@@ -1,6 +1,16 @@
+import string
+
 import pytest
+from hypothesis import assume, given
+from hypothesis import strategies as st
 
 from app.core.identificadores import digito_verificador, isin_valido, normalizar_isin
+
+corpos_de_isin = st.builds(
+    lambda pais, resto: pais + resto,
+    st.text(string.ascii_uppercase, min_size=2, max_size=2),
+    st.text(string.ascii_uppercase + string.digits, min_size=9, max_size=9),
+)
 
 # ISINs públicos de mercado (não são dados pessoais).
 ISINS_CONHECIDOS = [
@@ -57,3 +67,21 @@ def test_normalizar_isin_recusa_formato_invalido(texto):
 def test_normalizar_isin_recusa_digito_verificador_errado():
     with pytest.raises(ValueError, match="dígito verificador"):
         normalizar_isin("US0378331006")
+
+
+@given(corpos_de_isin)
+def test_corpo_mais_digito_calculado_forma_isin_valido(corpo):
+    assert isin_valido(corpo + digito_verificador(corpo))
+
+
+@given(corpos_de_isin, st.sampled_from(string.digits))
+def test_qualquer_outro_digito_verificador_e_recusado(corpo, digito):
+    assume(digito != digito_verificador(corpo))
+    assert not isin_valido(corpo + digito)
+
+
+@given(corpos_de_isin)
+def test_normalizar_isin_e_idempotente(corpo):
+    isin = corpo + digito_verificador(corpo)
+    assert normalizar_isin(isin) == isin
+    assert normalizar_isin(normalizar_isin(f" {isin.lower()} ")) == isin
