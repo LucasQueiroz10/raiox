@@ -4,8 +4,22 @@ from collections.abc import Hashable
 from dataclasses import dataclass, field
 from decimal import Decimal, localcontext
 
-from app.core.classificacao import Selo, TabelaClassificacao
+from app.core.classificacao import ParticipacaoTema, Selo, TabelaClassificacao
 from app.core.lookthrough import PRECISAO, ResultadoLookthrough
+
+
+@dataclass(frozen=True, slots=True)
+class EmpresaRaioX:
+    isin: str
+    setor: str | None  # None = sem classificação
+    selo_setor: Selo | None
+    temas: tuple[ParticipacaoTema, ...]
+    direto: Decimal
+    via_fundos: Decimal
+    total: Decimal
+    percentual: Decimal  # sobre o total da carteira
+    escondida: bool  # chega por pelo menos um fundo
+    fundos: frozenset[str]  # fundos da carteira por onde chega
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,6 +77,8 @@ class RaioX:
     derivativos_por_setor: dict[str | None, Fatia] = field(default_factory=dict)
     credito_por_setor: dict[str | None, Fatia] = field(default_factory=dict)
     vendido_por_setor: dict[str | None, Fatia] = field(default_factory=dict)
+    # Empresas com exposição em ações, maiores primeiro.
+    empresas: tuple[EmpresaRaioX, ...] = ()
 
 
 class _Somador:
@@ -129,7 +145,34 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
             derivativos_por_setor=derivativos.fatias(total),
             credito_por_setor=credito.fatias(total),
             vendido_por_setor=vendido.fatias(total),
+            empresas=_listar_empresas(resultado, tabela),
         )
+
+
+def _listar_empresas(
+    resultado: ResultadoLookthrough, tabela: TabelaClassificacao
+) -> tuple[EmpresaRaioX, ...]:
+    total = resultado.total
+    lista = []
+    for e in resultado.empresas.values():
+        if e.total == 0:
+            continue
+        c = tabela.classificacoes.get(e.isin)
+        lista.append(
+            EmpresaRaioX(
+                isin=e.isin,
+                setor=c.setor if c else None,
+                selo_setor=c.selo_setor if c else None,
+                temas=c.temas if c else (),
+                direto=e.direto,
+                via_fundos=e.via_fundos,
+                total=e.total,
+                percentual=e.total / total if total else Decimal(0),
+                escondida=e.via_fundos != 0,
+                fundos=frozenset(e.fundos),
+            )
+        )
+    return tuple(sorted(lista, key=lambda e: (-e.total, e.isin)))
 
 
 def _somar_pelo_setor(

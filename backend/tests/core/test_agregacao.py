@@ -186,3 +186,24 @@ def test_vendidos_agrupados_por_setor_sem_descontar_das_acoes():
     assert {s: f.valor for s, f in r.vendido_por_setor.items()} == {"Financeiro": D("-50")}
     assert "Financeiro" not in r.por_setor
     assert r.por_setor["Tecnologia"].valor == D("500")
+
+
+def test_lista_de_empresas_maiores_primeiro_com_as_escondidas_marcadas():
+    r = agregar(lookthrough_simulado(), tabela_simulada())
+
+    assert [(e.isin, e.total, e.escondida) for e in r.empresas] == [
+        (VAREJO, D("1200"), True),
+        (BANCO, D("1000"), False),  # só direto
+        (CHIPS, D("900"), True),
+        (SEMCLASSE, D("600"), True),
+    ]
+    varejo = r.empresas[0]
+    assert (varejo.setor, varejo.percentual, varejo.fundos) == ("Varejo digital", D("0.3"), {ETF})
+    assert [t.subtema for t in varejo.temas] == ["Nuvem", "Modelos"]
+    assert r.empresas[3].setor is None
+
+
+def test_empresa_so_com_credito_ou_vendido_fica_fora_da_lista():
+    r = agregar(lookthrough_com_derivativos(), tabela_simulada())
+
+    assert [e.isin for e in r.empresas] == [CHIPS]
