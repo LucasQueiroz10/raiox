@@ -81,3 +81,8 @@ Quando aparecem as notas:
 | `avisos.creditos_fontes` | | a escrever |
 | `avisos.ciclo` | | a escrever |
 | `avisos.fundo_sem_composicao` | | a escrever |
+
+
+## Hashing de login
+
+O hashing de login deve ser feito com Argon2id, quando o projeto for alem do prototipo. 
