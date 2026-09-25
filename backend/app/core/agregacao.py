@@ -19,8 +19,10 @@ class Fatia:
 class RaioX:
     total: Decimal
     versao_classificacao: str
-    # Chave None = sem classificação.
+    # Chave None = sem classificação (setor) ou sem tema (núcleo + sem classificação).
     por_setor: dict[str | None, Fatia] = field(default_factory=dict)
+    por_tema: dict[str | None, Fatia] = field(default_factory=dict)
+    por_subtema: dict[tuple[str, str] | None, Fatia] = field(default_factory=dict)
 
 
 class _Somador:
@@ -43,20 +45,34 @@ class _Somador:
 
 
 def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> RaioX:
-    """Soma a exposição comprada em ações de cada empresa pelo setor dela."""
+    """Soma a exposição comprada em ações de cada empresa pelo setor dela e divide o
+    valor pelos temas conforme o peso de cada um; o núcleo fica sem tema."""
     with localcontext(prec=PRECISAO):
-        por_setor = _Somador()
+        por_setor, por_tema, por_subtema = _Somador(), _Somador(), _Somador()
         for empresa in resultado.empresas.values():
-            if empresa.total == 0:
+            valor = empresa.total
+            if valor == 0:
                 continue
             c = tabela.classificacoes.get(empresa.isin)
             if c is None:
-                por_setor.somar(None, empresa.total, preliminar=False)
-            else:
-                por_setor.somar(c.setor, empresa.total, c.selo_setor is Selo.PRELIMINAR)
+                por_setor.somar(None, valor, preliminar=False)
+                por_tema.somar(None, valor, preliminar=False)
+                por_subtema.somar(None, valor, preliminar=False)
+                continue
 
+            por_setor.somar(c.setor, valor, c.selo_setor is Selo.PRELIMINAR)
+            for t in c.temas:
+                preliminar = t.selo is Selo.PRELIMINAR
+                por_tema.somar(t.tema, valor * t.peso, preliminar)
+                por_subtema.somar((t.tema, t.subtema), valor * t.peso, preliminar)
+            por_tema.somar(None, valor * c.peso_nucleo, preliminar=False)
+            por_subtema.somar(None, valor * c.peso_nucleo, preliminar=False)
+
+        total = resultado.total
         return RaioX(
-            total=resultado.total,
+            total=total,
             versao_classificacao=tabela.versao,
-            por_setor=por_setor.fatias(resultado.total),
+            por_setor=por_setor.fatias(total),
+            por_tema=por_tema.fatias(total),
+            por_subtema=por_subtema.fatias(total),
         )

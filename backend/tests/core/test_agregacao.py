@@ -95,3 +95,32 @@ def test_carteira_vazia_nao_divide_por_zero():
 
     assert r.total == 0
     assert r.por_setor == {}
+
+
+def test_valor_da_empresa_se_divide_pelos_pesos_dos_temas():
+    r = agregar(lookthrough_simulado(), tabela_simulada())
+
+    # VAREJO 1.200: Nuvem 35% = 420, Modelos 10% = 120. CHIPS 900: Semicondutores 80% = 720.
+    assert {s: f.valor for s, f in r.por_subtema.items()} == {
+        (IA, "Nuvem"): D("420"),
+        (IA, "Modelos"): D("120"),
+        (IA, "Semicondutores"): D("720"),
+        None: D("2440"),  # núcleos (660 + 180 + 1.000) e sem classificação (600)
+    }
+    assert r.por_tema[IA].valor == D("1260")
+    assert r.por_tema[IA].percentual == D("0.315")
+    assert r.por_tema[None].valor == D("2440")
+
+
+def test_soma_por_tema_nao_passa_do_total_em_acoes():
+    r = agregar(lookthrough_simulado(), tabela_simulada())
+
+    assert sum(f.valor for f in r.por_tema.values()) == D("3700")
+    assert sum(f.valor for f in r.por_subtema.values()) == D("3700")
+
+
+def test_tema_calculado_pelo_modelo_fica_preliminar():
+    r = agregar(lookthrough_simulado(), tabela_simulada())
+
+    assert r.por_tema[IA].valor_preliminar == D("1260")
+    assert r.por_subtema[(IA, "Nuvem")].valor_preliminar == D("420")
