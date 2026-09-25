@@ -145,3 +145,44 @@ def test_cobertura_e_sobre_o_valor_em_acoes_dividida_por_selo():
 
 def test_cobertura_sem_acoes_e_zero():
     assert agregar(abrir_carteira([], {}), tabela_simulada()).cobertura.percentual_classificada == 0
+
+
+def lookthrough_com_derivativos():
+    """ETF de R$ 1.000 com derivativos, crédito e posição vendida (números inventados)."""
+    etf = Composicao(
+        ETF,
+        date(2026, 8, 31),
+        "teste",
+        (
+            ItemComposicao(CHIPS, D("0.50"), TipoItem.ACAO),
+            ItemComposicao(None, D("0.10"), TipoItem.DERIVATIVO, ativo_objeto_isin=CHIPS),
+            ItemComposicao(None, D("0.02"), TipoItem.DERIVATIVO, ativo_objeto_isin=SEMCLASSE),
+            ItemComposicao(None, D("0.05"), TipoItem.DERIVATIVO),
+            ItemComposicao(isin("DEBENTURE"), D("0.10"), TipoItem.CREDITO, emissor_isin=VAREJO),
+            ItemComposicao(BANCO, D("-0.05"), TipoItem.ACAO),
+        ),
+    )
+    return abrir_carteira([Posicao(ETF, D("1000"), TipoItem.FUNDO)], {ETF: etf})
+
+
+def test_derivativos_agrupados_pelo_setor_do_ativo_objeto():
+    r = agregar(lookthrough_com_derivativos(), tabela_simulada())
+
+    assert {s: f.valor for s, f in r.derivativos_por_setor.items()} == {
+        "Tecnologia": D("100"),
+        None: D("70"),  # ativo-objeto sem classificação (20) ou desconhecido (50)
+    }
+
+
+def test_credito_agrupado_pelo_setor_do_emissor():
+    r = agregar(lookthrough_com_derivativos(), tabela_simulada())
+
+    assert {s: f.valor for s, f in r.credito_por_setor.items()} == {"Varejo digital": D("100")}
+
+
+def test_vendidos_agrupados_por_setor_sem_descontar_das_acoes():
+    r = agregar(lookthrough_com_derivativos(), tabela_simulada())
+
+    assert {s: f.valor for s, f in r.vendido_por_setor.items()} == {"Financeiro": D("-50")}
+    assert "Financeiro" not in r.por_setor
+    assert r.por_setor["Tecnologia"].valor == D("500")

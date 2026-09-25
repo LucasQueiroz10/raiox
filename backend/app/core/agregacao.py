@@ -59,6 +59,10 @@ class RaioX:
     por_setor: dict[str | None, Fatia] = field(default_factory=dict)
     por_tema: dict[str | None, Fatia] = field(default_factory=dict)
     por_subtema: dict[tuple[str, str] | None, Fatia] = field(default_factory=dict)
+    # Fora da exposição em ações: mostrados à parte, pelo setor da empresa ligada.
+    derivativos_por_setor: dict[str | None, Fatia] = field(default_factory=dict)
+    credito_por_setor: dict[str | None, Fatia] = field(default_factory=dict)
+    vendido_por_setor: dict[str | None, Fatia] = field(default_factory=dict)
 
 
 class _Somador:
@@ -104,6 +108,15 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
             por_tema.somar(None, valor * c.peso_nucleo, preliminar=False)
             por_subtema.somar(None, valor * c.peso_nucleo, preliminar=False)
 
+        derivativos, credito, vendido = _Somador(), _Somador(), _Somador()
+        for objeto, valor in resultado.derivativos_por_ativo_objeto.items():
+            _somar_pelo_setor(derivativos, tabela, objeto, valor)
+        for empresa in resultado.empresas.values():
+            if empresa.credito:
+                _somar_pelo_setor(credito, tabela, empresa.isin, empresa.credito)
+            if empresa.vendido:
+                _somar_pelo_setor(vendido, tabela, empresa.isin, empresa.vendido)
+
         total = resultado.total
         setores = por_setor.fatias(total)
         return RaioX(
@@ -113,4 +126,17 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
             por_setor=setores,
             por_tema=por_tema.fatias(total),
             por_subtema=por_subtema.fatias(total),
+            derivativos_por_setor=derivativos.fatias(total),
+            credito_por_setor=credito.fatias(total),
+            vendido_por_setor=vendido.fatias(total),
         )
+
+
+def _somar_pelo_setor(
+    somador: _Somador, tabela: TabelaClassificacao, isin: str | None, valor: Decimal
+) -> None:
+    c = tabela.classificacoes.get(isin) if isin else None
+    if c is None:
+        somador.somar(None, valor, preliminar=False)
+    else:
+        somador.somar(c.setor, valor, c.selo_setor is Selo.PRELIMINAR)
