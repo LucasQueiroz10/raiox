@@ -25,7 +25,8 @@ def ler_numero(texto: str, *, decimal: str) -> Decimal:
         raise ValueError(f"separador decimal desconhecido: {decimal!r}")
     limpo = "".join(texto.split())
     if formato.fullmatch(limpo) is None:
-        raise ValueError(f"número inválido para separador decimal {decimal!r}: {texto!r}")
+        # Sem repetir o texto: ele pode ser dado da carteira e acabar em um log.
+        raise ValueError(f"número inválido para separador decimal {decimal!r}")
     milhar = "." if decimal == "," else ","
     return Decimal(limpo.replace(milhar, "").replace(decimal, "."))
 
@@ -38,5 +39,5 @@ def ler_data(texto: str) -> date:
     elif m := _DATA_ISO.fullmatch(limpo):
         ano, mes, dia = m.groups()
     else:
-        raise ValueError(f"data em formato não reconhecido: {texto!r}")
+        raise ValueError("data em formato não reconhecido (use dd/mm/aaaa ou aaaa-mm-dd)")
     return date(int(ano), int(mes), int(dia))

@@ -89,3 +89,13 @@ def test_ler_data(texto, esperado):
 def test_ler_data_recusa_formato_invalido(texto):
     with pytest.raises(ValueError):
         ler_data(texto)
+
+
+def test_erros_nao_repetem_o_valor_recebido():
+    # O valor pode ser dado da carteira e a mensagem pode acabar em um log.
+    with pytest.raises(ValueError) as erro_numero:
+        ler_numero("98765,4x", decimal=",")
+    with pytest.raises(ValueError) as erro_data:
+        ler_data("98/76/5432x")
+    assert "98765" not in str(erro_numero.value)
+    assert "98/76" not in str(erro_data.value)
