@@ -22,6 +22,10 @@ PRECISAO = 50
 CONVERGENCIA_CICLO = Decimal("0.001")
 MAX_FUNDOS_DISTINTOS = 10  # fundos diferentes numa mesma cadeia
 MAX_NIVEIS = 100  # trava para ciclos que não convergem (ex.: A 100% em B e B 100% em A)
+# Trava total contra composições com erro (pesos somando mais de 100% dentro de ciclos
+# multiplicam os caminhos). Carteiras reais, mesmo com ETFs de milhares de ações, ficam
+# bem abaixo.
+MAX_PASSOS = 1_000_000
 
 
 class CodigoAviso(StrEnum):
@@ -29,12 +33,13 @@ class CodigoAviso(StrEnum):
     CICLO_SEM_CONVERGENCIA = "ciclo_sem_convergencia"
     CADEIA_LONGA = "cadeia_longa"
     FUNDO_SEM_COMPOSICAO = "fundo_sem_composicao"
+    LIMITE_DE_PROCESSAMENTO = "limite_de_processamento"
 
 
 @dataclass(frozen=True, slots=True)
 class Aviso:
     codigo: CodigoAviso
-    fundo_isin: str
+    fundo_isin: str | None  # None quando o aviso vale para a carteira toda
 
 
 @dataclass
@@ -97,7 +102,10 @@ class _Pendente:
 
 
 def abrir_carteira(
-    posicoes: Iterable[Posicao], composicoes: Mapping[str, Composicao]
+    posicoes: Iterable[Posicao],
+    composicoes: Mapping[str, Composicao],
+    *,
+    max_passos: int = MAX_PASSOS,
 ) -> ResultadoLookthrough:
     """Distribui o valor de cada posição até as empresas, sem normalizar pesos."""
     r = ResultadoLookthrough()
@@ -108,7 +116,13 @@ def abrir_carteira(
             item = ItemComposicao(p.isin, Decimal(1), p.tipo)
             pilha.append(_Pendente(item, p.valor_brl, None))
 
+        passos = 0
         while pilha:
+            passos += 1
+            if passos > max_passos:
+                restante = sum(p.valor for p in pilha)
+                r._nao_aberto(restante, CodigoAviso.LIMITE_DE_PROCESSAMENTO, None)
+                break
             atual = pilha.pop()
             item = atual.item
             composicao = composicoes.get(item.isin) if item.isin else None

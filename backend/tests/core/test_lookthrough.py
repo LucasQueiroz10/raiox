@@ -267,3 +267,13 @@ def test_fundo_sem_composicao_nao_entra_na_visao_por_fundo():
     r = abrir_carteira([Posicao(semdados, D("200"), TipoItem.FUNDO)], {})
 
     assert r.fundos == {}
+
+
+def test_composicao_patologica_para_no_limite_de_processamento():
+    # Pesos somando 200% num autociclo: o valor dobra e os caminhos se multiplicam.
+    a = fundo(FUNDO_A, (FUNDO_A, "1", TipoItem.FUNDO), (FUNDO_A, "1", TipoItem.FUNDO))
+
+    r = abrir_carteira([Posicao(FUNDO_A, D("1000"), TipoItem.FUNDO)], indexar(a), max_passos=1000)
+
+    assert Aviso(CodigoAviso.LIMITE_DE_PROCESSAMENTO, None) in r.avisos
+    assert sum(r.categorias.values()) == r.total
