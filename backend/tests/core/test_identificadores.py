@@ -1,6 +1,6 @@
 import pytest
 
-from app.core.identificadores import digito_verificador
+from app.core.identificadores import digito_verificador, isin_valido
 
 # ISINs públicos de mercado (não são dados pessoais).
 ISINS_CONHECIDOS = [
@@ -16,3 +16,25 @@ ISINS_CONHECIDOS = [
 @pytest.mark.parametrize("isin", ISINS_CONHECIDOS)
 def test_digito_verificador_reproduz_o_ultimo_caractere(isin):
     assert digito_verificador(isin[:11]) == isin[11]
+
+
+@pytest.mark.parametrize("isin", ISINS_CONHECIDOS)
+def test_isin_valido_aceita_isins_conhecidos(isin):
+    assert isin_valido(isin)
+
+
+@pytest.mark.parametrize(
+    "texto",
+    [
+        "US0378331006",  # dígito verificador errado
+        "US037833100",  # 11 caracteres
+        "US03783310055",  # 13 caracteres
+        "",
+        "US03783310-5",  # caractere fora de A-Z e 0-9
+        "1S0378331005",  # país com número
+        "US037833100X",  # dígito verificador que não é número
+        "us0378331005",  # minúsculas só são aceitas depois de normalizar
+    ],
+)
+def test_isin_valido_recusa_formatos_invalidos(texto):
+    assert not isin_valido(texto)

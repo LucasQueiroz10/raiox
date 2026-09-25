@@ -1,5 +1,10 @@
 """Identificadores de títulos. O ISIN é a chave interna de empresa."""
 
+import re
+
+# 2 letras de país (ou prefixo como XS), 9 caracteres alfanuméricos e 1 dígito verificador.
+_FORMATO_ISIN = re.compile(r"[A-Z]{2}[A-Z0-9]{9}[0-9]")
+
 
 def digito_verificador(corpo: str) -> str:
     """Calcula o 12º caractere do ISIN a partir dos 11 primeiros.
@@ -18,3 +23,10 @@ def digito_verificador(corpo: str) -> str:
                 n -= 9
         soma += n
     return str((10 - soma % 10) % 10)
+
+
+def isin_valido(texto: str) -> bool:
+    """Diz se o texto já é um ISIN válido (formato e dígito). Não normaliza."""
+    return (
+        _FORMATO_ISIN.fullmatch(texto) is not None and digito_verificador(texto[:11]) == texto[11]
+    )
