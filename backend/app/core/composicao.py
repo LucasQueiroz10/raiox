@@ -63,6 +63,7 @@ class ItemComposicao:
     peso: Decimal  # fração do patrimônio do fundo; pode ser negativa
     tipo: TipoItem
     ativo_objeto_isin: str | None = None  # só para derivativos
+    emissor_isin: str | None = None  # só para crédito: ISIN da ação da empresa emissora
 
 
 @dataclass(frozen=True, slots=True)
