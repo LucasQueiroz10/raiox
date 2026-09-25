@@ -1,6 +1,6 @@
 import pytest
 
-from app.core.identificadores import digito_verificador, isin_valido
+from app.core.identificadores import digito_verificador, isin_valido, normalizar_isin
 
 # ISINs públicos de mercado (não são dados pessoais).
 ISINS_CONHECIDOS = [
@@ -38,3 +38,22 @@ def test_isin_valido_aceita_isins_conhecidos(isin):
 )
 def test_isin_valido_recusa_formatos_invalidos(texto):
     assert not isin_valido(texto)
+
+
+@pytest.mark.parametrize(
+    "texto",
+    ["US0378331005", " us0378331005 ", "\tUs0378331005\n", "us 0378 3310 05"],
+)
+def test_normalizar_isin_remove_espacos_e_poe_em_maiusculas(texto):
+    assert normalizar_isin(texto) == "US0378331005"
+
+
+@pytest.mark.parametrize("texto", ["US037833100", "US03783310-5", "1S0378331005", ""])
+def test_normalizar_isin_recusa_formato_invalido(texto):
+    with pytest.raises(ValueError, match="formato"):
+        normalizar_isin(texto)
+
+
+def test_normalizar_isin_recusa_digito_verificador_errado():
+    with pytest.raises(ValueError, match="dígito verificador"):
+        normalizar_isin("US0378331006")

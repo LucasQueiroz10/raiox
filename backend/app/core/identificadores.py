@@ -30,3 +30,13 @@ def isin_valido(texto: str) -> bool:
     return (
         _FORMATO_ISIN.fullmatch(texto) is not None and digito_verificador(texto[:11]) == texto[11]
     )
+
+
+def normalizar_isin(texto: str) -> str:
+    """Remove espaços, põe em maiúsculas e devolve o ISIN; lança ValueError se for inválido."""
+    isin = "".join(texto.split()).upper()
+    if _FORMATO_ISIN.fullmatch(isin) is None:
+        raise ValueError(f"ISIN com formato inválido: {isin!r}")
+    if digito_verificador(isin[:11]) != isin[11]:
+        raise ValueError(f"ISIN com dígito verificador inválido: {isin!r}")
+    return isin
