@@ -1,8 +1,13 @@
-from datetime import date
+from datetime import date, timedelta
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from app.core.calendario import dia_util, feriados, pascoa, ultimo_dia_util
+
+anos = st.integers(min_value=1900, max_value=2200)
+dias = st.dates(min_value=date(1900, 1, 10), max_value=date(2200, 12, 31))
 
 
 @pytest.mark.parametrize(
@@ -73,3 +78,25 @@ def test_dia_util(dia, esperado):
 )
 def test_ultimo_dia_util(pedido, esperado):
     assert ultimo_dia_util(pedido) == esperado
+
+
+@given(anos)
+def test_pascoa_e_sempre_domingo_entre_22_de_marco_e_25_de_abril(ano):
+    p = pascoa(ano)
+    assert p.weekday() == 6
+    assert date(ano, 3, 22) <= p <= date(ano, 4, 25)
+
+
+@given(anos)
+def test_feriados_sao_todos_do_proprio_ano(ano):
+    assert all(f.year == ano for f in feriados(ano))
+
+
+@given(dias)
+def test_ultimo_dia_util_e_o_mais_proximo_para_tras(dia):
+    resultado = ultimo_dia_util(dia)
+    assert resultado <= dia
+    assert dia_util(resultado)
+    # Nenhum dia útil entre o resultado e o dia pedido.
+    entre = (resultado + timedelta(days=n) for n in range(1, (dia - resultado).days + 1))
+    assert not any(dia_util(d) for d in entre)
