@@ -225,3 +225,45 @@ def test_fundo_sem_composicao_vai_para_nao_aberto():
         Aviso(CodigoAviso.FUNDO_SEM_COMPOSICAO, isin("SEMDADOS")),
     }
     assert isin("SEMDADOS") not in r.empresas
+
+
+def test_visao_por_fundo_mostra_a_composicao_propria_sem_normalizar():
+    etf = fundo_completo()
+
+    r = abrir_carteira([Posicao(ETF, D("1000"), TipoItem.FUNDO)], indexar(etf))
+
+    resumo = r.fundos[ETF]
+    assert resumo.valor_recebido == D("1000")
+    assert resumo.pesos == etf.pesos_por_categoria()
+    assert resumo.pesos[Categoria.CAIXA] == D("0.05")
+    assert (resumo.data_referencia, resumo.fonte) == (date(2026, 8, 31), "teste")
+
+
+def test_visao_por_fundo_inclui_fundos_intermediarios():
+    fof = fundo(FUNDO_DE_FUNDOS, (ETF, "0.5", TipoItem.FUNDO), (ACAO_C, "0.5", TipoItem.ACAO))
+
+    r = abrir_carteira(
+        [Posicao(FUNDO_DE_FUNDOS, D("1000"), TipoItem.FUNDO)], indexar(fof, ETF_60_40)
+    )
+
+    assert r.fundos[FUNDO_DE_FUNDOS].valor_recebido == D("1000")
+    assert r.fundos[ETF].valor_recebido == D("500")
+    assert r.fundos[FUNDO_DE_FUNDOS].pesos[Categoria.FUNDOS] == D("0.5")
+
+
+def test_ucits_aproximado_leva_o_rotulo_para_a_visao_por_fundo():
+    ucits, etf_americano = isin("UCITS"), isin("ETFEUA")
+    c = fundo(ucits, (ACAO_A, "1", TipoItem.ACAO), aproximado_por=etf_americano)
+
+    r = abrir_carteira([Posicao(ucits, D("1000"), TipoItem.FUNDO)], indexar(c))
+
+    assert r.fundos[ucits].aproximado_por == etf_americano
+    assert r.fundos[ucits].valor_recebido == D("1000")
+
+
+def test_fundo_sem_composicao_nao_entra_na_visao_por_fundo():
+    semdados = isin("SEMDADOS")
+
+    r = abrir_carteira([Posicao(semdados, D("200"), TipoItem.FUNDO)], {})
+
+    assert r.fundos == {}

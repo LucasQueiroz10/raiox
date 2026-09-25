@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal, localcontext
 from enum import StrEnum
 
@@ -52,6 +53,19 @@ class ExposicaoEmpresa:
 
 
 @dataclass
+class ResumoFundo:
+    """A composição do próprio fundo, como a fonte informa, e quanto da carteira passou
+    por ele (somando todas as entradas, inclusive as voltas de um ciclo)."""
+
+    isin: str
+    data_referencia: date
+    fonte: str
+    aproximado_por: str | None
+    pesos: dict[Categoria, Decimal]
+    valor_recebido: Decimal = Decimal(0)
+
+
+@dataclass
 class ResultadoLookthrough:
     total: Decimal = Decimal(0)
     empresas: dict[str, ExposicaoEmpresa] = field(default_factory=dict)
@@ -60,6 +74,7 @@ class ResultadoLookthrough:
     )
     derivativos_por_ativo_objeto: dict[str | None, Decimal] = field(default_factory=dict)
     avisos: set[Aviso] = field(default_factory=set)
+    fundos: dict[str, ResumoFundo] = field(default_factory=dict)
 
     def _empresa(self, isin: str) -> ExposicaoEmpresa:
         if isin not in self.empresas:
@@ -128,7 +143,18 @@ def _abrir_fundo(
     else:
         caminho = (*caminho, (fundo, atual.valor))
 
-    sobra = 1 - sum(filho.peso for filho in composicao.itens)
+    resumo = r.fundos.get(fundo)
+    if resumo is None:
+        resumo = r.fundos[fundo] = ResumoFundo(
+            fundo,
+            composicao.data_referencia,
+            composicao.fonte,
+            composicao.aproximado_por,
+            composicao.pesos_por_categoria(),
+        )
+    resumo.valor_recebido += atual.valor
+
+    sobra = resumo.pesos[Categoria.NAO_IDENTIFICADO]
     r.categorias[Categoria.NAO_IDENTIFICADO] += atual.valor * sobra
     origem = atual.fundo_da_carteira or fundo
     return [
