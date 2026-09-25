@@ -52,7 +52,9 @@ posicoes = st.lists(
 def test_o_valor_da_carteira_sempre_se_conserva(carteira, fundos):
     r = abrir_carteira(carteira, fundos, max_passos=5000)
 
-    assert abs(sum(r.categorias.values()) - r.total) < D("1e-20")
+    with localcontext(prec=PRECISAO):  # mesma precisão do look-through
+        soma = sum(r.categorias.values(), D(0))
+        assert quase_igual(soma, r.total, *r.categorias.values())
 
 
 @settings(deadline=None)
@@ -63,5 +65,12 @@ def test_categorias_de_acoes_batem_com_as_empresas(carteira, fundos):
     with localcontext(prec=PRECISAO):  # mesma precisão do look-through
         acoes = sum((e.total for e in r.empresas.values()), D(0))
         vendido = sum((e.vendido for e in r.empresas.values()), D(0))
-    assert r.categorias[Categoria.ACOES] == acoes
-    assert r.categorias[Categoria.VENDIDO] == vendido
+        assert quase_igual(r.categorias[Categoria.ACOES], acoes)
+        assert quase_igual(r.categorias[Categoria.VENDIDO], vendido)
+
+
+def quase_igual(a: D, b: D, *outros: D) -> bool:
+    """Igualdade a menos do arredondamento de 50 dígitos: somas em ordens diferentes
+    podem divergir no último dígito. A tolerância é relativa ao maior valor envolvido."""
+    escala = max((abs(v) for v in (a, b, *outros)), default=D(0))
+    return abs(a - b) <= D("1e-40") * max(D(1), escala)
