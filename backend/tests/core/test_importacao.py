@@ -1,8 +1,9 @@
+from datetime import date
 from decimal import Decimal
 
 import pytest
 
-from app.core.importacao import ler_numero
+from app.core.importacao import ler_data, ler_numero
 
 
 @pytest.mark.parametrize(
@@ -59,3 +60,32 @@ def test_ler_numero_recusa_texto_invalido_ou_do_formato_errado(texto, decimal):
 def test_ler_numero_exige_separador_conhecido():
     with pytest.raises(ValueError):
         ler_numero("1", decimal=";")
+
+
+@pytest.mark.parametrize(
+    ("texto", "esperado"),
+    [
+        ("24/09/2026", date(2026, 9, 24)),
+        ("01/02/2026", date(2026, 2, 1)),  # dd/mm: 1º de fevereiro
+        ("2026-09-24", date(2026, 9, 24)),
+        (" 29/02/2024 ", date(2024, 2, 29)),
+    ],
+)
+def test_ler_data(texto, esperado):
+    assert ler_data(texto) == esperado
+
+
+@pytest.mark.parametrize(
+    "texto",
+    [
+        "31/02/2026",  # dia que não existe
+        "09/24/2026",  # formato americano mm/dd
+        "24/09/26",  # ano com 2 dígitos
+        "2026-09-24T10:00:00",
+        "24-09-2026",
+        "",
+    ],
+)
+def test_ler_data_recusa_formato_invalido(texto):
+    with pytest.raises(ValueError):
+        ler_data(texto)
