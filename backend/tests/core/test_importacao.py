@@ -2,8 +2,18 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from app.core.importacao import ler_data, ler_numero
+
+valores = st.decimals(
+    min_value=Decimal("-1e12"),
+    max_value=Decimal("1e12"),
+    places=2,
+    allow_nan=False,
+    allow_infinity=False,
+)
 
 
 @pytest.mark.parametrize(
@@ -99,3 +109,21 @@ def test_erros_nao_repetem_o_valor_recebido():
         ler_data("98/76/5432x")
     assert "98765" not in str(erro_numero.value)
     assert "98/76" not in str(erro_data.value)
+
+
+@given(valores)
+def test_ler_numero_desfaz_a_formatacao_americana(valor):
+    assert ler_numero(f"{valor:,.2f}", decimal=".") == valor
+
+
+@given(valores)
+def test_ler_numero_desfaz_a_formatacao_brasileira(valor):
+    americano = f"{valor:,.2f}"
+    brasileiro = americano.replace(",", "_").replace(".", ",").replace("_", ".")
+    assert ler_numero(brasileiro, decimal=",") == valor
+
+
+@given(st.dates(min_value=date(1000, 1, 1)))
+def test_ler_data_desfaz_as_duas_formatacoes(dia):
+    assert ler_data(dia.strftime("%d/%m/%Y")) == dia
+    assert ler_data(dia.isoformat()) == dia
