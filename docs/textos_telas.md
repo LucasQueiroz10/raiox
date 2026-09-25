@@ -58,6 +58,7 @@ Status possíveis: `a escrever` · `rascunho` · `aprovado`
 | `raiox.empresas_escondidas.titulo` | | a escrever |
 | `raiox.empresas_escondidas.explicacao` | | a escrever |
 | `raiox.cobertura` | | a escrever |
+| `raiox.nota_cobertura` | A cobertura considera apenas o valor investido em ações. Caixa, títulos públicos, derivativos e valores não identificados não têm setor e ficam fora deste cálculo. | rascunho |
 | `raiox.data_composicao` | | a escrever |
 | `raiox.rotulo_ucits` | | a escrever |
 | `raiox.caixa` | | a escrever |
@@ -70,6 +71,7 @@ Status possíveis: `a escrever` · `rascunho` · `aprovado`
 
 Quando aparecem as notas:
 
+- `raiox.nota_cobertura`: sempre junto do indicador de cobertura.
 - `raiox.nota_derivativos`: sempre que o total em derivativos da carteira for diferente de zero.
 - `raiox.nota_posicoes_vendidas`: sempre que o total em posições vendidas for diferente de zero. O texto deve seguir a linha da nota de derivativos, explicando que a identificação da exposição é limitada.
 
