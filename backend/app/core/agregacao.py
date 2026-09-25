@@ -16,9 +16,45 @@ class Fatia:
 
 
 @dataclass(frozen=True, slots=True)
+class Cobertura:
+    """Quanto do valor em ações tem setor classificado. Caixa, títulos públicos,
+    derivativos e não identificado não têm setor e ficam fora da base."""
+
+    total_acoes: Decimal
+    confirmada: Decimal
+    preliminar: Decimal
+    sem_classificacao: Decimal
+    percentual_confirmada: Decimal
+    percentual_preliminar: Decimal
+    percentual_classificada: Decimal
+
+    @classmethod
+    def calcular(cls, por_setor: dict[str | None, Fatia]) -> Cobertura:
+        classificadas = [f for s, f in por_setor.items() if s is not None]
+        preliminar = sum((f.valor_preliminar for f in classificadas), Decimal(0))
+        confirmada = sum((f.valor for f in classificadas), Decimal(0)) - preliminar
+        sem = por_setor[None].valor if None in por_setor else Decimal(0)
+        total = confirmada + preliminar + sem
+
+        def fracao(v: Decimal) -> Decimal:
+            return v / total if total else Decimal(0)
+
+        return cls(
+            total,
+            confirmada,
+            preliminar,
+            sem,
+            fracao(confirmada),
+            fracao(preliminar),
+            fracao(confirmada + preliminar),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class RaioX:
     total: Decimal
     versao_classificacao: str
+    cobertura: Cobertura
     # Chave None = sem classificação (setor) ou sem tema (núcleo + sem classificação).
     por_setor: dict[str | None, Fatia] = field(default_factory=dict)
     por_tema: dict[str | None, Fatia] = field(default_factory=dict)
@@ -69,10 +105,12 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
             por_subtema.somar(None, valor * c.peso_nucleo, preliminar=False)
 
         total = resultado.total
+        setores = por_setor.fatias(total)
         return RaioX(
             total=total,
             versao_classificacao=tabela.versao,
-            por_setor=por_setor.fatias(total),
+            cobertura=Cobertura.calcular(setores),
+            por_setor=setores,
             por_tema=por_tema.fatias(total),
             por_subtema=por_subtema.fatias(total),
         )

@@ -9,6 +9,7 @@ Ações: BANCO 1.000 · VAREJO 1.200 · CHIPS 900 · SEMCLASSE 600 = 3.700.
 
 from datetime import date
 from decimal import Decimal as D
+from decimal import localcontext
 
 from app.core.agregacao import agregar
 from app.core.classificacao import (
@@ -18,7 +19,7 @@ from app.core.classificacao import (
     TabelaClassificacao,
 )
 from app.core.composicao import Composicao, ItemComposicao, Posicao, TipoItem
-from app.core.lookthrough import abrir_carteira
+from app.core.lookthrough import PRECISAO, abrir_carteira
 from tests.ficticios import isin
 
 BANCO, VAREJO, CHIPS, SEMCLASSE = isin("BANCO"), isin("VAREJO"), isin("CHIPS"), isin("SEMCLASSE")
@@ -124,3 +125,23 @@ def test_tema_calculado_pelo_modelo_fica_preliminar():
 
     assert r.por_tema[IA].valor_preliminar == D("1260")
     assert r.por_subtema[(IA, "Nuvem")].valor_preliminar == D("420")
+
+
+def test_cobertura_e_sobre_o_valor_em_acoes_dividida_por_selo():
+    r = agregar(lookthrough_simulado(), tabela_simulada())
+
+    c = r.cobertura
+    # Caixa e Tesouro (300) ficam fora: a base são os 3.700 em ações.
+    assert c.total_acoes == D("3700")
+    assert (c.confirmada, c.preliminar, c.sem_classificacao) == (
+        D("2100"),  # VAREJO e CHIPS: setor de fonte oficial
+        D("1000"),  # BANCO: setor do Wikidata
+        D("600"),  # SEMCLASSE
+    )
+    with localcontext(prec=PRECISAO):
+        assert c.percentual_confirmada == D(2100) / D(3700)
+        assert c.percentual_classificada == D(3100) / D(3700)
+
+
+def test_cobertura_sem_acoes_e_zero():
+    assert agregar(abrir_carteira([], {}), tabela_simulada()).cobertura.percentual_classificada == 0
