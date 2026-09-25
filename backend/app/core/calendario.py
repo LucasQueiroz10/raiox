@@ -36,3 +36,15 @@ def feriados(ano: int) -> frozenset[date]:
         p + timedelta(days=60),  # Corpus Christi
     }
     return frozenset({date(ano, mes, dia) for mes, dia in fixos} | moveis)
+
+
+def dia_util(dia: date) -> bool:
+    """Segunda a sexta, fora dos feriados nacionais."""
+    return dia.weekday() < 5 and dia not in feriados(dia.year)
+
+
+def ultimo_dia_util(dia: date) -> date:
+    """O próprio dia, se for útil; senão, o dia útil imediatamente anterior."""
+    while not dia_util(dia):
+        dia -= timedelta(days=1)
+    return dia
