@@ -85,3 +85,11 @@ def test_normalizar_isin_e_idempotente(corpo):
     isin = corpo + digito_verificador(corpo)
     assert normalizar_isin(isin) == isin
     assert normalizar_isin(normalizar_isin(f" {isin.lower()} ")) == isin
+
+
+@pytest.mark.parametrize("texto", ["US0378331006", "US03783310-5"])
+def test_normalizar_isin_nao_repete_o_valor_na_mensagem(texto):
+    # O ISIN de uma posição é dado da carteira e a mensagem pode acabar em um log.
+    with pytest.raises(ValueError) as erro:
+        normalizar_isin(texto)
+    assert "0378331" not in str(erro.value)

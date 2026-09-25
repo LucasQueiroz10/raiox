@@ -35,8 +35,9 @@ def isin_valido(texto: str) -> bool:
 def normalizar_isin(texto: str) -> str:
     """Remove espaços, põe em maiúsculas e devolve o ISIN; lança ValueError se for inválido."""
     isin = "".join(texto.split()).upper()
+    # Sem repetir o ISIN: ele pode ser dado da carteira e acabar em um log.
     if _FORMATO_ISIN.fullmatch(isin) is None:
-        raise ValueError(f"ISIN com formato inválido: {isin!r}")
+        raise ValueError("ISIN com formato inválido")
     if digito_verificador(isin[:11]) != isin[11]:
-        raise ValueError(f"ISIN com dígito verificador inválido: {isin!r}")
+        raise ValueError("ISIN com dígito verificador inválido")
     return isin
