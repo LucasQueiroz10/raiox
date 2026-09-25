@@ -1,0 +1,36 @@
+# Segredos
+.env
+.env.*
+!.env.example
+secrets/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+*.egg-info/
+
+# Cobertura
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+coverage/
+
+# Node / front
+node_modules/
+dist/
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+# Claude Code (configuração pessoal)
+.claude/settings.local.json
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+.idea/
