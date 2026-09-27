@@ -1,0 +1,6 @@
+# Ferramentas de análise do IrRAE (Sobol e gráficos). Opcionais: não entram no CI.
+# Gere o requirements-analise.txt com:
+#   python -m piptools compile --generate-hashes --strip-extras --allow-unsafe -o requirements-analise.txt requirements-analise.in
+-c requirements-lote.txt
+SALib==1.6.0
+matplotlib==3.11.2
