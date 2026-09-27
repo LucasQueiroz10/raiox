@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:xbrldi="http://xbrl.org/2006/xbrldi"
+  xmlns:us-gaap="http://fasb.org/us-gaap/2024" xmlns:ex="http://example.com/2025" xmlns:iso4217="http://www.xbrl.org/2003/iso4217">
+  <xbrli:context id="c_fy_nuvem">
+    <xbrli:entity><xbrli:identifier scheme="http://www.sec.gov/CIK">0000000001</xbrli:identifier>
+      <xbrli:segment><xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">ex:NuvemSegmentMember</xbrldi:explicitMember></xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:startDate>2025-01-01</xbrli:startDate><xbrli:endDate>2025-12-31</xbrli:endDate></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_fy_varejo">
+    <xbrli:entity><xbrli:identifier scheme="http://www.sec.gov/CIK">0000000001</xbrli:identifier>
+      <xbrli:segment><xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">ex:VarejoSegmentMember</xbrldi:explicitMember></xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:startDate>2025-01-01</xbrli:startDate><xbrli:endDate>2025-12-31</xbrli:endDate></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_q4_nuvem">
+    <xbrli:entity><xbrli:identifier scheme="http://www.sec.gov/CIK">0000000001</xbrli:identifier>
+      <xbrli:segment><xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">ex:NuvemSegmentMember</xbrldi:explicitMember></xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:startDate>2025-10-01</xbrli:startDate><xbrli:endDate>2025-12-31</xbrli:endDate></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_fy_nuvem_prod">
+    <xbrli:entity><xbrli:identifier scheme="http://www.sec.gov/CIK">0000000001</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">ex:NuvemSegmentMember</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">ex:ArmazenamentoMember</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:startDate>2025-01-01</xbrli:startDate><xbrli:endDate>2025-12-31</xbrli:endDate></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_fy_total">
+    <xbrli:entity><xbrli:identifier scheme="http://www.sec.gov/CIK">0000000001</xbrli:identifier></xbrli:entity>
+    <xbrli:period><xbrli:startDate>2025-01-01</xbrli:startDate><xbrli:endDate>2025-12-31</xbrli:endDate></xbrli:period>
+  </xbrli:context>
+  <xbrli:unit id="usd"><xbrli:measure>iso4217:USD</xbrli:measure></xbrli:unit>
+  <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c_fy_nuvem" unitRef="usd" decimals="-6">30000000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+  <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c_fy_varejo" unitRef="usd" decimals="-6">70000000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+  <us-gaap:Revenues contextRef="c_fy_nuvem" unitRef="usd" decimals="-6">30500000000</us-gaap:Revenues>
+  <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c_q4_nuvem" unitRef="usd" decimals="-6">9000000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+  <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c_fy_nuvem_prod" unitRef="usd" decimals="-6">5000000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+  <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c_fy_total" unitRef="usd" decimals="-6">100000000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+  <us-gaap:OperatingIncomeLoss contextRef="c_fy_nuvem" unitRef="usd" decimals="-6">12000000000</us-gaap:OperatingIncomeLoss>
+  <us-gaap:OperatingIncomeLoss contextRef="c_fy_varejo" unitRef="usd" decimals="-6">-1000000000</us-gaap:OperatingIncomeLoss>
+</xbrli:xbrl>

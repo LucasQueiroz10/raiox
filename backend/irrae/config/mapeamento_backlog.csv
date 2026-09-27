@@ -1,0 +1,5 @@
+ticker,segmento_origem,fracao_do_backlog,frac_ia_media,frac_ia_conc,semicondutores,nuvem_dc,modelos_software,energia_dc,generica,split_conc,evidencia
+GOOGL,Google Cloud,1.0,0.50,10,0.10,0.65,0.25,0,0,20,backlog de 155 bi e todo do Google Cloud
+ORCL,Cloud - Infrastructure (IaaS),0.75,0.75,10,0,0.9,0.1,0,0,20,release FY26: RPO de 638 bi puxado por grandes contratos de IA (partes pre-pagas somam 75 bi)
+ORCL,Cloud - Applications (SaaS),0.10,0.10,15,0,0,1,0,0,20,elicitado
+ORCL,Software,0.15,0.03,20,0,0,1,0,0,20,elicitado (suporte de licencas)

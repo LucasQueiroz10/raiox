@@ -39,7 +39,33 @@ jobs:
         run: python -m ruff format --check .
 
       - name: Testes (pytest)
-        run: python -m pytest
+        # Os testes do lote (ingest/ e irrae/) rodam no job "lote", com as dependências científicas.
+        run: python -m pytest --ignore=tests/irrae --ignore=tests/ingest
 
       - name: Auditoria de dependências (pip-audit)
         run: pip-audit --require-hashes --disable-pip -r requirements.txt
+
+  lote:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      - name: Instalar dependências (desenvolvimento + lote)
+        run: python -m pip install --require-hashes -r requirements-dev.txt -r requirements-lote.txt
+
+      - name: Testes do lote (ingest e IrRAE)
+        run: python -m pytest tests/ingest tests/irrae
+
+      - name: Auditoria de dependências do lote (pip-audit)
+        run: pip-audit --require-hashes --disable-pip -r requirements-lote.txt

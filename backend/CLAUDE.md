@@ -39,3 +39,14 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
   Nada que dependa de yfinance ou de rentabilidade.
 - ingest/ SEC: User-Agent declarado e no máximo 10 req/s. ingest/ CVM: registrar o crédito ODbL
   para aparecer em GET /fontes.
+- Todo XML externo passa por ingest/xml_seguro.ler_xml (nunca etree.fromstring direto).
+
+## Lote: ingest/ e irrae/ (ver ADR 0004)
+- ingest/: leitores de dados externos, compartilhados pelo produto e pelo IrRAE.
+- irrae/: modelo do M1 (dono da metodologia). Configurações em irrae/config/.
+  Mudança de regra ou mapeamento é decisão do M1; a lista de decisões conjuntas está no ADR 0004.
+- Rodam em lote, fora da API. app/ nunca importa irrae/.
+- Dentro de irrae/ o uso de float e numpy é permitido; o resultado vira Decimal ao ser gravado.
+- Dependências: requirements-lote.in/.txt (CI) e requirements-analise.in/.txt (opcional).
+    python -m pip install --require-hashes -r requirements-dev.txt -r requirements-lote.txt
+    python -m pytest tests/ingest tests/irrae     (no CI: job "lote")

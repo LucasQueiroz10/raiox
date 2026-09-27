@@ -1,0 +1,41 @@
+{
+  "_doc": "Prior por código SIC do setor oficial (SEC): média da exposição esperada antes de olhar os dados da empresa. A incerteza do prior é o kappa de 'prior_setorial' em componentes.json. No protótipo as médias são elicitadas (julgamento); com o universo completo devem virar empíricas (média das empresas do setor, excluindo a própria).",
+  "por_sic": {
+    "3674": {
+      "descricao": "Semicondutores",
+      "media": {
+        "ia.semicondutores": 0.3,
+        "ia.generica": 0.02
+      }
+    },
+    "7370": {
+      "descricao": "Serviços de computação/processamento de dados",
+      "media": {
+        "ia.modelos_software": 0.08,
+        "ia.nuvem_dc": 0.05,
+        "ia.generica": 0.02
+      }
+    },
+    "7372": {
+      "descricao": "Software",
+      "media": {
+        "ia.modelos_software": 0.08,
+        "ia.nuvem_dc": 0.05,
+        "ia.generica": 0.02
+      }
+    },
+    "5961": {
+      "descricao": "Varejo não-loja",
+      "media": {
+        "ia.nuvem_dc": 0.02,
+        "ia.generica": 0.02
+      }
+    }
+  },
+  "padrao": {
+    "descricao": "Sem prior específico",
+    "media": {
+      "ia.generica": 0.02
+    }
+  }
+}

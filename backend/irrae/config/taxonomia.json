@@ -1,0 +1,16 @@
+{
+  "_doc": "Árvore de temas. Folhas formam o simplex (somam 100% por empresa). O peso de um tema é a soma das suas folhas, então subtema <= tema por construção. 'generica' absorve o que é do tema mas não cabe num subtema. Para ampliar (tecnologia, depois todos os setores), adicione temas e folhas aqui; o código não tem nomes fixos além de 'nucleo'.",
+  "nucleo": {"nome": "Núcleo (setor oficial)"},
+  "temas": {
+    "ia": {
+      "nome": "Cadeia de IA",
+      "folhas": {
+        "ia.semicondutores": "Semicondutores e hardware de IA",
+        "ia.nuvem_dc": "Nuvem e data centers",
+        "ia.modelos_software": "Modelos e software de IA",
+        "ia.energia_dc": "Energia para data centers",
+        "ia.generica": "IA sem subtema definido"
+      }
+    }
+  }
+}

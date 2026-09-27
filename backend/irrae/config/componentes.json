@@ -1,0 +1,77 @@
+{
+  "_doc": "Componentes (fontes) do IrRAE. kappa_prior = precisão da fonte como medida da exposição verdadeira (quanto maior, mais confiável). É um PONTO DE PARTIDA: o modelo reestima kappa com o universo de empresas (fusao.estimar_kappas) e encolhe para este valor quando há poucas empresas. Valores iniciais são julgamento do protótipo, não vêm de fonte; devem ser recalibrados. 'pilar' serve para as regras (percepção sozinha não cria tema) e para relatórios.",
+  "componentes": {
+    "A_receita": {
+      "nome": "Atividade: receita por segmento",
+      "pilar": "realizado",
+      "kappa_prior": 30
+    },
+    "A_lucro": {
+      "nome": "Atividade: lucro operacional por segmento",
+      "pilar": "realizado",
+      "kappa_prior": 20
+    },
+    "C_cadeia": {
+      "nome": "Cadeia: exposição herdada de clientes",
+      "pilar": "realizado",
+      "kappa_prior": 10
+    },
+    "Ir_capex": {
+      "nome": "Investimento recente: capex",
+      "pilar": "prospectivo",
+      "kappa_prior": 15
+    },
+    "B_backlog": {
+      "nome": "Carteira contratada (RPO/backlog)",
+      "pilar": "prospectivo",
+      "kappa_prior": 15
+    },
+    "R_patentes": {
+      "nome": "Pesquisa: patentes (USPTO AIPD)",
+      "pilar": "prospectivo",
+      "kappa_prior": 8
+    },
+    "P_participacoes": {
+      "nome": "Participações e aquisições",
+      "pilar": "prospectivo",
+      "kappa_prior": 6
+    },
+    "N_narrativa": {
+      "nome": "Narrativa: texto do 10-K",
+      "pilar": "percepcao",
+      "kappa_prior": 6
+    },
+    "E_enquadramento": {
+      "nome": "Enquadramento de mercado: ETFs (N-PORT)",
+      "pilar": "percepcao",
+      "kappa_prior": 5
+    },
+    "prior_setorial": {
+      "nome": "Prior do setor oficial (pseudo-componente)",
+      "pilar": "prior",
+      "kappa_prior": 5
+    }
+  },
+  "correlacao_erros": {
+    "_doc": "Correlação entre os ERROS das fontes (não entre os sinais). Fontes que erram juntas recebem menos peso somado. Julgamento inicial; reestimar com dados.",
+    "A_receita|A_lucro": 0.6,
+    "A_receita|B_backlog": 0.5,
+    "A_lucro|B_backlog": 0.3,
+    "Ir_capex|B_backlog": 0.3,
+    "A_receita|Ir_capex": 0.2,
+    "N_narrativa|E_enquadramento": 0.3
+  },
+  "fusao": {
+    "shrinkage_lambda": 0.3,
+    "_lambda_doc": "Mistura dos pesos ótimos com pesos iguais (puzzle de combinação: Smith & Wallis 2009).",
+    "n_amostras": 2000
+  },
+  "regras": {
+    "limiar_entrada": 0.06,
+    "limiar_saida": 0.04,
+    "suporte_minimo_nao_percepcao": 0.01,
+    "selo_largura_alta": 0.1,
+    "selo_largura_media": 0.2,
+    "min_componentes_reais": 2
+  }
+}
