@@ -17,7 +17,8 @@ import time
 from dataclasses import dataclass
 
 import pandas as pd
-from lxml import etree
+
+from ingest.xml_seguro import ler_xml
 
 NS_XBRLI = "http://www.xbrl.org/2003/instance"
 NS_XBRLDI = "http://xbrl.org/2006/xbrldi"
@@ -109,7 +110,7 @@ def parse_segmentos_instancia(
     Retorna: segmento, metrica, tag, valor, inicio, fim.
     """
     tags = tags or TAGS_PADRAO
-    raiz = etree.fromstring(xml)
+    raiz = ler_xml(xml)
     ctx = {}
     for c in raiz.iter(f"{{{NS_XBRLI}}}context"):
         membros = c.findall(f".//{{{NS_XBRLDI}}}explicitMember")

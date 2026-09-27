@@ -13,13 +13,14 @@ Para escala, a SEC publica também os "Form N-PORT Data Sets" em lote.
 from __future__ import annotations
 
 import pandas as pd
-from lxml import etree
+
+from ingest.xml_seguro import ler_xml
 
 NS = {"n": "http://www.sec.gov/edgar/nport"}
 
 
 def parse_nport(xml: bytes) -> tuple[dict, pd.DataFrame]:
-    raiz = etree.fromstring(xml)
+    raiz = ler_xml(xml)
 
     def txt(caminho: str) -> str | None:
         el = raiz.find(caminho, NS)
