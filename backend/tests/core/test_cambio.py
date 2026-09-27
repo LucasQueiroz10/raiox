@@ -5,7 +5,7 @@ from decimal import Decimal as D
 
 import pytest
 
-from app.core.cambio import ler_ptax_olinda
+from app.core.cambio import escolher_ptax, ler_ptax_olinda
 
 
 def resposta(*linhas: dict) -> dict:
@@ -59,3 +59,43 @@ def test_resposta_vazia():
 def test_recusa_cotacao_invalida(invalida):
     with pytest.raises(ValueError):
         ler_ptax_olinda(resposta(invalida))
+
+
+# Cotações inventadas: 04/09 (sex), 08/09 (ter), 23/12 (qua), 25/09 (sex) de 2026.
+COTACOES = {
+    date(2026, 9, 4): D("5.40"),
+    date(2026, 9, 8): D("5.41"),
+    date(2026, 9, 25): D("5.42"),
+    date(2026, 12, 23): D("5.43"),
+}
+
+
+def test_dia_util_com_cotacao_usa_a_propria_data():
+    p = escolher_ptax(COTACOES, date(2026, 9, 25))
+
+    assert (p.data_cotacao, p.valor, p.data_pedida) == (
+        date(2026, 9, 25),
+        D("5.42"),
+        date(2026, 9, 25),
+    )
+
+
+def test_fim_de_semana_volta_para_a_sexta():
+    assert escolher_ptax(COTACOES, date(2026, 9, 27)).data_cotacao == date(2026, 9, 25)
+
+
+def test_feriado_volta_para_o_dia_util_anterior():
+    # 07/09/2026 é segunda-feira e feriado (Independência).
+    assert escolher_ptax(COTACOES, date(2026, 9, 7)).data_cotacao == date(2026, 9, 4)
+
+
+def test_dia_util_sem_cotacao_volta_mais_um_dia_util():
+    # 24/12/2026 é quinta e dia útil, mas não há cotação: usa 23/12.
+    p = escolher_ptax(COTACOES, date(2026, 12, 24))
+
+    assert (p.data_cotacao, p.data_pedida) == (date(2026, 12, 23), date(2026, 12, 24))
+
+
+def test_sem_cotacao_nos_ultimos_10_dias_uteis_da_erro():
+    with pytest.raises(LookupError):
+        escolher_ptax(COTACOES, date(2026, 11, 30))

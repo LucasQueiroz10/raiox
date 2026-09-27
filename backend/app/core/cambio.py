@@ -3,10 +3,25 @@
 Funções puras: a busca na API (rede) fica na ingestão.
 """
 
-from datetime import date
+from collections.abc import Mapping
+from dataclasses import dataclass
+from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 
+from app.core.calendario import ultimo_dia_util
+
 _FECHAMENTO = "Fechamento"
+# Quantos dias úteis voltar quando o BCB não tem cotação na data calculada.
+MAX_DIAS_UTEIS_SEM_COTACAO = 10
+
+
+@dataclass(frozen=True, slots=True)
+class PtaxUsada:
+    """A cotação usada e as duas datas, para a tela mostrar de qual dia é a PTAX."""
+
+    data_pedida: date
+    data_cotacao: date
+    valor: Decimal
 
 
 def _decimal(valor: object) -> Decimal:
@@ -36,3 +51,14 @@ def ler_ptax_olinda(resposta: dict) -> dict[date, Decimal]:
         dia = date.fromisoformat(str(linha["dataHoraCotacao"])[:10])
         cotacoes[dia] = _decimal(linha["cotacaoVenda"])
     return cotacoes
+
+
+def escolher_ptax(cotacoes: Mapping[date, Decimal], data_pedida: date) -> PtaxUsada:
+    """PTAX do último dia útil até a data pedida; se o BCB não tiver cotação nesse dia,
+    volta dia útil a dia útil, até MAX_DIAS_UTEIS_SEM_COTACAO."""
+    dia = ultimo_dia_util(data_pedida)
+    for _ in range(MAX_DIAS_UTEIS_SEM_COTACAO):
+        if dia in cotacoes:
+            return PtaxUsada(data_pedida, dia, cotacoes[dia])
+        dia = ultimo_dia_util(dia - timedelta(days=1))
+    raise LookupError(f"sem PTAX nos {MAX_DIAS_UTEIS_SEM_COTACAO} dias úteis até {data_pedida}")
