@@ -6,20 +6,25 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 ## Comandos
 - py -3.14 -m venv .venv                      cria o ambiente (uma vez)
 - source .venv/Scripts/activate               Git Bash no Windows (no Linux/CI: .venv/bin/activate)
-- python -m pip install -r requirements-dev.txt
+- python -m pip install --require-hashes -r requirements-dev.txt
 - python -m pytest                            testes (Hypothesis incluso)
 - python -m ruff check . && python -m ruff format --check .
 - uvicorn app.main:app --reload               servidor local
 - python -m app.exportar_openapi              gera ../frontend/openapi.json
-- pip-audit -r requirements.txt               auditoria de dependências
+- pip-audit --require-hashes --disable-pip -r requirements.txt   auditoria de dependências
 
-## Dependências
-- requirements.txt: só produção (fastapi, pydantic, uvicorn...), versões fixas com ==.
-- requirements-dev.txt: começa com "-r requirements.txt" e adiciona pytest, hypothesis,
-  httpx, ruff e pip-audit, também com ==.
+## Dependências (travadas com hash pelo pip-tools)
+- requirements.in: dependências diretas de produção (fastapi, pydantic, uvicorn...), com ==.
+- requirements-dev.in: ferramentas de desenvolvimento, presas às versões de produção.
+- requirements.txt e requirements-dev.txt são GERADOS (todas as dependências, inclusive as
+  indiretas, com versão exata e hash). Nunca editar à mão:
+    python -m piptools compile --generate-hashes --strip-extras -o requirements.txt requirements.in
+    python -m piptools compile --generate-hashes --strip-extras --allow-unsafe -o requirements-dev.txt requirements-dev.in
+- Dependência nova: adicionar no .in certo, gerar os .txt, instalar, rodar os testes e commitar
+  os quatro arquivos juntos.
 - pyproject.toml guarda só a configuração do ruff (target-version = "py314") e do pytest;
   não lista dependências.
-- Dependência nova: adicionar no arquivo certo, instalar, rodar os testes e commitar junto.
+- Regras de segurança do ruff (S, flake8-bandit) ativas; nos testes só o assert é liberado.
 
 ## Regras
 - yfinance é proibido (bloqueado no ruff por flake8-tidy-imports.banned-api).

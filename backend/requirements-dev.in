@@ -1,0 +1,11 @@
+# Ferramentas de desenvolvimento (diretas). Gere o requirements-dev.txt com:
+#   python -m piptools compile --generate-hashes --strip-extras --allow-unsafe -o requirements-dev.txt requirements-dev.in
+# As versões de produção ficam presas às do requirements.txt.
+-c requirements.txt
+-r requirements.in
+pytest==9.1.1
+hypothesis==6.168.1
+httpx==0.28.1
+ruff==0.16.9
+pip-audit==2.10.1
+pip-tools==7.6.1
