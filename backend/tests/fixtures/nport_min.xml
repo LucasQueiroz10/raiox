@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edgarSubmission xmlns="http://www.sec.gov/edgar/nport" xmlns:com="http://www.sec.gov/edgar/common" xmlns:ncom="http://www.sec.gov/edgar/nportcommon" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <headerData><submissionType>NPORT-P</submissionType></headerData>
+  <formData>
+    <genInfo><seriesName>Exemplo AI ETF</seriesName><seriesId>S000000001</seriesId><repPdEnd>2025-12-31</repPdEnd><repPdDate>2025-09-30</repPdDate></genInfo>
+    <fundInfo><totAssets>1000000000.00</totAssets><netAssets>990000000.00</netAssets></fundInfo>
+    <invstOrSecs>
+      <invstOrSec><name>EMPRESA A</name><lei>LEIAAAAAAAAAAAAAAAAA</lei><title>EMPRESA A COM</title><cusip>000000AA1</cusip>
+        <identifiers><isin value="US000000AA10"/></identifiers><balance>1000</balance><units>NS</units><curCd>USD</curCd>
+        <valUSD>50000000.00</valUSD><pctVal>5.05</pctVal><payoffProfile>Long</payoffProfile><assetCat>EC</assetCat><issuerCat>CORP</issuerCat><invCountry>US</invCountry></invstOrSec>
+      <invstOrSec><name>EMPRESA B</name><lei>LEIBBBBBBBBBBBBBBBBB</lei><title>EMPRESA B COM</title><cusip>000000BB2</cusip>
+        <identifiers><isin value="US000000BB20"/></identifiers><balance>500</balance><units>NS</units><curCd>USD</curCd>
+        <valUSD>20000000.00</valUSD><pctVal>2.02</pctVal><payoffProfile>Long</payoffProfile><assetCat>EC</assetCat><issuerCat>CORP</issuerCat><invCountry>US</invCountry></invstOrSec>
+    </invstOrSecs>
+  </formData>
+</edgarSubmission>
