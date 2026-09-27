@@ -23,6 +23,11 @@ updates:
     groups:
       frontend:
         patterns: ["*"]
+    ignore:
+      # O typescript-eslint 8.x só aceita TypeScript abaixo de 6.1 (ver ADR 0003).
+      # Remover esta regra quando o typescript-eslint suportar o TypeScript 7.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
