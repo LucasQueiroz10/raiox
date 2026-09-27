@@ -1,0 +1,24 @@
+ticker,segmento,frac_ia_media,frac_ia_conc,semicondutores,nuvem_dc,modelos_software,energia_dc,generica,split_conc,papel,justificativa
+AMZN,North America,0.03,20,0,0,0,0,1,20,adotante,uso de IA em varejo e logistica; sem receita de IA divulgada
+AMZN,International,0.03,20,0,0,0,0,1,20,adotante,idem North America
+AMZN,AWS,0.40,12,0.10,0.75,0.15,0,0,20,habilitador,nuvem com demanda de IA (release cita Trainium); fracao de IA nao divulgada
+MSFT,Productivity and Business Processes,0.12,15,0,0,1,0,0,20,produtor,Copilot/M365; fracao nao divulgada
+MSFT,Intelligent Cloud,0.40,12,0,0.8,0.2,0,0,20,habilitador,Azure com servicos de IA; fracao nao divulgada
+MSFT,More Personal Computing,0.03,20,0,0,0,0,1,20,adotante,Windows/Xbox/busca
+GOOGL,Google Services,0.10,15,0,0,0.7,0,0.3,20,adotante,IA embutida em busca/anuncios; assinaturas de modelos
+GOOGL,Google Cloud,0.45,12,0.10,0.65,0.25,0,0,20,habilitador,nuvem com TPUs e modelos
+GOOGL,Other Bets,0.30,8,0,0,0,0,1,20,produtor,Waymo (autonomia)
+GOOGL,Hedging gains (losses),0,1000,0,0,0,0,1,20,nenhum,contabil; vai para o nucleo
+META,Family of Apps,0.10,15,0,0,0.6,0,0.4,20,adotante,IA em ranqueamento de anuncios e assistentes
+META,Reality Labs,0.10,10,0,0,0,0,1,20,produtor,dispositivos com IA
+NVDA,Data Center - Compute,0.92,30,1,0,0,0,0,50,habilitador,GPUs de data center majoritariamente para IA
+NVDA,Data Center - Networking,0.80,20,1,0,0,0,0,50,habilitador,rede de data center para clusters de IA
+NVDA,Gaming,0.08,15,1,0,0,0,0,50,habilitador,GPUs de jogos; uso residual em IA
+NVDA,Professional Visualization,0.20,10,1,0,0,0,0,50,habilitador,estacoes de trabalho
+NVDA,Automotive,0.40,8,0.7,0,0.3,0,0,20,habilitador,plataformas de conducao autonoma
+NVDA,OEM and Other,0.05,10,1,0,0,0,0,50,habilitador,residual
+ORCL,Cloud - Infrastructure (IaaS),0.55,10,0,0.9,0.1,0,0,20,habilitador,OCI com grandes contratos de IA
+ORCL,Cloud - Applications (SaaS),0.08,15,0,0,1,0,0,20,produtor,aplicacoes com IA embutida
+ORCL,Software,0.03,20,0,0,1,0,0,20,produtor,licencas e suporte (banco de dados)
+ORCL,Hardware,0.10,10,0,1,0,0,0,20,habilitador,servidores
+ORCL,Services,0.05,15,0,0,0,0,1,20,adotante,consultoria

@@ -1,0 +1,12 @@
+{
+  "_doc": "Dicionário inicial (julgamento do protótipo). Refinar com revisão manual de frases e, depois, com classificador. Termos casados por palavra inteira, sem diferenciar maiúsculas.",
+  "folhas": {
+    "ia.semicondutores": ["GPU", "GPUs", "accelerator", "accelerators", "AI chip", "AI chips", "TPU", "TPUs", "Trainium", "Inferentia", "high-bandwidth memory", "HBM"],
+    "ia.nuvem_dc": ["data center", "data centers", "datacenter", "datacenters", "AI infrastructure", "compute capacity", "cloud infrastructure", "AI cluster", "AI clusters"],
+    "ia.modelos_software": ["artificial intelligence", "generative AI", "large language model", "large language models", "LLM", "LLMs", "machine learning", "foundation model", "foundation models", "AI model", "AI models", "AI agents", "copilot"],
+    "ia.energia_dc": ["power generation for data centers", "data center power", "power purchase agreement", "nuclear", "gigawatt", "gigawatts", "power capacity"],
+    "ia.generica": ["AI"]
+  },
+  "termos_ia": ["AI", "artificial intelligence", "generative AI", "machine learning", "large language model"],
+  "termos_ameaca": ["disrupt", "disruption", "displace", "substitute", "replace our", "reduce demand for our", "obsolete", "competitors using AI", "lower barriers to entry"]
+}
