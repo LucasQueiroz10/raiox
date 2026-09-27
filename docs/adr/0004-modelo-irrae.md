@@ -38,8 +38,12 @@ O **protótipo v1 do M1** é o IrRAE oficial, na versão do arquivo `irrae_proto
 ### 3. Execução: em lote, no repositório
 
 - O modelo roda **em lote**, fora da API: calcula o IrRAE de todas as empresas quando os dados mudam e grava o resultado no banco. A API **só lê** esse resultado.
-- **Local no repositório:** `backend/ingest/irrae/` (código e configurações do modelo), com testes em `backend/tests/`.
-- **Dependências científicas separadas** (`numpy`, `scipy`, `pandas`, `lxml`, `beautifulsoup4`, `requests`) num arquivo próprio, para a API continuar leve. Ferramentas de análise (`SALib` para Sobol, `matplotlib` para gráficos) ficam como dependências opcionais dos scripts de análise, fora do pipeline.
+- **Local no repositório** (revisado em 27/09/2026, ao integrar o código):
+  - `backend/irrae/`: o modelo (componentes, fusão, regras, selo, calibração, look-through de ETF), com as configurações que o M1 edita em `backend/irrae/config/`.
+  - `backend/ingest/`: os leitores de dados externos (XBRL e data sets da SEC, N-PORT, patentes, texto do 10-K), compartilhados pelo IrRAE e pelo produto (o N-PORT também abre os ETFs no look-through).
+  - Testes em `backend/tests/irrae/` e `backend/tests/ingest/`, rodados no job `lote` do CI.
+- **Dependências científicas separadas** (`numpy`, `scipy`, `pandas`, `lxml`, `beautifulsoup4`, `requests`) em `backend/requirements-lote.in`/`.txt`, travadas com hash, para a API continuar leve. Ferramentas de análise (`SALib` para Sobol, `matplotlib` para gráficos) ficam em `requirements-analise.in`/`.txt`, opcionais e fora do CI.
+- **Todo XML externo** é lido por `ingest/xml_seguro.py`, sem expandir entidades nem acessar a rede.
 - **`float` e sorteios dentro do modelo** são permitidos. Na gravação, os pesos são convertidos para `Decimal` (truncados, sem passar de 100%). O motor da API continua exato (ver ADR 0003).
 - **Reprodutibilidade:** cada execução grava a versão do modelo, a semente dos sorteios, a data dos dados e a versão das configurações.
 - **Resultado gravado por empresa e subtema:** média, P5, P95, selo de precisão, origem e status de revisão. É o formato que a classificação e a agregação já esperam (`app/core/classificacao.py`), acrescido da faixa.
