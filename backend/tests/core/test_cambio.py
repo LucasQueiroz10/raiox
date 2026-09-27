@@ -4,8 +4,10 @@ from datetime import date
 from decimal import Decimal as D
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
-from app.core.cambio import escolher_ptax, ler_ptax_olinda
+from app.core.cambio import PtaxUsada, escolher_ptax, ler_ptax_olinda, para_reais
 
 
 def resposta(*linhas: dict) -> dict:
@@ -99,3 +101,32 @@ def test_dia_util_sem_cotacao_volta_mais_um_dia_util():
 def test_sem_cotacao_nos_ultimos_10_dias_uteis_da_erro():
     with pytest.raises(LookupError):
         escolher_ptax(COTACOES, date(2026, 11, 30))
+
+
+PTAX = PtaxUsada(date(2026, 9, 27), date(2026, 9, 25), D("5.4200"))
+
+
+def test_dolar_multiplica_pela_ptax():
+    assert para_reais(D("1000.00"), "USD", PTAX) == D("5420.00")
+
+
+def test_real_passa_direto_sem_precisar_de_ptax():
+    assert para_reais(D("1000.00"), "BRL", None) == D("1000.00")
+
+
+def test_dolar_sem_ptax_da_erro():
+    with pytest.raises(ValueError):
+        para_reais(D("1000.00"), "USD", None)
+
+
+def test_moeda_fora_do_escopo_da_erro():
+    with pytest.raises(ValueError):
+        para_reais(D("1000.00"), "EUR", PTAX)
+
+
+valores = st.decimals(min_value=D("0"), max_value=D("1e9"), places=2)
+
+
+@given(valores, valores)
+def test_conversao_e_linear(a, b):
+    assert para_reais(a + b, "USD", PTAX) == para_reais(a, "USD", PTAX) + para_reais(b, "USD", PTAX)

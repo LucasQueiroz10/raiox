@@ -62,3 +62,15 @@ def escolher_ptax(cotacoes: Mapping[date, Decimal], data_pedida: date) -> PtaxUs
             return PtaxUsada(data_pedida, dia, cotacoes[dia])
         dia = ultimo_dia_util(dia - timedelta(days=1))
     raise LookupError(f"sem PTAX nos {MAX_DIAS_UTEIS_SEM_COTACAO} dias úteis até {data_pedida}")
+
+
+def para_reais(valor: Decimal, moeda: str, ptax: PtaxUsada | None) -> Decimal:
+    """Valor em reais, sem arredondar: real passa direto, dólar multiplica pela PTAX.
+    O protótipo só aceita real e dólar."""
+    if moeda == "BRL":
+        return valor
+    if moeda == "USD":
+        if ptax is None:
+            raise ValueError("valor em dólar precisa da PTAX")
+        return valor * ptax.valor
+    raise ValueError("moeda fora do escopo do protótipo (só BRL e USD)")
