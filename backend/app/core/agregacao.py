@@ -7,6 +7,11 @@ from decimal import Decimal, localcontext
 from app.core.classificacao import ParticipacaoTema, Selo, TabelaClassificacao
 from app.core.lookthrough import PRECISAO, ResultadoLookthrough
 
+# Chave de tema/subtema para a parte da empresa que sabemos que NÃO é de tema nenhum
+# (a atividade do setor oficial). Diferente de None, que é "sem classificação":
+# não sabemos se é de algum tema (ausente ≠ zero).
+NUCLEO = "nucleo"
+
 
 @dataclass(frozen=True, slots=True)
 class EmpresaRaioX:
@@ -69,10 +74,10 @@ class RaioX:
     total: Decimal
     versao_classificacao: str
     cobertura: Cobertura
-    # Chave None = sem classificação (setor) ou sem tema (núcleo + sem classificação).
+    # Chave None = sem classificação. Em tema e subtema, NUCLEO = classificada e fora de tema.
     por_setor: dict[str | None, Fatia] = field(default_factory=dict)
     por_tema: dict[str | None, Fatia] = field(default_factory=dict)
-    por_subtema: dict[tuple[str, str] | None, Fatia] = field(default_factory=dict)
+    por_subtema: dict[tuple[str, str] | str | None, Fatia] = field(default_factory=dict)
     # Fora da exposição em ações: mostrados à parte, pelo setor da empresa ligada.
     derivativos_por_setor: dict[str | None, Fatia] = field(default_factory=dict)
     credito_por_setor: dict[str | None, Fatia] = field(default_factory=dict)
@@ -121,8 +126,8 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
                 preliminar = t.selo is Selo.PRELIMINAR
                 por_tema.somar(t.tema, valor * t.peso, preliminar)
                 por_subtema.somar((t.tema, t.subtema), valor * t.peso, preliminar)
-            por_tema.somar(None, valor * c.peso_nucleo, preliminar=False)
-            por_subtema.somar(None, valor * c.peso_nucleo, preliminar=False)
+            por_tema.somar(NUCLEO, valor * c.peso_nucleo, preliminar=False)
+            por_subtema.somar(NUCLEO, valor * c.peso_nucleo, preliminar=False)
 
         derivativos, credito, vendido = _Somador(), _Somador(), _Somador()
         for objeto, valor in resultado.derivativos_por_ativo_objeto.items():

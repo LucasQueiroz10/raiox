@@ -11,7 +11,7 @@ from datetime import date
 from decimal import Decimal as D
 from decimal import localcontext
 
-from app.core.agregacao import agregar
+from app.core.agregacao import NUCLEO, agregar
 from app.core.classificacao import (
     Classificacao,
     Origem,
@@ -106,11 +106,13 @@ def test_valor_da_empresa_se_divide_pelos_pesos_dos_temas():
         (IA, "Nuvem"): D("420"),
         (IA, "Modelos"): D("120"),
         (IA, "Semicondutores"): D("720"),
-        None: D("2440"),  # núcleos (660 + 180 + 1.000) e sem classificação (600)
+        NUCLEO: D("1840"),  # núcleos: 660 (VAREJO) + 180 (CHIPS) + 1.000 (BANCO)
+        None: D("600"),  # sem classificação (SEMCLASSE): não sabemos se é do tema
     }
     assert r.por_tema[IA].valor == D("1260")
     assert r.por_tema[IA].percentual == D("0.315")
-    assert r.por_tema[None].valor == D("2440")
+    assert r.por_tema[NUCLEO].valor == D("1840")
+    assert r.por_tema[None].valor == D("600")
 
 
 def test_soma_por_tema_nao_passa_do_total_em_acoes():
