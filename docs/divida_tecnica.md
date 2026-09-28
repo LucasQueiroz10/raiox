@@ -1,0 +1,15 @@
+# Dívida técnica e limitações conhecidas
+
+Tudo o que foi aceito conscientemente como limitação ou deixado para depois. Cada item diz o
+problema, por que foi aceito agora e quando resolver. Ao resolver um item, apague-o daqui no
+mesmo PR que o resolve. No código, o ponto afetado tem um comentário `DT-n` apontando para o item.
+
+| ID | Item | Por que foi aceito | Quando resolver |
+|---|---|---|---|
+| DT-1 | **Cache da PTAX em memória, por servidor.** A API busca a PTAX no Banco Central na primeira análise em dólar do dia e guarda em memória. Com vários servidores, cada um faz a sua busca. | Não há banco ainda; o custo é uma chamada por servidor por dia. | Quando o banco existir: ingestão diária da PTAX grava no banco e a API só lê. |
+| DT-2 | **Rate limit em memória, por servidor.** Com vários servidores, cada um conta separado e o limite real fica multiplicado pelo número de servidores. | Suficiente para um servidor no protótipo. | No deploy (S4): limite na borda (proxy/CDN) ou contador compartilhado. |
+| DT-3 | **Classes de ações contadas como empresas diferentes** (PETR3 e PETR4 têm ISINs diferentes). A lista de empresas mostra a mesma empresa partida; as somas por setor e tema não são afetadas. | A API sai antes; a correção só acrescenta campos à resposta. Depende da tabela ISIN → emissor (Formulário Cadastral da CVM). | **Antes do teste com usuários (portão P3, 23/10).** |
+| DT-4 | **Limite de 100 fundos calibrado com ETFs de 3.000 empresas.** Com fundos globais (~9.000 empresas), o pior caso estimado é ~4 s por análise; acima de 1 milhão de passos a trava do look-through manda o excesso para "não aberto". | Carteiras reais têm poucos fundos; a trava protege os extremos. | Medir o tempo real da API com carteiras sintéticas grandes e ajustar o limite (ou limitar pelo total de empresas abertas). |
+| DT-5 | **TypeScript preso na 6.0.** O `typescript-eslint` 8.x só aceita TypeScript abaixo de 6.1 (ADR 0003). O Dependabot foi configurado para não propor a 7. | Sem suporte das ferramentas de lint. | Quando o `typescript-eslint` suportar o TypeScript 7: atualizar e remover a regra do `dependabot.yml`. |
+| DT-6 | **Proteção da `main` não aplicada.** Em repositório privado no plano gratuito do GitHub, a regra existe mas não é imposta. | Fluxo por disciplina (sem push direto na `main`). | Decidir entre o GitHub Pro e manter o fluxo por disciplina. |
+| DT-7 | **Componente E do IrRAE (enquadramento por ETFs) com circularidade:** ao analisar um ETF temático, o E das ações usa o próprio ETF. | Pendente de decisão do M1 (dono da metodologia; ADR 0004). | Decisão do M1: deixar o E fora do protótipo ou recalcular sem o ETF analisado. |
