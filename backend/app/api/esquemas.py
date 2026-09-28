@@ -8,7 +8,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator
 
 from app.core.identificadores import normalizar_isin
 
@@ -46,11 +46,12 @@ class PosicaoEntrada(_Estrito):
 class EntradaRaioX(_Estrito):
     posicoes: list[PosicaoEntrada] = Field(min_length=1, max_length=MAX_POSICOES)
 
-    @model_validator(mode="after")
-    def _limite_de_fundos(self) -> EntradaRaioX:
-        if sum(p.tipo == "fundo" for p in self.posicoes) > MAX_FUNDOS:
+    @field_validator("posicoes")
+    @classmethod
+    def _limite_de_fundos(cls, posicoes: list[PosicaoEntrada]) -> list[PosicaoEntrada]:
+        if sum(p.tipo == "fundo" for p in posicoes) > MAX_FUNDOS:
             raise ValueError(f"no máximo {MAX_FUNDOS} fundos por carteira")
-        return self
+        return posicoes
 
 
 # ---- saída -------------------------------------------------------------------------------
