@@ -11,7 +11,7 @@ import logging
 from pathlib import Path
 from traceback import extract_tb
 
-from fastapi import FastAPI, Request
+from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -26,7 +26,7 @@ def _campo(erro: dict) -> list[str | int]:
     return loc[1:] if loc[:1] == ["body"] else loc
 
 
-async def _entrada_invalida(_: Request, exc: RequestValidationError) -> JSONResponse:
+async def entrada_invalida(_: Request, exc: RequestValidationError) -> JSONResponse:
     erros = [{"campo": _campo(e), "motivo": e["type"], "mensagem": e["msg"]} for e in exc.errors()]
     return JSONResponse(
         status_code=422, content={"detail": {"codigo": "entrada_invalida", "erros": erros}}
@@ -64,8 +64,3 @@ class ErroInternoGenerico:
                     status_code=500, content={"detail": {"codigo": "erro_interno"}}
                 )
                 await resposta(scope, receive, send)
-
-
-def registrar_erros(app: FastAPI) -> None:
-    app.add_exception_handler(RequestValidationError, _entrada_invalida)
-    app.add_middleware(ErroInternoGenerico)

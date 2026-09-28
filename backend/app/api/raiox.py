@@ -6,9 +6,10 @@ Nada da carteira é gravado nem registrado em log.
 from decimal import ROUND_HALF_UP, Decimal
 from functools import cache
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.api import esquemas as e
+from app.api.seguranca import LimitadorPorJanela, LimiteDeAnalises, ServidorOcupado
 from app.core.agregacao import NUCLEO, Fatia, RaioX, agregar
 from app.core.cambio import PtaxUsada, para_reais
 from app.core.composicao import Categoria, Posicao, TipoItem
@@ -20,6 +21,8 @@ from app.dados.repositorio import RepositorioDados
 router = APIRouter()
 
 MAX_EMPRESAS_NA_RESPOSTA = 200  # as maiores da carteira; o resto vai somado em demais_empresas
+ANALISES_POR_MINUTO = 20  # por IP
+MAX_ANALISES_SIMULTANEAS = 4  # por servidor
 _CENTAVOS = Decimal("0.01")
 _QUATRO_CASAS = Decimal("0.0001")
 
@@ -33,6 +36,30 @@ def obter_repositorio() -> RepositorioDados:
 @cache
 def obter_fonte_ptax() -> FontePtax:
     return FontePtax()
+
+
+@cache
+def obter_limitador_raiox() -> LimitadorPorJanela:
+    return LimitadorPorJanela(ANALISES_POR_MINUTO, 60)
+
+
+@cache
+def obter_limite_de_analises() -> LimiteDeAnalises:
+    return LimiteDeAnalises(MAX_ANALISES_SIMULTANEAS)
+
+
+def verificar_taxa(
+    request: Request,
+    limitador: LimitadorPorJanela = Depends(obter_limitador_raiox),  # noqa: B008 - padrão do FastAPI
+) -> None:
+    """Conta toda chamada ao /raiox, inclusive as que vão dar 422."""
+    ip = request.client.host if request.client else "sem-ip"
+    if not limitador.permitir(ip):
+        raise HTTPException(
+            429,
+            detail={"codigo": "muitas_analises"},
+            headers={"Retry-After": str(limitador.espera(ip))},
+        )
 
 
 def _reais(valor: Decimal) -> Decimal:
@@ -146,11 +173,12 @@ def _montar_resposta(
     )
 
 
-@router.post("/raiox", response_model=e.RaioXResposta)
+@router.post("/raiox", response_model=e.RaioXResposta, dependencies=[Depends(verificar_taxa)])
 def raiox(
     entrada: e.EntradaRaioX,
     repo: RepositorioDados = Depends(obter_repositorio),  # noqa: B008 - padrão do FastAPI
     fonte_ptax: FontePtax = Depends(obter_fonte_ptax),  # noqa: B008 - padrão do FastAPI
+    limite: LimiteDeAnalises = Depends(obter_limite_de_analises),  # noqa: B008 - padrão do FastAPI
 ) -> e.RaioXResposta:
     ptax = None
     if any(p.moeda == "USD" for p in entrada.posicoes):
@@ -159,6 +187,18 @@ def raiox(
         except CambioIndisponivel as erro:
             raise HTTPException(503, detail={"codigo": "cambio_indisponivel"}) from erro
 
+    try:
+        with limite.vaga():
+            return _analisar(entrada, repo, ptax)
+    except ServidorOcupado as erro:
+        raise HTTPException(
+            503, detail={"codigo": "servidor_ocupado"}, headers={"Retry-After": "2"}
+        ) from erro
+
+
+def _analisar(
+    entrada: e.EntradaRaioX, repo: RepositorioDados, ptax: PtaxUsada | None
+) -> e.RaioXResposta:
     posicoes = [
         Posicao(p.isin, para_reais(p.valor, p.moeda, ptax), TipoItem(p.tipo))
         for p in entrada.posicoes
