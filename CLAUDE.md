@@ -32,6 +32,9 @@ Fora: contas, alertas, rentabilidade, cotações automáticas, IR, Open Finance,
 - Classificação gerada por IA entra com status "rascunho".
 - Uma tarefa por vez. Mudança em mais de um módulo exige um plano aprovado antes.
 - Não use subagentes.
+- Limitações aceitas e pendências técnicas ficam em docs/divida_tecnica.md (itens DT-n).
+  Leia antes de mexer num módulo; ao criar uma limitação nova, registre lá e marque o código
+  com um comentário "DT-n"; ao resolver, apague o item no mesmo PR.
 
 ## Git
 - main protegida; nada de commit direto nela. Branches curtos a partir da main:

@@ -1,0 +1,178 @@
+{
+  "_doc": "Conjunto de exemplo SINTÉTICO: empresas, fundos, nomes e números inventados (ISINs com prefixo ZZ, que não é país). Usado pela API até o banco existir.",
+  "versao_classificacao": "exemplo-v1",
+  "nomes": {
+    "ZZCHIPS00019": "Chips Exemplo S.A.",
+    "ZZNUVEM00019": "Nuvem Exemplo Inc.",
+    "ZZSOFTW00011": "Software Exemplo Corp.",
+    "ZZBANCO00013": "Banco Exemplo S.A.",
+    "ZZENERG00013": "Energia Exemplo S.A.",
+    "ZZPETRO00010": "Petróleo Exemplo S.A.",
+    "ZZSEMCL00017": "Empresa Sem Classificação Exemplo",
+    "ZZTESOU00018": "Título Público Exemplo",
+    "ZZETFIA00019": "ETF Exemplo Cadeia de IA",
+    "ZZETFBR00018": "ETF Exemplo Brasil",
+    "ZZFOF0000016": "Fundo de Fundos Exemplo (FOF)"
+  },
+  "classificacoes": [
+    {
+      "isin": "ZZCHIPS00019",
+      "setor": "Tecnologia",
+      "setor_origem": "oficial",
+      "temas": [
+        {
+          "tema": "Cadeia de IA",
+          "subtema": "Semicondutores e hardware de IA",
+          "peso": "0.80"
+        }
+      ]
+    },
+    {
+      "isin": "ZZNUVEM00019",
+      "setor": "Varejo digital",
+      "setor_origem": "oficial",
+      "temas": [
+        {
+          "tema": "Cadeia de IA",
+          "subtema": "Nuvem e data centers",
+          "peso": "0.35"
+        },
+        {
+          "tema": "Cadeia de IA",
+          "subtema": "Modelos e software de IA",
+          "peso": "0.10"
+        }
+      ]
+    },
+    {
+      "isin": "ZZSOFTW00011",
+      "setor": "Tecnologia",
+      "setor_origem": "oficial",
+      "temas": [
+        {
+          "tema": "Cadeia de IA",
+          "subtema": "Modelos e software de IA",
+          "peso": "0.25"
+        },
+        {
+          "tema": "Cadeia de IA",
+          "subtema": "Nuvem e data centers",
+          "peso": "0.10"
+        }
+      ]
+    },
+    {
+      "isin": "ZZBANCO00013",
+      "setor": "Financeiro",
+      "setor_origem": "wikidata",
+      "temas": []
+    },
+    {
+      "isin": "ZZENERG00013",
+      "setor": "Utilidade pública",
+      "setor_origem": "oficial",
+      "temas": [
+        {
+          "tema": "Cadeia de IA",
+          "subtema": "Energia para data centers",
+          "peso": "0.15"
+        }
+      ]
+    },
+    {
+      "isin": "ZZPETRO00010",
+      "setor": "Energia",
+      "setor_origem": "oficial",
+      "temas": []
+    }
+  ],
+  "composicoes": [
+    {
+      "fundo": "ZZETFIA00019",
+      "data_referencia": "2026-06-30",
+      "fonte": "exemplo sintético",
+      "itens": [
+        {
+          "isin": "ZZCHIPS00019",
+          "peso": "0.35",
+          "tipo": "acao"
+        },
+        {
+          "isin": "ZZNUVEM00019",
+          "peso": "0.25",
+          "tipo": "acao"
+        },
+        {
+          "isin": "ZZSOFTW00011",
+          "peso": "0.25",
+          "tipo": "acao"
+        },
+        {
+          "isin": "ZZENERG00013",
+          "peso": "0.10",
+          "tipo": "acao"
+        },
+        {
+          "isin": null,
+          "peso": "0.03",
+          "tipo": "caixa"
+        },
+        {
+          "isin": null,
+          "peso": "0.01",
+          "tipo": "derivativo",
+          "ativo_objeto_isin": "ZZCHIPS00019"
+        }
+      ]
+    },
+    {
+      "fundo": "ZZETFBR00018",
+      "data_referencia": "2026-08-31",
+      "fonte": "exemplo sintético",
+      "itens": [
+        {
+          "isin": "ZZBANCO00013",
+          "peso": "0.40",
+          "tipo": "acao"
+        },
+        {
+          "isin": "ZZPETRO00010",
+          "peso": "0.35",
+          "tipo": "acao"
+        },
+        {
+          "isin": "ZZSEMCL00017",
+          "peso": "0.20",
+          "tipo": "acao"
+        },
+        {
+          "isin": null,
+          "peso": "0.05",
+          "tipo": "caixa"
+        }
+      ]
+    },
+    {
+      "fundo": "ZZFOF0000016",
+      "data_referencia": "2026-08-31",
+      "fonte": "exemplo sintético",
+      "itens": [
+        {
+          "isin": "ZZETFIA00019",
+          "peso": "0.50",
+          "tipo": "fundo"
+        },
+        {
+          "isin": "ZZETFBR00018",
+          "peso": "0.40",
+          "tipo": "fundo"
+        },
+        {
+          "isin": "ZZTESOU00018",
+          "peso": "0.10",
+          "tipo": "titulo_publico"
+        }
+      ]
+    }
+  ]
+}
