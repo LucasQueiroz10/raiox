@@ -48,7 +48,7 @@ Ficam para versões seguintes: contas de usuário, alertas de concentração, re
 [ Rotinas de ingestão ]  CVM (mensal) e SEC (trimestral)
 ```
 
-A carteira do usuário é processada em memória e **nunca é gravada**. O único dado pessoal armazenado é o e-mail de quem entra na lista de espera.
+No protótipo atual, a carteira do usuário é processada em memória e não é gravada. O único dado pessoal armazenado é o e-mail de quem entra na lista de espera. Contas de usuário com carteiras salvas, criptografadas, estão previstas para uma próxima versão.
 
 ## Estrutura do repositório
 

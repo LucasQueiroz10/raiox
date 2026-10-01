@@ -3,19 +3,24 @@ Protótipo web que mostra quanto da carteira está concentrado por empresa, seto
 e subtema, abrindo ETFs e fundos em cadeia (look-through) até as empresas.
 Descreve exposição; nunca recomenda compra ou venda.
 
-## Escopo do protótipo 1
+## Fase atual: protótipo 1
 Entra: cadastro manual; CSV da B3 e da Avenue; câmbio pela PTAX; raio-x por setor/tema/subtema;
 empresas "escondidas"; cobertura da classificação; data de cada composição; rótulo de
 aproximação nos ETFs UCITS; créditos às fontes; landing page com lista de espera.
 Fora: contas, alertas, rentabilidade, cotações automáticas, IR, Open Finance, recomendações.
+Dados:
+- Carteiras de usuários não são gravadas no PostgreSQL nem no navegador.
+  POST /raiox processa em memória e descarta.
+- O único dado pessoal gravado é o e-mail da lista de espera.
+Estas regras só mudam com decisão registrada em ADR em docs/adr/ (previsto para o MVP 1.1).
 
 ## Arquitetura
 - backend/: Python 3.14, FastAPI, Pydantic; ambiente com venv + pip (requirements.txt).
   Ver backend/CLAUDE.md.
 - frontend/: React + TypeScript + Vite sobre Node.js LTS. Ver frontend/CLAUDE.md.
-- PostgreSQL: só dados públicos (composições por data, classificação versionada) e a lista
-  de espera (e-mail, data, versão do aviso de privacidade). Carteiras NUNCA são gravadas:
-  POST /raiox processa em memória e descarta.
+- PostgreSQL: dados públicos (composições por data, classificação versionada) e a lista
+  de espera (e-mail, data, versão do aviso de privacidade). O que pode ou não ser
+  gravado sobre carteiras depende da fase: ver "Fase atual: protótipo 1" neste arquivo.
 - Rotas: POST /raiox, GET /fontes, POST /lista-espera, GET /saude.
 - Fontes: CVM (CDA, ODbL, crédito obrigatório) e SEC (N-PORT). UCITS é aproximado pelo
   ETF americano do mesmo índice.
