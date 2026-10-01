@@ -1,11 +1,11 @@
-"""Carteiras de ETFs pelo Form N-PORT (SEC). Dois usos: (1) look-through do ETF (abrir a carteira e
-agregar o IrRAE das ações: agregacao.pesos_da_carteira + agregacao.exposicao_etf) e (2) componente E
-(Enquadramento de mercado) de cada ação.
+"""Carteiras de ETFs pelo Form N-PORT (SEC). Uso: look-through do ETF (abrir a carteira e agregar o
+IrRAE das ações: agregacao.pesos_da_carteira + agregacao.exposicao_etf).
 
 NÃO executado no ambiente do protótipo (sec.gov bloqueado); testado com fixture.
 Estrutura XML conferida num NPORT-P real (namespace http://www.sec.gov/edgar/nport).
 Atenção: carteiras públicas saem trimestralmente com ~60 dias de defasagem
-(proposta da SEC de fev/2026 mantém esse regime), então E sempre chega atrasado.
+(proposta da SEC de fev/2026 mantém esse regime), então a carteira aberta sempre chega
+atrasada.
 
 Para escala, a SEC publica também os "Form N-PORT Data Sets" em lote.
 """
@@ -53,28 +53,3 @@ def parse_nport(xml: bytes) -> tuple[dict, pd.DataFrame]:
             }
         )
     return info, pd.DataFrame(linhas)
-
-
-def posicoes_empresa(
-    carteiras: dict[str, pd.DataFrame],
-    mapa_etf_folha: dict[str, str],
-    identificador: dict[str, str],
-) -> list[tuple[str, str, float]]:
-    """Dólares da empresa em cada ETF mapeado.
-
-    carteiras: seriesId -> DataFrame de parse_nport; mapa_etf_folha: seriesId -> folha ou 'nucleo'
-    (ETFs amplos/setoriais vão para 'nucleo');
-    identificador: {'cusip': ...} ou {'isin': ...} ou {'lei': ...}.
-    Saída no formato de componentes.de_etfs.
-    """
-    ((campo, valor),) = identificador.items()
-    out = []
-    for sid, df in carteiras.items():
-        if sid not in mapa_etf_folha:
-            continue
-        v = df.loc[
-            (df[campo] == valor) & (df["payoffProfile"].fillna("Long") == "Long"), "valUSD"
-        ].sum()
-        if v > 0:
-            out.append((sid, mapa_etf_folha[sid], float(v)))
-    return out
