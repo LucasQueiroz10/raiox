@@ -50,11 +50,13 @@ O **protótipo v1 do M1** é o IrRAE oficial, na versão do arquivo `irrae_proto
 
 ## Pontos em aberto (metodologia, com o M1)
 
-Recomendações do M2 feitas na análise do protótipo, ainda sem decisão:
+Recomendações do M2 feitas na análise do protótipo. Os pontos 1 e 3 foram decididos pelo M1 em
+`docs/decisoes_m1_irrae_v1.1.md` (IrRAE v1.1, aprovado em 01/10/2026); os demais seguem sem decisão.
 
 1. **Componente E (enquadramento por ETFs) fora do protótipo 1**, por causa da circularidade apontada pelo próprio M1 (o ETF analisado confirma o próprio rótulo) e do risco de parecer opinião sobre as empresas.
+   **Decidido (D-16):** o E é apagado do modelo na v1.1, sem flag; a DT-7 fecha no mesmo PR.
 2. **Mapeamentos elicitados entram como rascunho** e só aparecem ao usuário com evidência registrada e revisão humana (regra do CLAUDE.md para conteúdo gerado com IA).
-3. **Faixa na carteira pelo limite comonotônico** (soma dos quantis), chamada de "faixa estimada", e não de "intervalo de confiança".
+3. **Faixa da carteira.** **Decidido (D-01, R-07):** a agregação calcula dois cenários de referência, erros independentes e erros alinhados (comonotônico, soma dos quantis ponderados). Nenhum dos dois é limite da faixa, e a verdade não fica necessariamente entre eles. Nas saídas e relatórios, os nomes são "faixa estimada (cenário independente)" e "faixa estimada (cenário de erros alinhados)"; nunca "IC", "intervalo de confiança" nem "limite". O que aparece na tela do produto é decisão conjunta (X-02).
 4. **Exposição negativa fora da tela** no protótipo 1, até avaliação jurídica.
 5. **Separar "núcleo" (sabemos que não é do tema) de "sem classificação" (não sabemos)** na agregação, seguindo o princípio "ausente ≠ zero" do modelo.
 6. **Dados para o protótipo:** componentes A, Ir, B e N para 50 a 100 empresas americanas da cadeia de IA; R, C e P depois.

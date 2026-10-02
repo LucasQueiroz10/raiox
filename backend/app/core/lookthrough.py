@@ -107,7 +107,10 @@ def abrir_carteira(
     *,
     max_passos: int = MAX_PASSOS,
 ) -> ResultadoLookthrough:
-    """Distribui o valor de cada posição até as empresas, sem normalizar pesos."""
+    """Distribui o valor de cada posição até as empresas, sem normalizar pesos.
+
+    Usado pela API e, pela X-03, também pelo lote do IrRAE (DT-9: Decimal é mais lento que float).
+    """
     r = ResultadoLookthrough()
     with localcontext(prec=PRECISAO):
         pilha = []
