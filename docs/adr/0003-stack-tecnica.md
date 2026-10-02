@@ -19,7 +19,7 @@ O planejamento do MVP (24/09/2026) pede, na semana 1, um ADR de stack. As decis�
 | API | **FastAPI + Pydantic + uvicorn** | Validação de entrada tipada e OpenAPI gerado automaticamente, que alimenta os tipos do front |
 | Motor (`app/core/`) | **Funções puras**, sem FastAPI, banco ou rede | Testável sem infraestrutura; o I/O fica em `app/api/` e em `ingest/` |
 | Números | **`Decimal`**, nunca `float`, com 50 dígitos de precisão no look-through e na agregação; arredondamento só na saída da API | Dinheiro e pesos em cadeia perdem exatidão com `float`, e os 28 dígitos padrão do `Decimal` não bastam em cadeias de fundos |
-| Identificador de empresa | **ISIN**, validado pelo dígito verificador; nunca SEDOL | Chave pública e global; SEDOL é propriedade da Bolsa de Londres |
+| Identificador de empresa | ~~**ISIN**, validado pelo dígito verificador; nunca SEDOL~~ **Substituído pelo ADR 0005** (`ativo_id` e `empresa_id`) | O ISIN americano contém o CUSIP, licenciado pela CGS, e o ISIN não separa a empresa das classes de ações. SEDOL continua proibido |
 | Testes | **pytest + Hypothesis** (propriedades), com teste escrito antes do código | Os testes são o critério para aceitar código, inclusive o gerado com IA |
 | Qualidade | **ruff** (lint e formatação, com `yfinance` proibido por regra) e **pip-audit** | Uma ferramenta só para lint e formatação; auditoria de vulnerabilidades no CI |
 
