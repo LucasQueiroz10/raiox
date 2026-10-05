@@ -29,8 +29,9 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 ## Regras
 - yfinance é proibido (bloqueado no ruff por flake8-tidy-imports.banned-api).
 - app/core/ é puro: sem FastAPI, sem banco, sem rede. O I/O fica em app/api/, app/dados/ e ingest/.
-- app/dados/: de onde vêm composições, classificação e nomes (protocolo RepositorioDados) e a
-  PTAX (FontePtax, com cache). Até o banco existir, a API usa RepositorioExemplo, sintético.
+- app/dados/: de onde vêm composições, ligação ativo -> empresa, classificação e nomes (protocolo
+  RepositorioDados) e a PTAX (FontePtax, com cache). Até o banco existir, a API usa
+  RepositorioExemplo, sintético.
   Testes da API trocam repositório e PTAX por app.dependency_overrides; nenhum teste usa rede.
 - Valores em dinheiro e pesos usam Decimal, nunca float.
 - ISIN validado com dígito verificador em core/identificadores.

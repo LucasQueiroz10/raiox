@@ -24,7 +24,7 @@ def _isin(valor: str | None) -> str | None:
 
 
 class RepositorioExemplo:
-    """Lê o arquivo uma vez e valida os ISINs; um arquivo inválido falha ao carregar."""
+    """Lê o arquivo uma vez e valida os identificadores; um arquivo inválido falha ao carregar."""
 
     def __init__(self, arquivo: Path = ARQUIVO) -> None:
         self._arquivo = arquivo
@@ -40,11 +40,11 @@ class RepositorioExemplo:
             fundo = normalizar_isin(c["fundo"])
             itens = tuple(
                 ItemComposicao(
-                    ativo_id=_isin(i["isin"]),
+                    ativo_id=_isin(i["ativo_id"]),
                     peso=Decimal(i["peso"]),
                     tipo=TipoItem(i["tipo"]),
-                    ativo_objeto=_isin(i.get("ativo_objeto_isin")),
-                    emissor=_isin(i.get("emissor_isin")),
+                    ativo_objeto=_isin(i.get("ativo_objeto")),
+                    emissor=i.get("emissor"),
                 )
                 for i in c["itens"]
             )
@@ -54,23 +54,47 @@ class RepositorioExemplo:
         return saida
 
     @cached_property
+    def _empresa_do_ativo(self) -> dict[str, str]:
+        ligacao: dict[str, str] = {}
+        for e in self._dados["empresas"]:
+            for a in e["ativos"]:
+                ativo = normalizar_isin(a["ativo_id"])
+                if ativo in ligacao:
+                    raise ValueError("ativo ligado a mais de uma empresa no conjunto de exemplo")
+                ligacao[ativo] = e["empresa_id"]
+        return ligacao
+
+    @cached_property
     def _tabela(self) -> TabelaClassificacao:
         classificacoes = {}
-        for c in self._dados["classificacoes"]:
-            isin = normalizar_isin(c["isin"])
+        for e in self._dados["empresas"]:
+            c = e["classificacao"]
+            if c is None:
+                continue
             temas = tuple(
                 ParticipacaoTema(t["tema"], t["subtema"], Decimal(t["peso"])) for t in c["temas"]
             )
-            classificacoes[isin] = Classificacao(
-                isin, c["setor"], temas=temas, setor_origem=Origem(c["setor_origem"])
+            classificacoes[e["empresa_id"]] = Classificacao(
+                e["empresa_id"], c["setor"], temas=temas, setor_origem=Origem(c["setor_origem"])
             )
         return TabelaClassificacao(self._dados["versao_classificacao"], classificacoes)
 
+    @cached_property
+    def _nomes(self) -> dict[str, str]:
+        nomes = dict(self._dados["nomes"])
+        for e in self._dados["empresas"]:
+            nomes[e["empresa_id"]] = e["nome"]
+            nomes.update({a["ativo_id"]: a["nome"] for a in e["ativos"] if "nome" in a})
+        return nomes
+
     def composicoes(self) -> Mapping[str, Composicao]:
         return self._composicoes
+
+    def empresa_do_ativo(self) -> Mapping[str, str]:
+        return self._empresa_do_ativo
 
     def tabela_classificacao(self) -> TabelaClassificacao:
         return self._tabela
 
     def nome(self, identificador: str) -> str | None:
-        return self._dados["nomes"].get(identificador)
+        return self._nomes.get(identificador)
