@@ -6,7 +6,8 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "coverage"] },
+  // src/api/tipos.ts é gerado do OpenAPI (npm run gerar-tipos) e nunca editado à mão.
+  { ignores: ["dist", "coverage", "src/api/tipos.ts"] },
   js.configs.recommended,
   tseslint.configs.recommended,
   reactHooks.configs.flat.recommended,

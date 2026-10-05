@@ -12,7 +12,11 @@
 - npm audit --audit-level=high
 
 ## Regras
-- src/api/tipos.ts é gerado; nunca editar à mão. Se a API mudar, regenerar e commitar.
+- src/api/tipos.ts é gerado; nunca editar à mão. Se a API mudar, regenerar e commitar:
+  no backend, python -m app.exportar_openapi; aqui, npm run gerar-tipos. O workflow "contrato"
+  do CI falha se openapi.json ou tipos.ts estiverem desatualizados.
+- O openapi-typescript declara suporte só ao TypeScript 5; o "overrides" do package.json o faz
+  usar o TypeScript 6 do projeto (DT-5). Testado; não remover sem conferir a geração.
 - Textos de tela: copiados literalmente de docs/textos_telas.md para src/textos.ts,
   com a referência da seção. Nenhuma palavra alterada; nenhum texto solto nos componentes.
 - A interface descreve exposição; nunca sugere comprar, vender ou rebalancear.
