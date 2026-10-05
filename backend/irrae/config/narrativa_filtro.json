@@ -1,0 +1,25 @@
+{
+  "_doc": "Filtro do componente N (v1.1, seção 4; D-09, D-10 e D-20). O N lê o Item 1 e, no Item 7, só a subseção 'Results of Operations' (do título até o primeiro título de 'titulos_que_encerram_resultados'), sem o bloco de safe harbor e sem frases prospectivas. A lista de marcadores foi aprovada PROVISORIAMENTE pelo M1 (D-20) e ele vai revisá-la. Casamento por palavra inteira, sem diferenciar maiúsculas.",
+  "marcadores_prospectivos": [
+    "expect",
+    "anticipate",
+    "plan",
+    "intend",
+    "believe",
+    "may",
+    "will",
+    "could",
+    "aim",
+    "seek",
+    "forward-looking"
+  ],
+  "titulo_resultados": "results of operations",
+  "titulos_que_encerram_resultados": [
+    "liquidity and capital resources",
+    "critical accounting",
+    "recent accounting pronouncements",
+    "off-balance sheet",
+    "contractual obligations",
+    "quantitative and qualitative disclosures"
+  ]
+}
