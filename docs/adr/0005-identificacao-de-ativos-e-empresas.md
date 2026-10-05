@@ -109,7 +109,8 @@ Cada posição passa a ter `identificador` e `tipo_identificador`, no lugar do c
 
 - **Ação americana entra só pelo ticker.** Sem guardar ISINs americanos, não há como ligar um ISIN americano
   a uma empresa. Um ISIN de país fora da lista recebe 422, com um motivo que pede o ticker.
-- Identificador válido mas desconhecido continua indo para "não identificado", como hoje.
+- Identificador válido mas desconhecido continua entrando como uma empresa sem classificação, como
+  hoje: o próprio `ativo_id` faz o papel de `empresa_id` até a tabela ligá-lo a uma empresa.
 - Continua valendo a regra das mensagens de erro: nunca repetir o valor enviado.
 - Os leitores de CSV (ADR 0002) já sabem a origem do arquivo: a B3 traz ticker da B3 e a Avenue traz ticker
   americano.
