@@ -52,27 +52,27 @@ def categoria_do_item(tipo: TipoItem, peso: Decimal) -> Categoria:
 class Posicao:
     """Uma linha da carteira, já convertida para reais."""
 
-    isin: str
+    ativo_id: str
     valor_brl: Decimal
     tipo: TipoItem
 
 
 @dataclass(frozen=True, slots=True)
 class ItemComposicao:
-    isin: str | None  # caixa e alguns derivativos não têm ISIN
+    ativo_id: str | None  # caixa e alguns derivativos não têm identificador
     peso: Decimal  # fração do patrimônio do fundo; pode ser negativa
     tipo: TipoItem
-    ativo_objeto_isin: str | None = None  # só para derivativos
-    emissor_isin: str | None = None  # só para crédito: ISIN da ação da empresa emissora
+    ativo_objeto: str | None = None  # só para derivativos: ativo_id do ativo-objeto
+    emissor: str | None = None  # só para crédito: empresa_id da empresa emissora
 
 
 @dataclass(frozen=True, slots=True)
 class Composicao:
-    fundo_isin: str
+    fundo_id: str  # ativo_id do fundo
     data_referencia: date
     fonte: str
     itens: tuple[ItemComposicao, ...]
-    aproximado_por: str | None = None  # UCITS aproximado pelo ETF americano deste ISIN
+    aproximado_por: str | None = None  # UCITS aproximado pelo ETF americano deste ativo_id
 
     def pesos_por_categoria(self) -> dict[Categoria, Decimal]:
         """Peso de cada categoria no fundo, sem normalizar; a diferença para 100% fica

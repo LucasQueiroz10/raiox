@@ -15,7 +15,7 @@ NUCLEO = "nucleo"
 
 @dataclass(frozen=True, slots=True)
 class EmpresaRaioX:
-    isin: str
+    empresa_id: str
     setor: str | None  # None = sem classificação
     selo_setor: Selo | None
     temas: tuple[ParticipacaoTema, ...]
@@ -114,7 +114,7 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
             valor = empresa.total
             if valor == 0:
                 continue
-            c = tabela.classificacoes.get(empresa.isin)
+            c = tabela.classificacoes.get(empresa.empresa_id)
             if c is None:
                 por_setor.somar(None, valor, preliminar=False)
                 por_tema.somar(None, valor, preliminar=False)
@@ -134,9 +134,9 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
             _somar_pelo_setor(derivativos, tabela, objeto, valor)
         for empresa in resultado.empresas.values():
             if empresa.credito:
-                _somar_pelo_setor(credito, tabela, empresa.isin, empresa.credito)
+                _somar_pelo_setor(credito, tabela, empresa.empresa_id, empresa.credito)
             if empresa.vendido:
-                _somar_pelo_setor(vendido, tabela, empresa.isin, empresa.vendido)
+                _somar_pelo_setor(vendido, tabela, empresa.empresa_id, empresa.vendido)
 
         total = resultado.total
         setores = por_setor.fatias(total)
@@ -162,10 +162,10 @@ def _listar_empresas(
     for e in resultado.empresas.values():
         if e.total == 0:
             continue
-        c = tabela.classificacoes.get(e.isin)
+        c = tabela.classificacoes.get(e.empresa_id)
         lista.append(
             EmpresaRaioX(
-                isin=e.isin,
+                empresa_id=e.empresa_id,
                 setor=c.setor if c else None,
                 selo_setor=c.selo_setor if c else None,
                 temas=c.temas if c else (),
@@ -177,13 +177,13 @@ def _listar_empresas(
                 fundos=frozenset(e.fundos),
             )
         )
-    return tuple(sorted(lista, key=lambda e: (-e.total, e.isin)))
+    return tuple(sorted(lista, key=lambda e: (-e.total, e.empresa_id)))
 
 
 def _somar_pelo_setor(
-    somador: _Somador, tabela: TabelaClassificacao, isin: str | None, valor: Decimal
+    somador: _Somador, tabela: TabelaClassificacao, empresa_id: str | None, valor: Decimal
 ) -> None:
-    c = tabela.classificacoes.get(isin) if isin else None
+    c = tabela.classificacoes.get(empresa_id) if empresa_id else None
     if c is None:
         somador.somar(None, valor, preliminar=False)
     else:

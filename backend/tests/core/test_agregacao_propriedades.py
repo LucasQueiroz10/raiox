@@ -28,12 +28,12 @@ pesos_etf = st.decimals(min_value=D("-0.2"), max_value=D("0.6"), places=4)
 itens_etf = st.one_of(
     st.builds(lambda i, p: ItemComposicao(i, p, TipoItem.ACAO), st.sampled_from(ACOES), pesos_etf),
     st.builds(
-        lambda o, p: ItemComposicao(None, p, TipoItem.DERIVATIVO, ativo_objeto_isin=o),
+        lambda o, p: ItemComposicao(None, p, TipoItem.DERIVATIVO, ativo_objeto=o),
         st.none() | st.sampled_from(ACOES),
         pesos_etf,
     ),
     st.builds(
-        lambda e, p: ItemComposicao(isin("PDEB"), p, TipoItem.CREDITO, emissor_isin=e),
+        lambda e, p: ItemComposicao(isin("PDEB"), p, TipoItem.CREDITO, emissor=e),
         st.sampled_from(ACOES),
         pesos_etf,
     ),

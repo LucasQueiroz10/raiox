@@ -9,9 +9,9 @@ ACAO_A, ACAO_B, ACAO_C = isin("ACAOA"), isin("ACAOB"), isin("ACAOC")
 ETF, FUNDO_DE_FUNDOS = isin("ETF"), isin("FOF")
 
 
-def fundo(fundo_isin: str, *itens: tuple[str | None, str, TipoItem], **extra) -> Composicao:
+def fundo(fundo_id: str, *itens: tuple[str | None, str, TipoItem], **extra) -> Composicao:
     return Composicao(
-        fundo_isin=fundo_isin,
+        fundo_id=fundo_id,
         data_referencia=date(2026, 8, 31),
         fonte="teste",
         itens=tuple(ItemComposicao(i, D(p), t) for i, p, t in itens),
@@ -20,7 +20,7 @@ def fundo(fundo_isin: str, *itens: tuple[str | None, str, TipoItem], **extra) ->
 
 
 def indexar(*composicoes: Composicao) -> dict[str, Composicao]:
-    return {c.fundo_isin: c for c in composicoes}
+    return {c.fundo_id: c for c in composicoes}
 
 
 ETF_60_40 = fundo(ETF, (ACAO_A, "0.6", TipoItem.ACAO), (ACAO_B, "0.4", TipoItem.ACAO))
@@ -83,16 +83,16 @@ def test_carteira_vazia():
 
 def fundo_completo() -> Composicao:
     return Composicao(
-        fundo_isin=ETF,
+        fundo_id=ETF,
         data_referencia=date(2026, 8, 31),
         fonte="teste",
         itens=(
             ItemComposicao(ACAO_A, D("0.50"), TipoItem.ACAO),
             ItemComposicao(ACAO_B, D("-0.02"), TipoItem.ACAO),
             ItemComposicao(None, D("0.05"), TipoItem.CAIXA),
-            ItemComposicao(None, D("0.03"), TipoItem.DERIVATIVO, ativo_objeto_isin=ACAO_A),
+            ItemComposicao(None, D("0.03"), TipoItem.DERIVATIVO, ativo_objeto=ACAO_A),
             ItemComposicao(None, D("0.01"), TipoItem.DERIVATIVO),
-            ItemComposicao(isin("DEBENTURE"), D("0.06"), TipoItem.CREDITO, emissor_isin=ACAO_C),
+            ItemComposicao(isin("DEBENTURE"), D("0.06"), TipoItem.CREDITO, emissor=ACAO_C),
             ItemComposicao(isin("TESOURO"), D("0.20"), TipoItem.TITULO_PUBLICO),
             ItemComposicao(isin("OUTRO"), D("0.04"), TipoItem.OUTRO),
         ),
@@ -190,7 +190,7 @@ def cadeia(n: int) -> list[Composicao]:
 
 def test_cadeia_de_10_fundos_abre_ate_o_fim():
     composicoes = cadeia(10)
-    inicio = composicoes[0].fundo_isin
+    inicio = composicoes[0].fundo_id
 
     r = abrir_carteira([Posicao(inicio, D("1000"), TipoItem.FUNDO)], indexar(*composicoes))
 
@@ -200,7 +200,7 @@ def test_cadeia_de_10_fundos_abre_ate_o_fim():
 
 def test_cadeia_com_mais_de_10_fundos_para_em_nao_aberto():
     composicoes = cadeia(11)
-    inicio, ultimo = composicoes[0].fundo_isin, composicoes[-1].fundo_isin
+    inicio, ultimo = composicoes[0].fundo_id, composicoes[-1].fundo_id
 
     r = abrir_carteira([Posicao(inicio, D("1000"), TipoItem.FUNDO)], indexar(*composicoes))
 

@@ -7,7 +7,7 @@ from tests.ficticios import isin
 
 def composicao(*itens: ItemComposicao) -> Composicao:
     return Composicao(
-        fundo_isin=isin("FUNDO"),
+        fundo_id=isin("FUNDO"),
         data_referencia=date(2026, 8, 31),
         fonte="teste",
         itens=itens,
@@ -20,7 +20,7 @@ def test_pesos_por_categoria_separa_cada_tipo_e_o_nao_identificado():
         ItemComposicao(isin("ACAOB"), D("-0.02"), TipoItem.ACAO),  # vendida a descoberto
         ItemComposicao(isin("OUTROFUNDO"), D("0.20"), TipoItem.FUNDO),
         ItemComposicao(None, D("0.05"), TipoItem.CAIXA),
-        ItemComposicao(None, D("0.03"), TipoItem.DERIVATIVO, ativo_objeto_isin=isin("ACAOA")),
+        ItemComposicao(None, D("0.03"), TipoItem.DERIVATIVO, ativo_objeto=isin("ACAOA")),
         ItemComposicao(isin("DEBENTURE"), D("0.06"), TipoItem.CREDITO),
         ItemComposicao(isin("TESOURO"), D("0.04"), TipoItem.TITULO_PUBLICO),
         ItemComposicao(isin("OUTRO"), D("0.01"), TipoItem.OUTRO),

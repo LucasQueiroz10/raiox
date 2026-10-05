@@ -62,7 +62,7 @@ class ParticipacaoTema:
 
 @dataclass(frozen=True, slots=True)
 class Classificacao:
-    isin: str
+    empresa_id: str
     setor: str
     temas: tuple[ParticipacaoTema, ...] = ()
     setor_origem: Origem = Origem.OFICIAL

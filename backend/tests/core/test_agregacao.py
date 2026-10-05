@@ -157,10 +157,10 @@ def lookthrough_com_derivativos():
         "teste",
         (
             ItemComposicao(CHIPS, D("0.50"), TipoItem.ACAO),
-            ItemComposicao(None, D("0.10"), TipoItem.DERIVATIVO, ativo_objeto_isin=CHIPS),
-            ItemComposicao(None, D("0.02"), TipoItem.DERIVATIVO, ativo_objeto_isin=SEMCLASSE),
+            ItemComposicao(None, D("0.10"), TipoItem.DERIVATIVO, ativo_objeto=CHIPS),
+            ItemComposicao(None, D("0.02"), TipoItem.DERIVATIVO, ativo_objeto=SEMCLASSE),
             ItemComposicao(None, D("0.05"), TipoItem.DERIVATIVO),
-            ItemComposicao(isin("DEBENTURE"), D("0.10"), TipoItem.CREDITO, emissor_isin=VAREJO),
+            ItemComposicao(isin("DEBENTURE"), D("0.10"), TipoItem.CREDITO, emissor=VAREJO),
             ItemComposicao(BANCO, D("-0.05"), TipoItem.ACAO),
         ),
     )
@@ -193,7 +193,7 @@ def test_vendidos_agrupados_por_setor_sem_descontar_das_acoes():
 def test_lista_de_empresas_maiores_primeiro_com_as_escondidas_marcadas():
     r = agregar(lookthrough_simulado(), tabela_simulada())
 
-    assert [(e.isin, e.total, e.escondida) for e in r.empresas] == [
+    assert [(e.empresa_id, e.total, e.escondida) for e in r.empresas] == [
         (VAREJO, D("1200"), True),
         (BANCO, D("1000"), False),  # só direto
         (CHIPS, D("900"), True),
@@ -208,4 +208,4 @@ def test_lista_de_empresas_maiores_primeiro_com_as_escondidas_marcadas():
 def test_empresa_so_com_credito_ou_vendido_fica_fora_da_lista():
     r = agregar(lookthrough_com_derivativos(), tabela_simulada())
 
-    assert [e.isin for e in r.empresas] == [CHIPS]
+    assert [e.empresa_id for e in r.empresas] == [CHIPS]
