@@ -130,7 +130,7 @@ def test_posicao_vendida_nao_desconta_da_exposicao_comprada():
 def test_derivativos_ficam_marcados_pelo_ativo_objeto():
     r = abrir_carteira([Posicao(ETF, D("1000"), TipoItem.FUNDO)], indexar(fundo_completo()))
 
-    assert r.derivativos_por_ativo_objeto == {ACAO_A: D("30"), None: D("10")}
+    assert r.derivativos_por_empresa == {ACAO_A: D("30"), None: D("10")}
     # O derivativo não soma na exposição em ações da empresa.
     assert r.empresas[ACAO_A].via_fundos == D("500")
 

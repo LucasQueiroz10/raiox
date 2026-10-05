@@ -14,6 +14,15 @@ NUCLEO = "nucleo"
 
 
 @dataclass(frozen=True, slots=True)
+class ClasseRaioX:
+    """Parte de uma classe de ação (ex.: PN ou ON) na exposição comprada da empresa."""
+
+    ativo_id: str | None  # None = chegou por fundo sem identificar a classe
+    valor: Decimal
+    percentual_da_empresa: Decimal
+
+
+@dataclass(frozen=True, slots=True)
 class EmpresaRaioX:
     empresa_id: str
     setor: str | None  # None = sem classificação
@@ -25,6 +34,7 @@ class EmpresaRaioX:
     percentual: Decimal  # sobre o total da carteira
     escondida: bool  # chega por pelo menos um fundo
     fundos: frozenset[str]  # fundos da carteira por onde chega
+    classes: tuple[ClasseRaioX, ...]  # maior primeiro
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,7 +140,7 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
             por_subtema.somar(NUCLEO, valor * c.peso_nucleo, preliminar=False)
 
         derivativos, credito, vendido = _Somador(), _Somador(), _Somador()
-        for objeto, valor in resultado.derivativos_por_ativo_objeto.items():
+        for objeto, valor in resultado.derivativos_por_empresa.items():
             _somar_pelo_setor(derivativos, tabela, objeto, valor)
         for empresa in resultado.empresas.values():
             if empresa.credito:
@@ -175,9 +185,19 @@ def _listar_empresas(
                 percentual=e.total / total if total else Decimal(0),
                 escondida=e.via_fundos != 0,
                 fundos=frozenset(e.fundos),
+                classes=_classes(e.por_ativo, e.total),
             )
         )
     return tuple(sorted(lista, key=lambda e: (-e.total, e.empresa_id)))
+
+
+def _classes(por_ativo: dict[str | None, Decimal], total: Decimal) -> tuple[ClasseRaioX, ...]:
+    classes = [
+        ClasseRaioX(ativo, valor, valor / total if total else Decimal(0))
+        for ativo, valor in por_ativo.items()
+        if valor != 0
+    ]
+    return tuple(sorted(classes, key=lambda c: (-c.valor, c.ativo_id or "")))
 
 
 def _somar_pelo_setor(

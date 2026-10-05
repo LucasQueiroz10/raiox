@@ -64,6 +64,8 @@ class ItemComposicao:
     tipo: TipoItem
     ativo_objeto: str | None = None  # só para derivativos: ativo_id do ativo-objeto
     emissor: str | None = None  # só para crédito: empresa_id da empresa emissora
+    # Só para ação sem ativo_id (ex.: N-PORT, que não traz ticker): a empresa, direto.
+    empresa_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

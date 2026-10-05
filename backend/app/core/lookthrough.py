@@ -50,6 +50,8 @@ class ExposicaoEmpresa:
     vendido: Decimal = Decimal(0)  # vendas a descoberto dentro de fundos (negativo)
     credito: Decimal = Decimal(0)  # debêntures e outros títulos emitidos pela empresa
     fundos: set[str] = field(default_factory=set)  # fundos da carteira por onde chega
+    # Parte comprada de cada classe (ativo_id); None = item de fundo sem ativo_id.
+    por_ativo: dict[str | None, Decimal] = field(default_factory=dict)
 
     @property
     def total(self) -> Decimal:
@@ -77,7 +79,8 @@ class ResultadoLookthrough:
     categorias: dict[Categoria, Decimal] = field(
         default_factory=lambda: {c: Decimal(0) for c in Categoria if c is not Categoria.FUNDOS}
     )
-    derivativos_por_ativo_objeto: dict[str | None, Decimal] = field(default_factory=dict)
+    # Pela empresa do ativo-objeto; None = derivativo sem ativo-objeto.
+    derivativos_por_empresa: dict[str | None, Decimal] = field(default_factory=dict)
     avisos: set[Aviso] = field(default_factory=set)
     fundos: dict[str, ResumoFundo] = field(default_factory=dict)
 
@@ -105,13 +108,18 @@ def abrir_carteira(
     posicoes: Iterable[Posicao],
     composicoes: Mapping[str, Composicao],
     *,
+    empresa_do_ativo: Mapping[str, str] | None = None,
     max_passos: int = MAX_PASSOS,
 ) -> ResultadoLookthrough:
     """Distribui o valor de cada posição até as empresas, sem normalizar pesos.
 
+    empresa_do_ativo liga cada ação (ativo_id) à empresa emissora (empresa_id), para as classes da
+    mesma empresa somarem juntas (ADR 0005). Ação fora dela é a própria empresa.
+
     Usado pela API e, pela X-03, também pelo lote do IrRAE (DT-9: Decimal é mais lento que float).
     """
     r = ResultadoLookthrough()
+    ligacao = empresa_do_ativo or {}
     with localcontext(prec=PRECISAO):
         pilha = []
         for p in posicoes:
@@ -134,7 +142,7 @@ def abrir_carteira(
             elif item.tipo is TipoItem.FUNDO and item.ativo_id:
                 r._nao_aberto(atual.valor, CodigoAviso.FUNDO_SEM_COMPOSICAO, item.ativo_id)
             else:
-                _registrar(r, atual)
+                _registrar(r, atual, ligacao)
     return r
 
 
@@ -181,29 +189,37 @@ def _abrir_fundo(
     ]
 
 
-def _registrar(r: ResultadoLookthrough, atual: _Pendente) -> None:
+def _registrar(
+    r: ResultadoLookthrough, atual: _Pendente, empresa_do_ativo: Mapping[str, str]
+) -> None:
     item, valor, origem = atual.item, atual.valor, atual.fundo_da_carteira
     categoria = categoria_do_item(item.tipo, valor)
     r.categorias[categoria] += valor
 
     if categoria is Categoria.DERIVATIVOS:
         objeto = item.ativo_objeto
-        r.derivativos_por_ativo_objeto[objeto] = (
-            r.derivativos_por_ativo_objeto.get(objeto, Decimal(0)) + valor
-        )
+        chave = empresa_do_ativo.get(objeto, objeto) if objeto else None
+        r.derivativos_por_empresa[chave] = r.derivativos_por_empresa.get(chave, Decimal(0)) + valor
         return
 
     if categoria is Categoria.CREDITO and item.emissor:
         empresa = r._empresa(item.emissor)
         empresa.credito += valor
-    elif categoria in (Categoria.ACOES, Categoria.VENDIDO) and item.ativo_id:
-        empresa = r._empresa(item.ativo_id)
+    elif categoria in (Categoria.ACOES, Categoria.VENDIDO) and (item.ativo_id or item.empresa_id):
+        if item.empresa_id:
+            empresa = r._empresa(item.empresa_id)
+        else:
+            empresa = r._empresa(empresa_do_ativo.get(item.ativo_id, item.ativo_id))
         if categoria is Categoria.VENDIDO:
             empresa.vendido += valor
-        elif origem is None:
-            empresa.direto += valor
         else:
-            empresa.via_fundos += valor
+            empresa.por_ativo[item.ativo_id] = (
+                empresa.por_ativo.get(item.ativo_id, Decimal(0)) + valor
+            )
+            if origem is None:
+                empresa.direto += valor
+            else:
+                empresa.via_fundos += valor
     else:
         return
     if origem is not None:
