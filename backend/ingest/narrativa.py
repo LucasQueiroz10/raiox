@@ -67,19 +67,24 @@ def contar_termos(texto: str, dicionario: dict[str, list[str]]) -> tuple[dict[st
 
 def contar_frases(fs: list[str], dicionario: dict[str, list[str]]) -> tuple[dict[str, float], int]:
     """Como contar_termos, sobre frases já separadas (e já filtradas)."""
-    genericas = {f for f in dicionario if f.endswith(".generica")}
     cont: dict[str, float] = {}
     for fr in fs:
-        especificas = [f for f in dicionario if f not in genericas and _tem(fr, dicionario[f])]
-        if especificas:
-            for f in especificas:
-                cont[f] = cont.get(f, 0.0) + 1.0 / len(especificas)
-            continue
-        for g in genericas:
-            if _tem(fr, dicionario[g]):
-                cont[g] = cont.get(g, 0.0) + 1.0
-                break
+        citadas = folhas_da_frase(fr, dicionario)
+        for f in citadas:
+            cont[f] = cont.get(f, 0.0) + 1.0 / len(citadas)
     return cont, len(fs)
+
+
+def folhas_da_frase(frase: str, dicionario: dict[str, list[str]]) -> list[str]:
+    """Folhas que a frase cita: as específicas; sem nenhuma, a genérica do tema; senão, nenhuma."""
+    genericas = {f for f in dicionario if f.endswith(".generica")}
+    especificas = [f for f in dicionario if f not in genericas and _tem(frase, dicionario[f])]
+    if especificas:
+        return especificas
+    for g in genericas:
+        if _tem(frase, dicionario[g]):
+            return [g]
+    return []
 
 
 def escore_ameaca(
