@@ -26,7 +26,7 @@ def test_422_informa_campo_e_motivo_sem_repetir_os_valores(cliente):
     entrada = {
         "posicoes": [
             {
-                "isin": "US0378331006",  # dígito verificador errado
+                "isin": "USZQ4X7K2W18",  # dígito verificador errado
                 "valor": "-987654.32",
                 "moeda": "XQZ",
                 "tipo": "acao",
@@ -48,7 +48,7 @@ def test_422_informa_campo_e_motivo_sem_repetir_os_valores(cliente):
         ("posicoes", 0, "apelido"): "extra_forbidden",
     }
     assert all(set(e) == {"campo", "motivo", "mensagem"} for e in detalhe["erros"])
-    for enviado in ("US0378331006", "987654", "XQZ", "Fulano"):
+    for enviado in ("USZQ4X7K2W18", "987654", "XQZ", "Fulano"):
         assert enviado not in r.text
 
 

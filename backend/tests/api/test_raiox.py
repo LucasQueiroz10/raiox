@@ -145,7 +145,7 @@ def test_cambio_indisponivel_so_afeta_carteira_em_dolar(cliente, ptax):
 
 
 def test_isin_desconhecido_entra_como_sem_classificacao(cliente):
-    desconhecido = "US0378331005"  # ISIN válido, fora do conjunto de exemplo
+    desconhecido = "USZQ4X7K2W17"  # ISIN válido e fictício, fora do conjunto de exemplo
 
     corpo = cliente.post("/raiox", json=carteira(pos(desconhecido, "100.00"))).json()
 
@@ -157,7 +157,7 @@ def test_isin_desconhecido_entra_como_sem_classificacao(cliente):
     "entrada",
     [
         carteira(),  # vazia
-        carteira(pos("US0378331006", "100.00")),  # dígito verificador errado
+        carteira(pos("USZQ4X7K2W18", "100.00")),  # dígito verificador errado
         carteira(pos(BANCO, "-1.00")),  # valor negativo
         carteira(pos(BANCO, "0")),  # valor zero
         carteira(pos(BANCO, "1.001")),  # mais de 2 casas
