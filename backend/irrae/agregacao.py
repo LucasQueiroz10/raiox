@@ -13,11 +13,6 @@ o intervalo do ETF é reportado em dois casos-limite:
     (Dhaene et al. 2002). Entre todas as dependências possíveis com as mesmas
     marginais, a comonotônica maximiza a variância da soma.
 A verdade fica entre os dois.
-
-Circularidade: o componente E (Enquadramento) de cada ação usa as carteiras de
-ETFs. Ao analisar um ETF, recalcule o E das ações SEM esse ETF
-(posicoes_sem_etf), senão o rótulo do ETF confirma a si mesmo. Para auditar se
-um "ETF de IA" é mesmo de IA, o mais limpo é desligar o E.
 """
 
 from __future__ import annotations
@@ -30,13 +25,6 @@ import pandas as pd
 from .taxonomia import Taxonomia
 
 NAO_COBERTO = "nao_coberto"
-
-
-def posicoes_sem_etf(
-    posicoes_e: list[tuple[str, str, float]], etf_id: str
-) -> list[tuple[str, str, float]]:
-    """Remove o ETF analisado das posições usadas para montar o componente E de uma ação."""
-    return [p for p in posicoes_e if p[0] != etf_id]
 
 
 @dataclass

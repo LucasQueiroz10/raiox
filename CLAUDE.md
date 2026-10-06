@@ -29,7 +29,8 @@ Estas regras só mudam com decisão registrada em ADR em docs/adr/ (previsto par
 ## Regras obrigatórias
 - Teste primeiro. Nenhuma função do motor entra sem um teste que a descreva.
   Nunca altere um teste existente só para fazê-lo passar.
-- A chave de empresa é o ISIN. Nunca use SEDOL.
+- Ativos são identificados pelo `ativo_id` e empresas pelo `empresa_id` (ADR 0005).
+  Nunca guarde CUSIP, SEDOL nem ISIN de país fora da lista permitida do ADR 0005.
 - Use só fontes marcadas como permitidas em docs/matriz_de_dados.md.
 - Nunca leia, crie ou altere .env, .env.* ou secrets/.
 - Só dados sintéticos em código, testes, logs e conversa. Nada de nomes, e-mails ou carteiras reais.

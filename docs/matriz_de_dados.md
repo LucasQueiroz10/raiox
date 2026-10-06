@@ -22,7 +22,7 @@ Todas as fontes de dados que o Projeto RX usa ou pretende usar, com o método ex
 | 3 | CVM – Cadastro de companhias abertas | Setor oficial das empresas brasileiras | ODbL | provisória |
 | 4 | CVM – Formulário Cadastral (valores mobiliários) | Ligar código de negociação da B3 ao ISIN | ODbL | provisória |
 | 5 | CVM – Formulário de Referência | Componente Ir do IrRAE para empresas brasileiras (futuro) | ODbL | pendente |
-| 6 | SEC – Form N-PORT | O que tem dentro de cada ETF americano; ETFs temáticos (componente E) | Domínio público | provisória |
+| 6 | SEC – Form N-PORT | O que tem dentro de cada ETF americano | Domínio público | provisória |
 | 7 | SEC – EDGAR Submissions e lista de tickers | Setor oficial (código SIC) das empresas registradas na SEC | Domínio público | provisória |
 | 8 | SEC – XBRL dos relatórios anuais (10-K) | Receita e investimento por segmento (componentes A e Ir) | Domínio público | provisória |
 | 9 | SEC – Texto dos relatórios anuais (10-K e 20-F) | Plano B do componente Ir | Domínio público | provisória |
@@ -88,10 +88,9 @@ Todas as fontes de dados que o Projeto RX usa ou pretende usar, com o método ex
   1. Para cada ETF necessário, localizamos o registro dele no EDGAR e baixamos o N-PORT mais recente (arquivo XML).
   2. Lemos cada posição: nome, identificadores (ISIN quando houver), valor, percentual do patrimônio, tipo de ativo e, para derivativos, o ativo-objeto e o valor nocional.
   3. Gravamos a composição com a data de referência.
-- **Três usos:**
+- **Dois usos:**
   - composição dos ETFs americanos da carteira do usuário;
   - **aproximação dos ETFs UCITS:** um ETF UCITS (listado na Europa) é aproximado pelo ETF americano que segue o mesmo índice, e a tela mostra um rótulo de aproximação;
-  - **componente E do IrRAE:** peso de cada empresa nos ETFs temáticos (ex.: ETFs de IA) e nos ETFs setoriais.
 - **Regras de acesso da SEC:** identificação obrigatória no cabeçalho `User-Agent` (nome do projeto e um e-mail de contato) e no máximo 10 requisições por segundo.
 - **Frequência:** trimestral.
 - **Crédito:** não exigido. Vamos citar a fonte mesmo assim.
@@ -170,6 +169,5 @@ Todas as fontes de dados que o Projeto RX usa ou pretende usar, com o método ex
 4. **PatentsView:** confirmar a licença e o crédito exigido.
 5. **B3:** confirmar se a tabela de ISIN e a classificação setorial da B3 podem ser usadas.
 6. **Banco Central:** confirmar os termos dos dados abertos.
-7. **Componente "especulação" do IrRAE:** usa a presença das empresas em ETFs temáticos. É um nome interno. Na tela, o nome será neutro (ex.: "associação pelo mercado"), para não parecer julgamento sobre a empresa.
-8. **IA:** definir o provedor e verificar os termos sobre o conteúdo gerado.
-9. **Uso atual:** todas as fontes provisórias estão sendo usadas apenas em desenvolvimento e testes, sem comercialização. Qualquer lançamento público depende da validação desta matriz.
+7. **IA:** definir o provedor e verificar os termos sobre o conteúdo gerado.
+8. **Uso atual:** todas as fontes provisórias estão sendo usadas apenas em desenvolvimento e testes, sem comercialização. Qualquer lançamento público depende da validação desta matriz.

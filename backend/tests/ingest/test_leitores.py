@@ -12,7 +12,7 @@ from ingest.narrativa import (
     extrair_texto,
     secoes_10k,
 )
-from ingest.nport import parse_nport, posicoes_empresa
+from ingest.nport import parse_nport
 from ingest.patentes import contagens_por_empresa
 from ingest.sec_edgar import parse_segmentos_instancia, segmentos_fsn
 
@@ -61,10 +61,6 @@ def test_fsn_segmentos():
 def test_nport():
     info, pos = parse_nport((FIX / "nport_min.xml").read_bytes())
     assert info["seriesId"] == "S000000001" and len(pos) == 2
-    p = posicoes_empresa(
-        {"S000000001": pos}, {"S000000001": "ia.modelos_software"}, {"cusip": "000000AA1"}
-    )
-    assert p == [("S000000001", "ia.modelos_software", 50_000_000.0)]
 
 
 def test_narrativa_secoes_contagens_e_ameaca():

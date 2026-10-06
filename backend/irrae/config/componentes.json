@@ -41,11 +41,6 @@
       "pilar": "percepcao",
       "kappa_prior": 6
     },
-    "E_enquadramento": {
-      "nome": "Enquadramento de mercado: ETFs (N-PORT)",
-      "pilar": "percepcao",
-      "kappa_prior": 5
-    },
     "prior_setorial": {
       "nome": "Prior do setor oficial (pseudo-componente)",
       "pilar": "prior",
@@ -58,8 +53,7 @@
     "A_receita|B_backlog": 0.5,
     "A_lucro|B_backlog": 0.3,
     "Ir_capex|B_backlog": 0.3,
-    "A_receita|Ir_capex": 0.2,
-    "N_narrativa|E_enquadramento": 0.3
+    "A_receita|Ir_capex": 0.2
   },
   "fusao": {
     "shrinkage_lambda": 0.3,

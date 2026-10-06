@@ -6,7 +6,7 @@ empresas são necessárias para estimar a precisão (kappa) de cada fonte;
 
 Geração:
   w_c ~ Dirichlet(conc_setor * media_setor)                 (verdade)
-  X_kc ~ Dirichlet(kappa_k * w_c)   [E com viés de 'hype']   (erro da fonte)
+  X_kc ~ Dirichlet(kappa_k * w_c)                           (erro da fonte)
   medição: estimativa pontual e amostras em torno dela       (erro de medição)
     - R e N via contagens (Multinomial), o resto via Dirichlet com concentração variável
   faltantes: cada fonte some com probabilidade própria
@@ -34,7 +34,6 @@ KAPPA_VERDADEIRO = {
     "B_backlog": 20,
     "R_patentes": 6,
     "N_narrativa": 5,
-    "E_enquadramento": 3,
     "C_cadeia": 8,
     "P_participacoes": 4,
 }
@@ -45,7 +44,6 @@ P_FALTA = {
     "B_backlog": 0.6,
     "R_patentes": 0.3,
     "N_narrativa": 0.1,
-    "E_enquadramento": 0.3,
     "C_cadeia": 0.7,
     "P_participacoes": 0.8,
 }
@@ -53,7 +51,6 @@ CONTAGEM = {
     "R_patentes": (4.0, 1.2),
     "N_narrativa": (5.5, 0.6),
 }  # lognormal (mu, sigma) do nº de documentos/frases
-HYPE = 1.8  # E super-representa folhas de IA
 CONC_SETOR = 8.0
 
 
@@ -82,11 +79,7 @@ def gerar_universo(
             if rng.random() < pf[k]:
                 comps.append(ausente(k))
                 continue
-            alvo = w.copy()
-            if k == "E_enquadramento":
-                alvo[1:] *= HYPE
-                alvo /= alvo.sum()
-            x_fonte = rng.dirichlet(np.maximum(kap * alvo, 1e-3))
+            x_fonte = rng.dirichlet(np.maximum(kap * w, 1e-3))
             if k in CONTAGEM:
                 mu, sd = CONTAGEM[k]
                 ndoc = max(1, int(rng.lognormal(mu, sd)))
