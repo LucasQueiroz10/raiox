@@ -177,35 +177,6 @@ def de_contagens(
     return Componente(nome, rng.dirichlet(c + alpha0, size=S), fonte=fonte)
 
 
-def de_etfs(
-    nome: str,
-    posicoes: list[tuple[str, str, float]],
-    tax: Taxonomia,
-    S: int,
-    rng: np.random.Generator,
-    fonte: str = "",
-) -> Componente:
-    """Enquadramento de mercado a partir de carteiras de ETFs (N-PORT).
-
-    posicoes: (etf, folha_ou_'nucleo', valor_em_usd_da_empresa_no_etf).
-    Composição = dólares da empresa em ETFs de cada folha / dólares em todos os ETFs.
-    Usar dólares (não % do ETF) já neutraliza o tamanho da empresa.
-    Incerteza: bootstrap sobre os ETFs (poucos ETFs => intervalo largo).
-    """
-    pos = [(e, a, v) for e, a, v in posicoes if v > 0]
-    if not pos:
-        return ausente(nome, "empresa não aparece nos ETFs mapeados")
-    etfs = sorted({e for e, _, _ in pos})
-    M = np.zeros((len(etfs), tax.L))
-    for e, a, v in pos:
-        M[etfs.index(e), tax.idx(a)] += v
-    idx = rng.integers(0, len(etfs), size=(S, len(etfs)))
-    X = M[idx].sum(axis=1)
-    s = X.sum(axis=1, keepdims=True)
-    s[s == 0] = 1.0
-    return Componente(nome, X / s, fonte=fonte)
-
-
 def de_heranca(
     nome: str,
     parceiros: list[tuple[float, np.ndarray]],

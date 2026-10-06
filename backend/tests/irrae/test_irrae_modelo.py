@@ -8,7 +8,6 @@ from irrae.componentes import (
     LinhaMapeamento,
     ausente,
     de_contagens,
-    de_etfs,
     de_heranca,
     de_receita_futura,
     de_segmentos,
@@ -62,19 +61,7 @@ def test_poucas_contagens_dao_intervalo_largo(tax, rng):
     assert poucas.amostras[:, i].std() > 3 * muitas.amostras[:, i].std()
 
 
-def test_etfs_e_heranca(tax, rng):
-    e = de_etfs(
-        "E_enquadramento",
-        [
-            ("AIQ", "ia.modelos_software", 30.0),
-            ("SMH", "ia.semicondutores", 10.0),
-            ("SPY", "nucleo", 60.0),
-        ],
-        tax,
-        S,
-        rng,
-    )
-    assert np.allclose(e.amostras.sum(axis=1), 1) and e.media[0] > 0.4
+def test_heranca_cobertura(tax, rng):
     w_cliente = tax.vetor({"ia.nuvem_dc": 0.8})
     alta = de_heranca("C_cadeia", [(0.9, w_cliente)], tax, S, rng)
     baixa = de_heranca("C_cadeia", [(0.1, w_cliente)], tax, S, rng)

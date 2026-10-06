@@ -4,8 +4,7 @@ import numpy as np
 import pytest
 
 from ingest.nport import parse_nport
-from irrae.agregacao import exposicao_etf, pesos_da_carteira, posicoes_sem_etf
-from irrae.componentes import de_etfs
+from irrae.agregacao import exposicao_etf, pesos_da_carteira
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures"
 
@@ -38,14 +37,6 @@ def test_comonotonico_mais_largo_e_quantis_somam(tax, rng):
     tema = {k: np.sort(v[:, 1:].sum(1)) for k, v in am.items()}
     soma = sum(0.25 * t for t in tema.values())
     assert np.quantile(soma, 0.95) == pytest.approx(r.p95_comon[ia], abs=0.005)
-
-
-def test_sem_etf_muda_o_componente_e(tax, rng):
-    pos = [("AIQ", "ia.modelos_software", 80.0), ("SPY", "nucleo", 20.0)]
-    com = de_etfs("E_enquadramento", pos, tax, 500, rng)
-    sem = de_etfs("E_enquadramento", posicoes_sem_etf(pos, "AIQ"), tax, 500, rng)
-    assert com.media[tax.idx("ia.modelos_software")] > 0.5
-    assert sem.media[0] == pytest.approx(1.0)
 
 
 def test_pesos_da_carteira_nport():
