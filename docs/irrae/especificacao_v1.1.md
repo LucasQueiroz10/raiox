@@ -39,6 +39,10 @@ rótulo; na tela do produto, só textos do `docs/textos_telas.md` [D-19].
 - **Entrada:** ISIN, tipo (`acao`, `etf`, `caixa`, `outro`) e valor [D-17, D-03]. O prompt pedia
   identificador por ticker, CUSIP ou ISIN e peso como fração do patrimônio. O CUSIP fica de fora até o
   resultado da T-01 [D-03, R-01]. Testes usam só ISINs sintéticos [D-17].
+  - O ISIN é obrigatório só para `acao` e `etf`; `caixa` e `outro` entram só com tipo e valor e vão
+    direto para "não coberto" [P-2, decidida pelo Lucas em 02/10/2026].
+  - O identificador da entrada vai seguir o `empresa_id` da R-02 (decidida pelo Lucas em 02/10/2026;
+    detalhes no ADR 0005, em preparação). Até lá, a D-17 vale como está.
 - **Validação (prompt):** valores não negativos; com valores, os pesos (valor / total) somam 1 por
   construção. Posição vendida ou alavancagem **direta** do usuário está fora do escopo da v1.1 e dá erro
   claro.
@@ -169,8 +173,9 @@ estimação de κ (5.6), regras (5.7), papel e exposição negativa (5.8), Kalma
 
 - **P-1 (PR 4, M1):** com o balde `vendido` da D-13, a fórmula de `E^(s)` e a identidade do teste 5
   ("Σ folhas + não coberto = 1") precisam incluir o vendido? O prompt foi escrito antes da D-13.
-- **P-2 (PR 4, Lucas):** como representar uma posição direta de tipo `caixa` ou `outro`, que pode não ter
-  ISIN, já que a entrada da D-17 é por ISIN.
+- ~~**P-2 (PR 4, Lucas):** como representar uma posição direta de tipo `caixa` ou `outro`, que pode não
+  ter ISIN.~~ **Decidida (02/10/2026):** ISIN obrigatório só para ação e ETF (seção 1).
 
 Pendências que já estão no documento de decisões: R-05 (e-mail do projeto, bloqueia a T-01 e a amostra
-real do N), R-01 (depois da T-01), R-02 (antes da DT-3), X-02 (tela) e R-09 (nome do produto).
+real do N), R-01 (depois da T-01), X-02 (tela) e R-09 (nome do produto). A R-02 foi decidida pelo Lucas
+em 02/10/2026: adotar o `empresa_id`, com os detalhes no ADR 0005 (em preparação), antes da DT-3.
