@@ -90,8 +90,17 @@ class Tema(BaseModel):
     selo: str
 
 
+class Classe(BaseModel):
+    """Uma classe de ação da empresa (ex.: PN ou ON) e a parte dela na exposição comprada."""
+
+    ativo_id: str | None  # None = chegou por fundo sem identificar a classe
+    nome: str | None
+    valor: Decimal
+    percentual_da_empresa: Decimal
+
+
 class Empresa(BaseModel):
-    isin: str
+    empresa_id: str
     nome: str | None
     setor: str | None
     selo_setor: str | None
@@ -102,6 +111,7 @@ class Empresa(BaseModel):
     percentual: Decimal
     escondida: bool
     fundos: list[str]
+    classes: list[Classe]  # maior primeiro
 
 
 class DemaisEmpresas(BaseModel):
@@ -111,7 +121,7 @@ class DemaisEmpresas(BaseModel):
 
 
 class Fundo(BaseModel):
-    isin: str
+    fundo_id: str
     nome: str | None
     data_referencia: date
     fonte: str
@@ -122,7 +132,7 @@ class Fundo(BaseModel):
 
 class Aviso(BaseModel):
     codigo: str
-    fundo_isin: str | None
+    fundo_id: str | None
 
 
 class Ptax(BaseModel):
