@@ -1,0 +1,789 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Projeto RX",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/saude": {
+      "get": {
+        "summary": "Saude",
+        "operationId": "saude_saude_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Saude"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/raiox": {
+      "post": {
+        "summary": "Raiox",
+        "operationId": "raiox_raiox_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntradaRaioX"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RaioXResposta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Aviso": {
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "fundo_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fundo Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codigo",
+          "fundo_id"
+        ],
+        "title": "Aviso"
+      },
+      "Classe": {
+        "properties": {
+          "ativo_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ativo Id"
+          },
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "valor": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor"
+          },
+          "percentual_da_empresa": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Percentual Da Empresa"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ativo_id",
+          "nome",
+          "valor",
+          "percentual_da_empresa"
+        ],
+        "title": "Classe",
+        "description": "Uma classe de ação da empresa (ex.: PN ou ON) e a parte dela na exposição comprada."
+      },
+      "Cobertura": {
+        "properties": {
+          "total_acoes": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Acoes"
+          },
+          "confirmada": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Confirmada"
+          },
+          "preliminar": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Preliminar"
+          },
+          "sem_classificacao": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Sem Classificacao"
+          },
+          "percentual_confirmada": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Percentual Confirmada"
+          },
+          "percentual_preliminar": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Percentual Preliminar"
+          },
+          "percentual_classificada": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Percentual Classificada"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_acoes",
+          "confirmada",
+          "preliminar",
+          "sem_classificacao",
+          "percentual_confirmada",
+          "percentual_preliminar",
+          "percentual_classificada"
+        ],
+        "title": "Cobertura"
+      },
+      "DemaisEmpresas": {
+        "properties": {
+          "quantidade": {
+            "type": "integer",
+            "title": "Quantidade"
+          },
+          "valor": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor"
+          },
+          "percentual": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Percentual"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quantidade",
+          "valor",
+          "percentual"
+        ],
+        "title": "DemaisEmpresas"
+      },
+      "Empresa": {
+        "properties": {
+          "empresa_id": {
+            "type": "string",
+            "title": "Empresa Id"
+          },
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "setor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setor"
+          },
+          "selo_setor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selo Setor"
+          },
+          "temas": {
+            "items": {
+              "$ref": "#/components/schemas/Tema"
+            },
+            "type": "array",
+            "title": "Temas"
+          },
+          "direto": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Direto"
+          },
+          "via_fundos": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Via Fundos"
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total"
+          },
+          "percentual": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Percentual"
+          },
+          "escondida": {
+            "type": "boolean",
+            "title": "Escondida"
+          },
+          "fundos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fundos"
+          },
+          "classes": {
+            "items": {
+              "$ref": "#/components/schemas/Classe"
+            },
+            "type": "array",
+            "title": "Classes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "empresa_id",
+          "nome",
+          "setor",
+          "selo_setor",
+          "temas",
+          "direto",
+          "via_fundos",
+          "total",
+          "percentual",
+          "escondida",
+          "fundos",
+          "classes"
+        ],
+        "title": "Empresa"
+      },
+      "EntradaRaioX": {
+        "properties": {
+          "posicoes": {
+            "items": {
+              "$ref": "#/components/schemas/PosicaoEntrada"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Posicoes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "posicoes"
+        ],
+        "title": "EntradaRaioX"
+      },
+      "Fatia": {
+        "properties": {
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "classificado",
+              "nucleo",
+              "sem_classificacao"
+            ],
+            "title": "Categoria"
+          },
+          "valor": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor"
+          },
+          "percentual": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Percentual"
+          },
+          "valor_preliminar": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor Preliminar"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome",
+          "categoria",
+          "valor",
+          "percentual",
+          "valor_preliminar"
+        ],
+        "title": "Fatia",
+        "description": "nome None = sem classificação (ou núcleo, em tema/subtema; ver categoria)."
+      },
+      "FatiaSubtema": {
+        "properties": {
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "classificado",
+              "nucleo",
+              "sem_classificacao"
+            ],
+            "title": "Categoria"
+          },
+          "valor": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor"
+          },
+          "percentual": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Percentual"
+          },
+          "valor_preliminar": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor Preliminar"
+          },
+          "tema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome",
+          "categoria",
+          "valor",
+          "percentual",
+          "valor_preliminar",
+          "tema"
+        ],
+        "title": "FatiaSubtema"
+      },
+      "Fundo": {
+        "properties": {
+          "fundo_id": {
+            "type": "string",
+            "title": "Fundo Id"
+          },
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "data_referencia": {
+            "type": "string",
+            "format": "date",
+            "title": "Data Referencia"
+          },
+          "fonte": {
+            "type": "string",
+            "title": "Fonte"
+          },
+          "aproximado_por": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aproximado Por"
+          },
+          "valor_recebido": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor Recebido"
+          },
+          "pesos": {
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+            },
+            "type": "object",
+            "title": "Pesos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fundo_id",
+          "nome",
+          "data_referencia",
+          "fonte",
+          "aproximado_por",
+          "valor_recebido",
+          "pesos"
+        ],
+        "title": "Fundo"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PosicaoEntrada": {
+        "properties": {
+          "isin": {
+            "type": "string",
+            "title": "Isin"
+          },
+          "valor": {
+            "type": "string",
+            "title": "Valor",
+            "description": "Valor maior que zero, em texto, com ponto e até 2 casas decimais",
+            "examples": [
+              "1000.00"
+            ]
+          },
+          "moeda": {
+            "type": "string",
+            "enum": [
+              "BRL",
+              "USD"
+            ],
+            "title": "Moeda"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "acao",
+              "fundo"
+            ],
+            "title": "Tipo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "isin",
+          "valor",
+          "moeda",
+          "tipo"
+        ],
+        "title": "PosicaoEntrada"
+      },
+      "Ptax": {
+        "properties": {
+          "valor": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor"
+          },
+          "data_cotacao": {
+            "type": "string",
+            "format": "date",
+            "title": "Data Cotacao"
+          },
+          "data_pedida": {
+            "type": "string",
+            "format": "date",
+            "title": "Data Pedida"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valor",
+          "data_cotacao",
+          "data_pedida"
+        ],
+        "title": "Ptax"
+      },
+      "RaioXResposta": {
+        "properties": {
+          "total": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total"
+          },
+          "versao_classificacao": {
+            "type": "string",
+            "title": "Versao Classificacao"
+          },
+          "ptax": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Ptax"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cobertura": {
+            "$ref": "#/components/schemas/Cobertura"
+          },
+          "por_setor": {
+            "items": {
+              "$ref": "#/components/schemas/Fatia"
+            },
+            "type": "array",
+            "title": "Por Setor"
+          },
+          "por_tema": {
+            "items": {
+              "$ref": "#/components/schemas/Fatia"
+            },
+            "type": "array",
+            "title": "Por Tema"
+          },
+          "por_subtema": {
+            "items": {
+              "$ref": "#/components/schemas/FatiaSubtema"
+            },
+            "type": "array",
+            "title": "Por Subtema"
+          },
+          "categorias": {
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+            },
+            "type": "object",
+            "title": "Categorias"
+          },
+          "derivativos_por_setor": {
+            "items": {
+              "$ref": "#/components/schemas/Fatia"
+            },
+            "type": "array",
+            "title": "Derivativos Por Setor"
+          },
+          "credito_por_setor": {
+            "items": {
+              "$ref": "#/components/schemas/Fatia"
+            },
+            "type": "array",
+            "title": "Credito Por Setor"
+          },
+          "vendido_por_setor": {
+            "items": {
+              "$ref": "#/components/schemas/Fatia"
+            },
+            "type": "array",
+            "title": "Vendido Por Setor"
+          },
+          "empresas": {
+            "items": {
+              "$ref": "#/components/schemas/Empresa"
+            },
+            "type": "array",
+            "title": "Empresas"
+          },
+          "demais_empresas": {
+            "$ref": "#/components/schemas/DemaisEmpresas"
+          },
+          "fundos": {
+            "items": {
+              "$ref": "#/components/schemas/Fundo"
+            },
+            "type": "array",
+            "title": "Fundos"
+          },
+          "avisos": {
+            "items": {
+              "$ref": "#/components/schemas/Aviso"
+            },
+            "type": "array",
+            "title": "Avisos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "versao_classificacao",
+          "ptax",
+          "cobertura",
+          "por_setor",
+          "por_tema",
+          "por_subtema",
+          "categorias",
+          "derivativos_por_setor",
+          "credito_por_setor",
+          "vendido_por_setor",
+          "empresas",
+          "demais_empresas",
+          "fundos",
+          "avisos"
+        ],
+        "title": "RaioXResposta"
+      },
+      "Saude": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "Saude"
+      },
+      "Tema": {
+        "properties": {
+          "tema": {
+            "type": "string",
+            "title": "Tema"
+          },
+          "subtema": {
+            "type": "string",
+            "title": "Subtema"
+          },
+          "peso": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Peso"
+          },
+          "selo": {
+            "type": "string",
+            "title": "Selo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tema",
+          "subtema",
+          "peso",
+          "selo"
+        ],
+        "title": "Tema"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

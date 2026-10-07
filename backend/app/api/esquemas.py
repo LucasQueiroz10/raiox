@@ -8,7 +8,14 @@ from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    WithJsonSchema,
+    field_validator,
+)
 
 from app.core.identificadores import normalizar_isin
 
@@ -23,7 +30,18 @@ def _so_texto(valor: object) -> object:
 
 
 ValorEmTexto = Annotated[
-    Decimal, BeforeValidator(_so_texto), Field(gt=0, max_digits=18, decimal_places=2)
+    Decimal,
+    BeforeValidator(_so_texto),
+    Field(gt=0, max_digits=18, decimal_places=2),
+    # Sem isto, o OpenAPI diria "número ou texto" e o tipo gerado no front aceitaria número.
+    WithJsonSchema(
+        {
+            "type": "string",
+            "description": "Valor maior que zero, em texto, com ponto e até 2 casas decimais",
+            "examples": ["1000.00"],
+        },
+        mode="validation",
+    ),
 ]
 
 

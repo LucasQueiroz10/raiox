@@ -1,0 +1,59 @@
+name: contrato
+
+# Confere que o contrato da API commitado (frontend/openapi.json) e os tipos gerados dele
+# (frontend/src/api/tipos.ts) batem com o código do backend.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contrato-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependências da API
+        working-directory: backend
+        run: python -m pip install --require-hashes -r requirements.txt
+
+      - name: Instalar dependências do front
+        working-directory: frontend
+        run: npm ci
+
+      - name: Exportar o OpenAPI
+        working-directory: backend
+        run: python -m app.exportar_openapi
+
+      - name: Gerar os tipos
+        working-directory: frontend
+        run: npm run gerar-tipos
+
+      - name: Conferir que nada mudou
+        run: |
+          if ! git diff --exit-code -- frontend/openapi.json frontend/src/api/tipos.ts; then
+            echo "::error::Contrato desatualizado. Rode 'python -m app.exportar_openapi' no backend e 'npm run gerar-tipos' no front, e commite os dois arquivos."
+            exit 1
+          fi
