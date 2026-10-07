@@ -146,8 +146,8 @@ def _montar_resposta(
         vendido_por_setor=_fatias(raio_x.vendido_por_setor),
         empresas=[
             e.Empresa(
-                isin=emp.isin,
-                nome=repo.nome(emp.isin),
+                isin=emp.empresa_id,
+                nome=repo.nome(emp.empresa_id),
                 setor=emp.setor,
                 selo_setor=emp.selo_setor.value if emp.selo_setor else None,
                 temas=[
@@ -208,18 +208,18 @@ def _analisar(
 
     fundos = [
         e.Fundo(
-            isin=f.isin,
-            nome=repo.nome(f.isin),
+            isin=f.fundo_id,
+            nome=repo.nome(f.fundo_id),
             data_referencia=f.data_referencia,
             fonte=f.fonte,
             aproximado_por=f.aproximado_por,
             valor_recebido=_reais(f.valor_recebido),
             pesos={cat.value: _fracao(p) for cat, p in f.pesos.items()},
         )
-        for f in sorted(resultado.fundos.values(), key=lambda f: f.isin)
+        for f in sorted(resultado.fundos.values(), key=lambda f: f.fundo_id)
     ]
     avisos = [
-        e.Aviso(codigo=a.codigo.value, fundo_isin=a.fundo_isin)
-        for a in sorted(resultado.avisos, key=lambda a: (a.codigo, a.fundo_isin or ""))
+        e.Aviso(codigo=a.codigo.value, fundo_isin=a.fundo_id)
+        for a in sorted(resultado.avisos, key=lambda a: (a.codigo, a.fundo_id or ""))
     ]
     return _montar_resposta(raio_x, resultado.categorias, fundos, avisos, repo, ptax)

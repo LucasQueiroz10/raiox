@@ -14,8 +14,17 @@ NUCLEO = "nucleo"
 
 
 @dataclass(frozen=True, slots=True)
+class ClasseRaioX:
+    """Parte de uma classe de ação (ex.: PN ou ON) na exposição comprada da empresa."""
+
+    ativo_id: str | None  # None = chegou por fundo sem identificar a classe
+    valor: Decimal
+    percentual_da_empresa: Decimal
+
+
+@dataclass(frozen=True, slots=True)
 class EmpresaRaioX:
-    isin: str
+    empresa_id: str
     setor: str | None  # None = sem classificação
     selo_setor: Selo | None
     temas: tuple[ParticipacaoTema, ...]
@@ -25,6 +34,7 @@ class EmpresaRaioX:
     percentual: Decimal  # sobre o total da carteira
     escondida: bool  # chega por pelo menos um fundo
     fundos: frozenset[str]  # fundos da carteira por onde chega
+    classes: tuple[ClasseRaioX, ...]  # maior primeiro
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,7 +124,7 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
             valor = empresa.total
             if valor == 0:
                 continue
-            c = tabela.classificacoes.get(empresa.isin)
+            c = tabela.classificacoes.get(empresa.empresa_id)
             if c is None:
                 por_setor.somar(None, valor, preliminar=False)
                 por_tema.somar(None, valor, preliminar=False)
@@ -130,13 +140,13 @@ def agregar(resultado: ResultadoLookthrough, tabela: TabelaClassificacao) -> Rai
             por_subtema.somar(NUCLEO, valor * c.peso_nucleo, preliminar=False)
 
         derivativos, credito, vendido = _Somador(), _Somador(), _Somador()
-        for objeto, valor in resultado.derivativos_por_ativo_objeto.items():
+        for objeto, valor in resultado.derivativos_por_empresa.items():
             _somar_pelo_setor(derivativos, tabela, objeto, valor)
         for empresa in resultado.empresas.values():
             if empresa.credito:
-                _somar_pelo_setor(credito, tabela, empresa.isin, empresa.credito)
+                _somar_pelo_setor(credito, tabela, empresa.empresa_id, empresa.credito)
             if empresa.vendido:
-                _somar_pelo_setor(vendido, tabela, empresa.isin, empresa.vendido)
+                _somar_pelo_setor(vendido, tabela, empresa.empresa_id, empresa.vendido)
 
         total = resultado.total
         setores = por_setor.fatias(total)
@@ -162,10 +172,10 @@ def _listar_empresas(
     for e in resultado.empresas.values():
         if e.total == 0:
             continue
-        c = tabela.classificacoes.get(e.isin)
+        c = tabela.classificacoes.get(e.empresa_id)
         lista.append(
             EmpresaRaioX(
-                isin=e.isin,
+                empresa_id=e.empresa_id,
                 setor=c.setor if c else None,
                 selo_setor=c.selo_setor if c else None,
                 temas=c.temas if c else (),
@@ -175,15 +185,25 @@ def _listar_empresas(
                 percentual=e.total / total if total else Decimal(0),
                 escondida=e.via_fundos != 0,
                 fundos=frozenset(e.fundos),
+                classes=_classes(e.por_ativo, e.total),
             )
         )
-    return tuple(sorted(lista, key=lambda e: (-e.total, e.isin)))
+    return tuple(sorted(lista, key=lambda e: (-e.total, e.empresa_id)))
+
+
+def _classes(por_ativo: dict[str | None, Decimal], total: Decimal) -> tuple[ClasseRaioX, ...]:
+    classes = [
+        ClasseRaioX(ativo, valor, valor / total if total else Decimal(0))
+        for ativo, valor in por_ativo.items()
+        if valor != 0
+    ]
+    return tuple(sorted(classes, key=lambda c: (-c.valor, c.ativo_id or "")))
 
 
 def _somar_pelo_setor(
-    somador: _Somador, tabela: TabelaClassificacao, isin: str | None, valor: Decimal
+    somador: _Somador, tabela: TabelaClassificacao, empresa_id: str | None, valor: Decimal
 ) -> None:
-    c = tabela.classificacoes.get(isin) if isin else None
+    c = tabela.classificacoes.get(empresa_id) if empresa_id else None
     if c is None:
         somador.somar(None, valor, preliminar=False)
     else:

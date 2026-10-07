@@ -40,11 +40,11 @@ class RepositorioExemplo:
             fundo = normalizar_isin(c["fundo"])
             itens = tuple(
                 ItemComposicao(
-                    isin=_isin(i["isin"]),
+                    ativo_id=_isin(i["isin"]),
                     peso=Decimal(i["peso"]),
                     tipo=TipoItem(i["tipo"]),
-                    ativo_objeto_isin=_isin(i.get("ativo_objeto_isin")),
-                    emissor_isin=_isin(i.get("emissor_isin")),
+                    ativo_objeto=_isin(i.get("ativo_objeto_isin")),
+                    emissor=_isin(i.get("emissor_isin")),
                 )
                 for i in c["itens"]
             )
@@ -72,5 +72,5 @@ class RepositorioExemplo:
     def tabela_classificacao(self) -> TabelaClassificacao:
         return self._tabela
 
-    def nome(self, isin: str) -> str | None:
-        return self._dados["nomes"].get(isin)
+    def nome(self, identificador: str) -> str | None:
+        return self._dados["nomes"].get(identificador)

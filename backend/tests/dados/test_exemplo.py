@@ -18,7 +18,7 @@ def test_todos_os_isins_sao_validos_e_ficticios():
     repo = RepositorioExemplo()
     isins = set(repo.composicoes()) | set(repo.tabela_classificacao().classificacoes)
     for c in repo.composicoes().values():
-        isins |= {i.isin for i in c.itens if i.isin}
+        isins |= {i.ativo_id for i in c.itens if i.ativo_id}
 
     assert isins
     assert all(isin_valido(i) and i.startswith("ZZ") for i in isins)

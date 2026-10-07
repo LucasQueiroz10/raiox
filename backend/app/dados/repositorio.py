@@ -14,13 +14,13 @@ from app.core.composicao import Composicao
 @runtime_checkable
 class RepositorioDados(Protocol):
     def composicoes(self) -> Mapping[str, Composicao]:
-        """Composição mais recente de cada fundo, por ISIN do fundo."""
+        """Composição mais recente de cada fundo, pelo fundo_id."""
         ...
 
     def tabela_classificacao(self) -> TabelaClassificacao:
         """Classificação vigente de cada empresa, com a versão da tabela."""
         ...
 
-    def nome(self, isin: str) -> str | None:
+    def nome(self, identificador: str) -> str | None:
         """Nome da empresa ou do fundo, ou None se desconhecido."""
         ...
