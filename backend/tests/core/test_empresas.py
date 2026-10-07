@@ -7,13 +7,14 @@ direto para a empresa.
 
 from datetime import date
 from decimal import Decimal as D
+from decimal import localcontext
 
 from hypothesis import given, settings
 
 from app.core.agregacao import agregar
 from app.core.classificacao import Classificacao, ParticipacaoTema, TabelaClassificacao
 from app.core.composicao import Composicao, ItemComposicao, Posicao, TipoItem
-from app.core.lookthrough import abrir_carteira
+from app.core.lookthrough import PRECISAO, abrir_carteira
 from tests.core.test_lookthrough_propriedades import ACOES, composicoes, posicoes, quase_igual
 from tests.ficticios import isin
 
@@ -123,14 +124,15 @@ def test_juntar_classes_nao_muda_os_totais(carteira, fundos):
     junto = abrir_carteira(carteira, fundos, max_passos=5000, empresa_do_ativo=ligacao)
 
     assert junto.categorias == separado.categorias
-    for campo in ("direto", "via_fundos", "vendido", "credito"):
-        a = sum((getattr(e, campo) for e in separado.empresas.values()), D(0))
-        b = sum((getattr(e, campo) for e in junto.empresas.values()), D(0))
-        assert quase_igual(a, b), campo
-    for e in junto.empresas.values():
-        assert quase_igual(sum(e.por_ativo.values(), D(0)), e.total)
-    assert quase_igual(
-        sum(separado.derivativos_por_empresa.values(), D(0)),
-        sum(junto.derivativos_por_empresa.values(), D(0)),
-    )
+    with localcontext(prec=PRECISAO):  # mesma precisão do look-through
+        for campo in ("direto", "via_fundos", "vendido", "credito"):
+            a = sum((getattr(e, campo) for e in separado.empresas.values()), D(0))
+            b = sum((getattr(e, campo) for e in junto.empresas.values()), D(0))
+            assert quase_igual(a, b), campo
+        for e in junto.empresas.values():
+            assert quase_igual(sum(e.por_ativo.values(), D(0)), e.total)
+        assert quase_igual(
+            sum(separado.derivativos_por_empresa.values(), D(0)),
+            sum(junto.derivativos_por_empresa.values(), D(0)),
+        )
     assert not set(ligacao) & set(junto.derivativos_por_empresa)
