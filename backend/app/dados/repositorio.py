@@ -1,8 +1,8 @@
 """De onde a API tira os dados públicos: composições, ligação ativo -> empresa, classificação e
 nomes.
 
-Hoje a implementação é um conjunto de exemplo sintético (app/dados/exemplo.py).
-Quando o banco existir, entra outra implementação com a mesma interface.
+Duas implementações: o PostgreSQL (app/dados/postgres.py), quando RX_BANCO_URL está definida, e o
+conjunto de exemplo sintético (app/dados/exemplo.py), no desenvolvimento sem banco.
 """
 
 from collections.abc import Mapping
@@ -28,4 +28,10 @@ class RepositorioDados(Protocol):
 
     def nome(self, identificador: str) -> str | None:
         """Nome da empresa, da classe de ação ou do fundo, ou None se desconhecido."""
+        ...
+
+
+class FonteDados(Protocol):
+    def foto(self) -> RepositorioDados:
+        """Os dados de um momento só: uma análise inteira lê dados coerentes entre si."""
         ...

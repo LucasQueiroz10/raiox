@@ -91,6 +91,9 @@ python -m banco.preparar                       # cria os usuários e o banco rx
 export RX_BANCO_URL=postgresql+psycopg://rx_dono@127.0.0.1:5433/rx
 python -m alembic upgrade head                 # aplica as migrações
 ```
+Para a API ler o banco, suba o `uvicorn` com
+`RX_BANCO_URL=postgresql+psycopg://rx_api@127.0.0.1:5433/rx`. Sem essa variável, ela usa o
+conjunto de exemplo sintético.
 Os detalhes estão em `backend/CLAUDE.md` e no ADR 0006.
 
 ### Front-end

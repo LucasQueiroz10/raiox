@@ -208,9 +208,10 @@ class RepositorioPostgres:
             try:
                 self._atualizar()
             except (SQLAlchemyError, ValueError) as erro:
-                if self._foto is None:
-                    raise DadosIndisponiveis("dados públicos indisponíveis") from erro
                 # Só o tipo do erro: a mensagem do driver pode trazer o endereço do banco.
+                if self._foto is None:
+                    log.warning("Dados públicos indisponíveis (%s).", type(erro).__name__)
+                    raise DadosIndisponiveis("dados públicos indisponíveis") from erro
                 log.warning(
                     "Falha ao reler os dados (%s); segue com a última foto.", type(erro).__name__
                 )
@@ -224,6 +225,10 @@ class RepositorioPostgres:
             if self._foto is None or versao != self._versao:
                 self._foto = ler_foto(conexao)
                 self._versao = versao
+
+    def fechar(self) -> None:
+        """Fecha as conexões abertas com o banco (ao desligar o servidor)."""
+        self._motor.dispose()
 
     def composicoes(self) -> Mapping[str, Composicao]:
         return self.foto().composicoes()

@@ -26,3 +26,13 @@
 - No protótipo 1, a carteira não é persistida no navegador (ver "Fase atual" no CLAUDE.md da raiz).
 - A carteira nunca é enviada a terceiros (nenhum serviço externo recebe posições ou valores).
 - Sem analytics: nenhum script de rastreamento ou de métricas de terceiros no front.
+
+## UI/UX
+- Uma resposta principal por tela; detalhes sob demanda.
+- Todo termo técnico (cobertura, aproximação, UCITS) tem explicação curta ao lado.
+- Formulários: rótulo visível, validação no campo, erro que diz como resolver.
+- Importação de CSV mostra prévia editável antes de confirmar.
+- Toda ação mostra carregamento e impede clique duplo.
+- Todo resultado tem estados de carregando, erro, vazio e cobertura baixa.
+- Celular primeiro; contraste WCAG AA; áreas de toque de 44 px ou mais.
+- Cores da marca para exposição; vermelho só para erro do sistema.
