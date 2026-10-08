@@ -30,10 +30,11 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 - yfinance é proibido (bloqueado no ruff por flake8-tidy-imports.banned-api).
 - app/core/ é puro: sem FastAPI, sem banco, sem rede. O I/O fica em app/api/, app/dados/ e ingest/.
 - app/dados/: de onde vêm composições, ligação ativo -> empresa, classificação e nomes (protocolo
-  RepositorioDados) e a PTAX (FontePtax, com cache). A API ainda usa o RepositorioExemplo,
-  sintético; o RepositorioPostgres (app/dados/postgres.py) lê as visões vigentes como rx_api, guarda
-  uma foto em memória e só relê quando sai carga nova (DT-10). Para várias leituras coerentes entre
-  si (uma análise inteira), use foto() uma vez.
+  RepositorioDados) e a PTAX (FontePtax, com cache). Com RX_BANCO_URL a API usa o
+  RepositorioPostgres (app/dados/postgres.py): lê as visões vigentes como rx_api, guarda uma foto em
+  memória e só relê quando sai carga nova (DT-10). Sem RX_BANCO_URL, usa o RepositorioExemplo,
+  sintético. Cada análise pede uma foto só (FonteDados.foto(), em app.state.dados), para não
+  misturar dois momentos do banco.
   Testes da API trocam repositório e PTAX por app.dependency_overrides; nenhum teste usa rede.
 - Valores em dinheiro e pesos usam Decimal, nunca float.
 - ISIN e CNPJ (numérico e alfanumérico) validados com dígito verificador em core/identificadores.
@@ -93,10 +94,14 @@ Regras:
 - Limites (app/api/raiox.py, esquemas.py e main.py): 500 posições, das quais até 100 fundos;
   200 empresas na resposta (o resto somado em demais_empresas); 20 análises por minuto por IP
   (429); 4 análises simultâneas por servidor (503); corpo de até 1 MB (413).
+- Banco fora do ar antes da primeira leitura: 503 dados_indisponiveis (conexão espera até 5 s).
+  Depois da primeira leitura, a API segue com a última foto.
 - Contadores em memória, por servidor (DT-2 em docs/divida_tecnica.md).
 - Configuração pelas variáveis de ambiente do processo (app/config.py):
     RX_AMBIENTE=desenvolvimento|producao   produção desliga /docs, /redoc e /openapi.json e liga o HSTS
     RX_ORIGENS_PERMITIDAS=https://...       origens do front no CORS, separadas por vírgula
+    RX_BANCO_URL=postgresql+psycopg://rx_api@...   banco (ADR 0006); sem ela, dados de exemplo;
+                                            obrigatória em produção; nunca em log nem em mensagem
   Valor inválido derruba o servidor na partida, de propósito.
 - Produção: uvicorn app.main:app --no-server-header --forwarded-allow-ips=<IP do proxy>
   O IP do limite é o da conexão; o uvicorn só aceita o X-Forwarded-For vindo desses IPs.
