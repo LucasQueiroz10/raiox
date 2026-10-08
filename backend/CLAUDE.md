@@ -48,6 +48,29 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
   para aparecer em GET /fontes.
 - Todo XML externo passa por ingest/xml_seguro.ler_xml (nunca etree.fromstring direto).
 
+## Banco: PostgreSQL (ver ADR 0006)
+Comandos dentro de backend/, com o Docker Desktop aberto:
+- docker compose up -d --wait                 sobe o PostgreSQL de desenvolvimento (127.0.0.1:5433)
+- export RX_BANCO_URL_ADMIN=postgresql+psycopg://postgres@127.0.0.1:5433/postgres
+  python -m banco.preparar                    cria os usuários e o banco rx (uma vez)
+- export RX_BANCO_URL=postgresql+psycopg://rx_dono@127.0.0.1:5433/rx
+  python -m alembic upgrade head              aplica as migrações (só como rx_dono)
+- export RX_BANCO_TESTE_URL=postgresql+psycopg://postgres@127.0.0.1:5433/postgres
+  python -m pytest tests/banco                testes com banco; sem a variável, são pulados
+- docker compose down                         para o banco (os dados ficam no volume; -v apaga)
+O PostgreSQL do compose aceita conexão sem senha e só escuta em 127.0.0.1: serve só para
+desenvolvimento e CI (job "banco"). A porta é a 5433 para não brigar com um PostgreSQL local.
+Regras:
+- banco/preparar.py só cria os usuários e o banco. Tudo dentro do banco (esquemas, tabelas, visões e
+  permissões) vem das migrações, em banco/migracoes/versions/.
+- Migrações só para frente (downgrade levanta erro): um erro se corrige com uma migração nova.
+  Escritas em SQL à mão e revisadas no PR. Nova migração:
+    python -m alembic revision -m "descrição curta" --rev-id 0002   (número seguinte)
+- Esquemas: ref (dados públicos) e app (lista de espera e a versão das migrações). O public fica
+  sem uso e sem permissão.
+- Toda tabela, visão ou função nova diz, na mesma migração, quem pode o quê (GRANT), com teste em
+  tests/banco. Valores e pesos em NUMERIC, nunca real nem double precision.
+
 ## Lote: ingest/ e irrae/ (ver ADR 0004)
 - ingest/: leitores de dados externos, compartilhados pelo produto e pelo IrRAE.
 - irrae/: modelo do M1 (dono da metodologia). Configurações em irrae/config/.
