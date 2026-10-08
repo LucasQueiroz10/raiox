@@ -5,6 +5,8 @@ entram só com o nome.
 """
 
 from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 import psycopg
@@ -51,3 +53,45 @@ class BancoDeTeste:
         with pytest.MonkeyPatch.context() as mp:
             mp.setenv("RX_BANCO_URL", self.url(usuario))
             command.upgrade(config_alembic(), "head")
+
+
+# --- Cargas sintéticas (ADR 0006, seção 5), pelos mesmos comandos que a ingestão usa ---
+
+
+def abrir_carga(conexao: psycopg.Connection, tipo: str, data_referencia: date | None = None) -> int:
+    """Registra uma carga nova, que nasce "carregando", e devolve o carga_id."""
+    linha = conexao.execute(
+        "INSERT INTO ref.carga (tipo, fonte, data_referencia) VALUES (%s, %s, %s)"
+        " RETURNING carga_id",
+        (tipo, "fonte sintética", data_referencia),
+    ).fetchone()
+    return linha[0]
+
+
+def publicar(conexao: psycopg.Connection, carga_id: int, linhas: int = 0) -> None:
+    conexao.execute(
+        "UPDATE ref.carga SET status = 'publicada', linhas = %s WHERE carga_id = %s",
+        (linhas, carga_id),
+    )
+
+
+def inserir_composicao(
+    conexao: psycopg.Connection,
+    carga_id: int,
+    fundo_id: str,
+    data_referencia: date,
+    itens: list[tuple[str | None, str, str]],
+) -> int:
+    """Grava uma composição com itens (ativo_id, peso, tipo) e devolve o composicao_id."""
+    composicao_id = conexao.execute(
+        "INSERT INTO ref.composicao (carga_id, fundo_id, nome_fundo, data_referencia, moeda)"
+        " VALUES (%s, %s, %s, %s, 'BRL') RETURNING composicao_id",
+        (carga_id, fundo_id, "Fundo Sintético", data_referencia),
+    ).fetchone()[0]
+    for ordem, (ativo_id, peso, tipo) in enumerate(itens, start=1):
+        conexao.execute(
+            "INSERT INTO ref.composicao_item (composicao_id, ordem, ativo_id, tipo, peso)"
+            " VALUES (%s, %s, %s, %s, %s)",
+            (composicao_id, ordem, ativo_id, tipo, Decimal(peso)),
+        )
+    return composicao_id
