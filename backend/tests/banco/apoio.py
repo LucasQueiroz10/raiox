@@ -4,6 +4,7 @@ O servidor de teste aceita conexão sem senha (como o do compose.yaml), então o
 entram só com o nome.
 """
 
+import json
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -15,6 +16,7 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy.engine import make_url
 
+from app.dados.exemplo import RepositorioExemplo
 from banco.preparar import url_libpq
 
 ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
@@ -95,3 +97,79 @@ def inserir_composicao(
             (composicao_id, ordem, ativo_id, tipo, Decimal(peso)),
         )
     return composicao_id
+
+
+EXEMPLO = Path(__file__).resolve().parents[2] / "app" / "dados" / "exemplo.json"
+
+
+def carregar_exemplo(conexao: psycopg.Connection) -> None:
+    """Publica o conjunto de exemplo (app/dados/exemplo.json) em três cargas, como a ingestão
+    faria: identificação, classificação e composições. A classificação e as composições saem do
+    RepositorioExemplo, com o status de cada linha calculado pelo motor."""
+    dados = json.loads(EXEMPLO.read_text(encoding="utf-8"))
+    exemplo = RepositorioExemplo()
+    composicoes = exemplo.composicoes()
+
+    carga = abrir_carga(conexao, "identificacao")
+    for e in dados["empresas"]:
+        conexao.execute(
+            "INSERT INTO ref.empresa (carga_id, empresa_id, nome) VALUES (%s, %s, %s)",
+            (carga, e["empresa_id"], e["nome"]),
+        )
+        for a in e["ativos"]:
+            conexao.execute(
+                "INSERT INTO ref.ativo (carga_id, ativo_id, tipo, empresa_id, nome)"
+                " VALUES (%s, %s, 'acao', %s, %s)",
+                (carga, a["ativo_id"], e["empresa_id"], a.get("nome")),
+            )
+    for fundo in sorted(composicoes):
+        conexao.execute(
+            "INSERT INTO ref.ativo (carga_id, ativo_id, tipo, nome) VALUES (%s, %s, 'fundo', %s)",
+            (carga, fundo, dados["nomes"][fundo]),
+        )
+    publicar(conexao, carga)
+
+    carga = abrir_carga(conexao, "classificacao")
+    for c in exemplo.tabela_classificacao().classificacoes.values():
+        conexao.execute(
+            "INSERT INTO ref.classificacao"
+            " (carga_id, empresa_id, setor, setor_origem, setor_status)"
+            " VALUES (%s, %s, %s, %s, %s)",
+            (carga, c.empresa_id, c.setor, c.setor_origem.value, c.setor_status.value),
+        )
+        for t in c.temas:
+            conexao.execute(
+                "INSERT INTO ref.classificacao_tema"
+                " (carga_id, empresa_id, tema, subtema, peso, origem, status)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                (carga, c.empresa_id, t.tema, t.subtema, t.peso, t.origem.value, t.status.value),
+            )
+    publicar(conexao, carga)
+
+    (fonte,) = {c.fonte for c in composicoes.values()}
+    carga = conexao.execute(
+        "INSERT INTO ref.carga (tipo, fonte) VALUES ('composicoes_cvm', %s) RETURNING carga_id",
+        (fonte,),
+    ).fetchone()[0]
+    for c in composicoes.values():
+        composicao_id = conexao.execute(
+            "INSERT INTO ref.composicao (carga_id, fundo_id, nome_fundo, data_referencia, moeda)"
+            " VALUES (%s, %s, %s, %s, 'BRL') RETURNING composicao_id",
+            (carga, c.fundo_id, dados["nomes"][c.fundo_id], c.data_referencia),
+        ).fetchone()[0]
+        for ordem, i in enumerate(c.itens, start=1):
+            conexao.execute(
+                "INSERT INTO ref.composicao_item (composicao_id, ordem, ativo_id, empresa_id,"
+                " tipo, peso, ativo_objeto, emissor) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                (
+                    composicao_id,
+                    ordem,
+                    i.ativo_id,
+                    i.empresa_id,
+                    i.tipo.value,
+                    i.peso,
+                    i.ativo_objeto,
+                    i.emissor,
+                ),
+            )
+    publicar(conexao, carga)
