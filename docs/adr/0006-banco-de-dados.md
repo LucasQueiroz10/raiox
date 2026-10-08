@@ -1,6 +1,6 @@
 # ADR 0006: Banco de dados (PostgreSQL)
 
-- **Status:** proposto
+- **Status:** aceito em 2026-10-08
 - **Data:** 2026-10-07
 - **Decisor:** Lucas (Membro 2), por ser decisão de engenharia (ADR 0004). O M1 revisa a lista de
   espera (dado pessoal) e as tabelas do IrRAE.

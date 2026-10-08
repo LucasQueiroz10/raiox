@@ -2,7 +2,8 @@
 
 - **Status:** aceito no conceito em 2026-10-02. Os itens marcados *(a conferir no PR)* são regras de
   implementação para a revisão do PR.
-- **Data:** 2026-10-02. Revisado em 2026-10-04 com o resultado preliminar da T-01 (seções 2, 3, 4 e 6).
+- **Data:** 2026-10-02. Revisado em 2026-10-04 com o resultado preliminar da T-01 (seções 2, 3, 4 e 6) e em
+  2026-10-08 com o CNPJ alfanumérico (seções 2, 3 e 5).
 - **Decisores:** Lucas (Membro 2) e M1. Decisão conjunta R-02 de `docs/decisoes_m1_irrae_v1.1.md`.
 - **Substitui:** a linha "Identificador de empresa" do ADR 0003 e a regra "a chave de empresa é o ISIN" do
   `CLAUDE.md`. **Afeta:** o ADR 0002 (identificação do ativo) e a D-17 da v1.1 do IrRAE.
@@ -44,7 +45,7 @@ somam na mesma empresa, e a resposta mostra o tipo e a % de cada classe. **Isso 
 |---|---|---|
 | Ação, BDR ou ETF com ISIN de país da **lista permitida** | o próprio ISIN | `BR` + 9 caracteres + dígito |
 | Ativo negociado nos EUA | `US:` + ticker | `US:GOOGL` |
-| Fundo brasileiro (em bolsa ou não) | `CNPJ:` + 14 dígitos | `CNPJ:` + 14 dígitos |
+| Fundo brasileiro (em bolsa ou não) | `CNPJ:` + CNPJ de 14 caracteres | `CNPJ:` + 12 letras ou números + 2 dígitos |
 
 - **Lista permitida de países do ISIN:** `BR` (ações, BDRs e ETFs da B3), `IE` e `LU` (ETFs UCITS). ISIN de
   país fora da lista **nunca é guardado**. Usar lista de permitidos, e não de proibidos, porque a fronteira
@@ -53,6 +54,12 @@ somam na mesma empresa, e a resposta mostra o tipo e a % de cada classe. **Isso 
 - **Fundos brasileiros sempre pelo CNPJ**, mesmo os negociados na B3 (FIIs, ETFs), porque a CVM identifica
   os fundos e as cotas de fundos dentro de outros fundos pelo CNPJ. O ticker e o ISIN de um fundo em bolsa
   apontam para o mesmo `CNPJ:`.
+- **CNPJ alfanumérico:** desde julho de 2026 a Receita Federal emite CNPJs novos com letras (IN RFB
+  2.229/2024). As 12 primeiras posições (raiz e ordem) têm letras maiúsculas ou números; os 2 dígitos
+  verificadores continuam números, e os CNPJs só com números continuam valendo. O dígito verificador é
+  o módulo 11 de sempre, com cada caractere valendo o código ASCII menos 48 (os números valem 0 a 9, "A"
+  vale 17 e "Z" vale 42), conforme o manual da Receita. Guardado sem máscara e em maiúsculas. Vale para
+  o `CNPJ:` dos fundos e o `BR:CNPJ:` das empresas.
 - **Item de composição sem identificador de ativo** (ex.: ação no N-PORT, que não traz ticker): o item
   aponta direto para o `empresa_id`, sem `ativo_id`. A classe (ex.: classe A ou C) vem do nome do título,
   só para exibição.
@@ -63,7 +70,7 @@ Derivado só de identificadores públicos e sem licença, na ordem de prioridade
 
 | Prioridade | `empresa_id` | Fonte (`docs/matriz_de_dados.md`) |
 |---|---|---|
-| 1 | `BR:CNPJ:` + 14 dígitos | CVM, cadastro de companhias abertas (fonte 3) |
+| 1 | `BR:CNPJ:` + CNPJ de 14 caracteres (numérico ou alfanumérico, seção 2) | CVM, cadastro de companhias abertas (fonte 3) |
 | 2 | `US:CIK:` + 10 dígitos | SEC EDGAR (fonte 7) |
 | 3 | `LEI:` + 20 caracteres | campo `lei` do N-PORT (fonte 6; D-08, sem a API do GLEIF) |
 
@@ -105,7 +112,7 @@ Cada posição passa a ter `identificador` e `tipo_identificador`, no lugar do c
 | `isin` | formato, dígito verificador e país na lista permitida |
 | `ticker_b3` | 4 letras e 1 ou 2 dígitos (ex.: PETR4, BOVA11, BDRs como AAPL34) *(a conferir no PR)* |
 | `ticker_eua` | 1 a 5 letras, com classe opcional (ex.: BRK.B) *(a conferir no PR)* |
-| `cnpj` | 14 dígitos e dígitos verificadores |
+| `cnpj` | 12 letras maiúsculas ou números e 2 dígitos verificadores (CNPJ alfanumérico, seção 2); aceita a máscara (ex.: `12.ABC.345/01DE-35`) e letras minúsculas, normalizadas antes de validar |
 
 - **Ação americana entra só pelo ticker.** Sem guardar ISINs americanos, não há como ligar um ISIN americano
   a uma empresa. Um ISIN de país fora da lista recebe 422, com um motivo que pede o ticker.
