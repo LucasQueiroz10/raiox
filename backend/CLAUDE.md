@@ -70,6 +70,12 @@ Regras:
   sem uso e sem permissão.
 - Toda tabela, visão ou função nova diz, na mesma migração, quem pode o quê (GRANT), com teste em
   tests/banco. Valores e pesos em NUMERIC, nunca real nem double precision.
+- Dados de ref só entram por carga: abrir a carga (nasce "carregando"), inserir as linhas e
+  publicar numa transação só. Linha só entra em carga aberta do tipo certo; carga publicada não muda;
+  ninguém além do rx_dono altera ou apaga linhas (gatilhos e permissões da migração 0002).
+- A API lê só as visões *_vigente e carga_publicada, nunca as tabelas.
+- Identificadores nas colunas com os domínios ref.ativo_id, ref.empresa_id e ref.isin_permitido:
+  o próprio banco recusa CUSIP, SEDOL e ISIN de país fora da lista do ADR 0005.
 
 ## Lote: ingest/ e irrae/ (ver ADR 0004)
 - ingest/: leitores de dados externos, compartilhados pelo produto e pelo IrRAE.
