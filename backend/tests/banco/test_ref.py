@@ -455,3 +455,93 @@ def test_colunas_de_identificador_usam_os_formatos_do_adr_0005(banco):
     assert colunas
     for tabela, coluna, dominio in colunas:
         assert dominio == esperado[coluna], (tabela, coluna)
+
+
+# --- CNPJ alfanumérico (Receita Federal, desde julho de 2026) ---
+
+CNPJS_VALIDOS = ["12ABC34501DE35", "11222333000009"]  # exemplo da Receita e sintético numérico
+CNPJS_MAL_FORMADOS = [
+    "12abc34501de35",  # minúsculas
+    "12ABC34501DEA5",  # letra no dígito verificador
+    "12ABC34501DE3",  # 13 caracteres
+    "12ABC34501DE355",  # 15 caracteres
+]
+
+
+@pytest.mark.parametrize("cnpj", CNPJS_VALIDOS)
+def test_formatos_aceitam_cnpj_numerico_e_alfanumerico(banco, cnpj):
+    with banco.conectar_admin() as admin:
+        assert admin.execute("SELECT %s::ref.ativo_id", (f"CNPJ:{cnpj}",)).fetchone()
+        assert admin.execute("SELECT %s::ref.empresa_id", (f"BR:CNPJ:{cnpj}",)).fetchone()
+
+
+@pytest.mark.parametrize("cnpj", CNPJS_MAL_FORMADOS)
+def test_formatos_recusam_cnpj_mal_formado(banco, cnpj):
+    with banco.conectar_admin() as admin:
+        with pytest.raises(psycopg.errors.CheckViolation):
+            admin.execute("SELECT %s::ref.ativo_id", (f"CNPJ:{cnpj}",))
+        with pytest.raises(psycopg.errors.CheckViolation):
+            admin.execute("SELECT %s::ref.empresa_id", (f"BR:CNPJ:{cnpj}",))
+
+
+def test_coluna_cnpj_da_empresa_aceita_o_alfanumerico(banco):
+    inserir = "INSERT INTO ref.empresa (carga_id, empresa_id, nome, cnpj) VALUES (%s, %s, %s, %s)"
+    with banco.conectar("rx_ingestao") as ingestao:
+        carga = abrir_carga(ingestao, "identificacao")
+        ingestao.execute(inserir, (carga, "ZZ:CNPJALFA", "Empresa Sintética", CNPJS_VALIDOS[0]))
+        for n, cnpj in enumerate(CNPJS_MAL_FORMADOS):
+            with pytest.raises(psycopg.errors.CheckViolation):
+                ingestao.execute(inserir, (carga, f"ZZ:CNPJRUIM{n}", "Empresa Sintética", cnpj))
+
+
+# --- Regras que a migração 0002 já tinha, agora fixadas por teste ---
+
+
+def test_peso_negativo_e_aceito(banco):
+    # Venda a descoberto, derivativo com valor de mercado negativo, caixa e valores a pagar.
+    fundo = _fundo(14)
+    with banco.conectar("rx_ingestao") as ingestao:
+        carga = abrir_carga(ingestao, "composicoes_cvm", date(2026, 8, 31))
+        itens = [
+            (isin("H1"), "1.10", "acao"),
+            (isin("H2"), "-0.05", "acao"),
+            (None, "-0.05", "caixa"),
+        ]
+        inserir_composicao(ingestao, carga, fundo, date(2026, 8, 31), itens)
+        publicar(ingestao, carga)
+
+    with banco.conectar("rx_api") as api:
+        pesos = api.execute(
+            "SELECT peso FROM ref.composicao_item_vigente WHERE fundo_id = %s ORDER BY ordem",
+            (fundo,),
+        ).fetchall()
+
+    assert pesos == [(Decimal("1.10"),), (Decimal("-0.05"),), (Decimal("-0.05"),)]
+
+
+def test_tema_aprovado_de_empresa_com_setor_em_rascunho_fica_de_fora(banco):
+    # Sem setor aprovado a empresa entra sem classificação: a parte que não é tema (o núcleo) é
+    # do setor, então mostrar só os temas deixaria a divisão por setor incoerente.
+    with banco.conectar("rx_ingestao") as ingestao:
+        carga = abrir_carga(ingestao, "classificacao")
+        for empresa, status in [("ZZ:SETOROK", "aprovado"), ("ZZ:SETORRASC", "rascunho")]:
+            ingestao.execute(
+                "INSERT INTO ref.classificacao"
+                " (carga_id, empresa_id, setor, setor_origem, setor_status)"
+                " VALUES (%s, %s, 'Tecnologia', 'oficial', %s)",
+                (carga, empresa, status),
+            )
+            ingestao.execute(
+                "INSERT INTO ref.classificacao_tema"
+                " (carga_id, empresa_id, tema, subtema, peso, origem, status)"
+                " VALUES (%s, %s, 'Cadeia de IA', 'Nuvem', 0.25, 'manual', 'aprovado')",
+                (carga, empresa),
+            )
+        publicar(ingestao, carga)
+
+    with banco.conectar("rx_api") as api:
+        setores = api.execute("SELECT empresa_id FROM ref.classificacao_vigente").fetchall()
+        temas = api.execute("SELECT empresa_id FROM ref.classificacao_tema_vigente").fetchall()
+
+    assert setores == [("ZZ:SETOROK",)]
+    assert temas == [("ZZ:SETOROK",)]
