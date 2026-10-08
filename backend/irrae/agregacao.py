@@ -6,13 +6,14 @@ mais um balde 'nao_coberto' (caixa, derivativos, ações ainda sem IrRAE).
 
 Incerteza: o IrRAE de cada ação tem amostras. Como os erros de estimação das
 ações podem ser correlacionados (mesmo método de mapeamento, mesmos kappa),
-o intervalo do ETF é reportado em dois casos-limite:
-  - independente: erros das ações independentes (intervalo mais estreito);
-  - comonotônico: erros perfeitamente alinhados (intervalo mais largo). Para
+a faixa do ETF é reportada em dois cenários de referência (D-01):
+  - independente: erros das ações independentes (em geral, faixa mais estreita);
+  - comonotônico: erros perfeitamente alinhados (em geral, faixa mais larga). Para
     somas comonotônicas os quantis se somam: Q_ETF(p) = soma_i peso_i Q_i(p)
     (Dhaene et al. 2002). Entre todas as dependências possíveis com as mesmas
     marginais, a comonotônica maximiza a variância da soma.
-A verdade fica entre os dois.
+Nenhum dos dois é limite: a faixa alinhada pode sair mais estreita que a independente (contraexemplo
+na D-01 de docs/decisoes_m1_irrae_v1.1.md), e a verdade não fica necessariamente entre elas.
 """
 
 from __future__ import annotations
