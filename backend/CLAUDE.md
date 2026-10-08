@@ -34,7 +34,7 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
   RepositorioExemplo, sintético.
   Testes da API trocam repositório e PTAX por app.dependency_overrides; nenhum teste usa rede.
 - Valores em dinheiro e pesos usam Decimal, nunca float.
-- ISIN validado com dígito verificador em core/identificadores.
+- ISIN e CNPJ (numérico e alfanumérico) validados com dígito verificador em core/identificadores.
 - POST /raiox não grava nem registra em log o conteúdo da carteira. Respostas de erro também
   não repetem a entrada: 422 traz só campo, motivo e mensagem; exceção inesperada vira 500
   genérico e o log guarda só o tipo e o arquivo:linha (app/api/erros.py).
