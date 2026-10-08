@@ -87,6 +87,10 @@ class RepositorioExemplo:
             nomes.update({a["ativo_id"]: a["nome"] for a in e["ativos"] if "nome" in a})
         return nomes
 
+    def foto(self) -> RepositorioExemplo:
+        """Os dados de exemplo não mudam: a foto é o próprio repositório."""
+        return self
+
     def composicoes(self) -> Mapping[str, Composicao]:
         return self._composicoes
 

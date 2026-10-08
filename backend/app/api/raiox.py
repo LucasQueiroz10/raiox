@@ -14,7 +14,7 @@ from app.core.agregacao import NUCLEO, Fatia, RaioX, agregar
 from app.core.cambio import PtaxUsada, para_reais
 from app.core.composicao import Categoria, Posicao, TipoItem
 from app.core.lookthrough import abrir_carteira
-from app.dados.exemplo import RepositorioExemplo
+from app.dados.postgres import DadosIndisponiveis
 from app.dados.ptax import CambioIndisponivel, FontePtax
 from app.dados.repositorio import RepositorioDados
 
@@ -27,10 +27,12 @@ _CENTAVOS = Decimal("0.01")
 _QUATRO_CASAS = Decimal("0.0001")
 
 
-@cache
-def obter_repositorio() -> RepositorioDados:
-    # Até o banco existir, a API usa o conjunto de exemplo sintético.
-    return RepositorioExemplo()
+def obter_repositorio(request: Request) -> RepositorioDados:
+    """Uma foto dos dados por análise, para não misturar dois momentos do banco (ADR 0006)."""
+    try:
+        return request.app.state.dados.foto()
+    except DadosIndisponiveis as erro:
+        raise HTTPException(503, detail={"codigo": "dados_indisponiveis"}) from erro
 
 
 @cache
