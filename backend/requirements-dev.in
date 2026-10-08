@@ -12,3 +12,5 @@ pip-tools==7.6.1
 # O pytest e o build só pedem o colorama no Windows. Fixado aqui para entrar no arquivo gerado em
 # qualquer sistema: gerado no Linux (CI, Dependabot), ele sumia e a instalação no Windows falhava.
 colorama==0.4.6
+# Mesmo caso: o psycopg só pede o tzdata no Windows.
+tzdata==2026.5
