@@ -31,7 +31,7 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 | 6 | SEC – Form N-PORT | O que tem dentro de cada ETF americano | Domínio público (SEC) | FP-09, FP-10 | provisória: o M1 pediu a explicação do uso em 11/10/2026 |
 | 7 | SEC – Submissions, lista de tickers e lista SIC | Ticker americano → empresa (CIK) e setor oficial (SIC) | Domínio público (SEC) | FP-02, FP-07, FP-08 | permitida |
 | 11 | Wikidata | Setor de empresas fora dos EUA e do Brasil, como preliminar | CC0 | FA-09 | permitida (só como referência cruzada) |
-| 12 | Banco Central – PTAX | Câmbio do dólar | Dados abertos do BCB | FP-36 | permitida (só o dólar) |
+| 12 | Banco Central – PTAX | Câmbio do dólar | ODbL | FP-36 | permitida (só o dólar) |
 | 13 | B3 – Serviço de códigos ISIN | Ligar o ticker da B3 ao ISIN | Termos da B3 | FP-31 | pendente: a nota do M1 manda usar o ISIN informado pelo usuário e, sem ele, um código interno |
 | 14 | Modelo de IA (provedor a definir) | Sugerir classificações nas lacunas | Termos do provedor | – | pendente |
 | 15 | Arquivos enviados pelo usuário (B3 e Avenue) | A carteira a analisar | Dado pessoal (LGPD) | – | permitida por design |
@@ -168,7 +168,8 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 
 - **Onde:** API de dados abertos do BCB (serviço PTAX no portal Olinda).
 - **Método exato:** para a data da análise, buscamos a PTAX de venda de fechamento do dólar. Se a data não for dia útil, usamos o último dia útil anterior. Se o BCB não tiver cotação nesse dia, voltamos mais um dia. A tela mostra a PTAX usada e a data dela.
-- **Condições (FP-36):** só a PTAX do dólar, que o BCB apura (as outras moedas vêm de terceiros). **O aviso de responsabilidade que vem nas respostas da API Olinda deve ser repassado ao usuário** (texto de tela a definir).
+- **Licença:** ODbL, indicada na página do conjunto de dados no portal de dados abertos do BCB (conferido em 12/10/2026). Exige crédito, como a fonte 1.
+- **Condições (FP-36):** só a PTAX do dólar, que o BCB apura (as outras moedas vêm de terceiros). **O aviso de responsabilidade que vem nas respostas da API Olinda deve ser repassado ao usuário.** A resposta da API e a página do conjunto não trazem esse aviso (conferido em 12/10/2026): falta o M1 indicar a fonte do texto (`cambio.aviso_bcb` em `textos_telas.md`).
 - **Frequência:** hoje, a cada análise, com cache diário (DT-1); com o banco, uma carga diária.
 
 ### 13. B3 – Serviço de códigos ISIN (pendente)
