@@ -1,7 +1,8 @@
 # ADR 0007: Hospedagem no Google Cloud
 
 - **Status:** proposto
-- **Data:** 2026-10-12
+- **Data:** 2026-10-12. Revisado no mesmo dia: rotas sob `/api`, endereço `run.app`, releitura dos
+  dados sem trava, provedor de identidade restrito ao repositório, domínio e cookies.
 - **Decisor:** Lucas (Membro 2), por ser decisão de engenharia (ADR 0004). O M1 revisa a região dos
   dados, os logs e a retenção (LGPD e Marco Civil da Internet) e o custo.
 - **Relacionados:** ADR 0003 (stack), ADR 0006 (banco de dados), DT-1, DT-2, DT-4 e DT-10.
@@ -24,6 +25,7 @@ latência para o usuário).
   dados: API, banco, cargas, imagens, segredos e logs.
 - A única peça global é a rede de entrega do front (arquivos estáticos, sem dado de usuário).
 - Um projeto de produção no P3. Um ambiente de homologação vem depois (seção 10).
+- **Domínio:** `sagitalapp.com.br`, já registrado, apontado para o Firebase Hosting.
 
 ### 2. As peças
 
@@ -41,6 +43,12 @@ latência para o usuário).
 O Firebase Hosting aceita encaminhar para o Cloud Run em `southamerica-east1` (lista de regiões da
 documentação do Firebase, conferida em 12/10/2026).
 
+**Rotas sob `/api`:** o Firebase repassa o caminho inteiro (um pedido a `/api/raiox` chega à API
+como `/api/raiox`). Por isso as rotas da API ficam sob `/api` em todos os ambientes, para o
+desenvolvimento e a produção se comportarem igual: `/api/raiox`, `/api/saude` e, depois,
+`/api/fontes` e `/api/lista-espera`. Fora do `/api` fica só o endpoint interno de aquecimento
+(seção 3), que o Firebase não encaminha.
+
 ### 3. API no Cloud Run
 
 - **Instâncias:** mínimo de 1 durante o P3, para a primeira análise não esperar a partida do
@@ -55,10 +63,52 @@ documentação do Firebase, conferida em 12/10/2026).
 - **IP do cliente para o limite por IP:** no Cloud Run a conexão chega da infraestrutura do Google,
   e o IP do cliente vem no cabeçalho `X-Forwarded-For`. O primeiro endereço desse cabeçalho pode ser
   forjado pelo próprio cliente. Decisão: usar o endereço que a infraestrutura do Google acrescenta,
-  nunca o primeiro. A posição exata é conferida no primeiro deploy, com uma requisição nossa. Nunca
-  `--forwarded-allow-ips="*"` sem esse tratamento (`backend/CLAUDE.md`).
+  nunca o primeiro. A posição exata é conferida no primeiro deploy, com pedidos nossos: um pelo
+  domínio e outro direto ao endereço `run.app` (abaixo), registrando a estrutura do cabeçalho nos
+  dois casos (só as posições, nunca os IPs). Nunca `--forwarded-allow-ips="*"` sem esse tratamento
+  (`backend/CLAUDE.md`).
 - **Tempo por requisição:** o encaminhamento do Firebase tem limite de 60 s; o pior caso da análise
   fica em uns 2 s (DT-4).
+- **Cobrança por pedido** (o padrão do Cloud Run): a CPU só existe enquanto há pedido em andamento.
+  Por isso nada roda em segundo plano na API: todo trabalho acontece dentro de um pedido.
+
+**Releitura dos dados sem travar as análises** (DT-10):
+
+- A primeira leitura da foto dos dados acontece na partida do servidor, antes de ele aceitar
+  pedidos. Se o banco não responder, o servidor sobe mesmo assim, e as análises recebem 503
+  `dados_indisponiveis` até uma leitura dar certo. Sem foto, só um pedido por vez tenta ler; os
+  outros recebem 503 na hora.
+- Quando um pedido percebe uma carga nova (conferência no máximo a cada minuto), só ele monta a
+  foto nova, fora da trava, com a marcação de releitura em andamento. Os demais seguem com a foto
+  anterior, sem esperar. A foto nova entra de uma vez só, quando fica pronta. Durante a releitura há
+  duas fotos na memória.
+- Depois de uma falha (banco fora do ar), a próxima conferência espera alguns minutos, para não
+  fazer um usuário por minuto esperar o tempo limite de conexão.
+- **Aquecimento:** o Cloud Scheduler chama o endpoint interno `POST /interno/aquecer` depois da
+  carga diária da CDA (seção 5), para nenhum usuário pagar a releitura. O endpoint monta a foto
+  dentro do próprio pedido e só depois responde (não há CPU fora dos pedidos); não devolve dados;
+  e fica fora do `/api`, então o Firebase não o encaminha. Como o endereço `run.app` é público
+  (abaixo), ele exige um segredo num cabeçalho (Secret Manager, enviado pelo Cloud Scheduler) e
+  responde 404 sem ele. Sem carga nova, só confere a versão e não relê nada. O aquecimento chega a
+  uma instância só; com mais de uma no ar, as outras releem no próximo pedido que receberem.
+
+**Endereço `run.app`: risco aceito no P3** (DT-11):
+
+- Todo serviço do Cloud Run tem um endereço público próprio (`...run.app`), e quem o chama direto
+  não passa pelo Firebase. Não dá para desligá-lo: o Firebase Hosting usa esse endereço para
+  encaminhar os pedidos e está na lista de serviços que param de funcionar sem ele (documentação do
+  Cloud Run, conferida em 12/10/2026). Restringir a entrada ao balanceador de carga também bloquearia
+  o Firebase.
+- A API também não consegue reconhecer com segurança um pedido que não veio pelo Firebase: quem chama
+  o `run.app` pode forjar qualquer cabeçalho, e o Firebase não acrescenta um segredo ao pedido que
+  encaminha.
+- Consequência: quem chamar o `run.app` direto consegue driblar o limite por IP. Continuam valendo as
+  4 análises por instância e o máximo de 3 instâncias, que seguram o custo, mas não a
+  disponibilidade.
+- **Aceito para o P3** (teste fechado, com poucos usuários). **Condição para o lançamento público:**
+  migrar para um balanceador de carga do Google na frente de tudo (`/api` para o Cloud Run e o resto
+  para um bucket com rede de entrega), com a entrada restrita ao balanceador, o `run.app` desligado e
+  o limite por IP na borda (Cloud Armor), o que também resolve a DT-2.
 
 ### 4. Banco no Cloud SQL
 
@@ -86,6 +136,7 @@ documentação do Firebase, conferida em 12/10/2026).
 | CVM, composição dos fundos (CDA) | Todo dia às 9h (a CVM atualiza de terça a sábado, às 8h) |
 | CVM, FCA e cadastros | Toda segunda às 9h |
 | PTAX | Dias úteis às 13h30, com nova tentativa às 18h |
+| Aquecimento da API (`POST /interno/aquecer`, seção 3) | Todo dia às 9h45, depois da carga da CDA; ajustar ao tempo medido da carga |
 | SEC (tickers e N-PORT) | Quando o e-mail do projeto e a liberação do N-PORT estiverem prontos |
 
 - Cada carga é um Cloud Run Job disparado pelo Cloud Scheduler, com o usuário `rx_ingestao`, uma
@@ -93,6 +144,8 @@ documentação do Firebase, conferida em 12/10/2026).
 - Uma falha deixa a carga em `com_erro` (ADR 0006, seção 3) e dispara alerta (seção 8). A API segue
   com os dados publicados antes.
 - As cargas acessam a internet pela saída padrão do Cloud Run. Nenhuma fonte exige IP fixo.
+- Se a carga da CDA atrasar, o aquecimento não acha carga nova e não faz nada; o primeiro pedido
+  depois da publicação relê (seção 3).
 
 ### 6. Segredos e contas de serviço
 
@@ -103,6 +156,12 @@ documentação do Firebase, conferida em 12/10/2026).
   - `rx-deploy`: usada pelo GitHub Actions para publicar imagens e fazer o deploy, sem acesso ao banco.
 - O GitHub Actions entra no Google Cloud por **Workload Identity Federation**: nenhuma chave de conta
   de serviço (arquivo JSON) existe em lugar nenhum.
+- O provedor de identidade aceita só o repositório `LucasQueiroz10/raiox`, conferido pelo nome e pelo
+  número interno do repositório e do dono no GitHub, que não mudam se o repositório for renomeado e
+  não são reaproveitados. A conta `rx-deploy` aceita só os jobs do ambiente `producao` do GitHub.
+  Comandos no roteiro de operação (`docs/runbooks/producao.md`).
+- O segredo do aquecimento (seção 3) fica no Secret Manager: a API o lê, e o deploy o grava no
+  cabeçalho do job do Cloud Scheduler.
 - Segredos nunca entram no repositório, na imagem ou nos logs. A troca de senha fica no roteiro de
   operação.
 
@@ -129,13 +188,18 @@ documentação do Firebase, conferida em 12/10/2026).
   - carga com erro;
   - fonte sem carga nova além do esperado (ex.: CDA sem publicação há 3 dias);
   - API respondendo com erros 5xx;
-  - `/saude` fora do ar (verificação de disponibilidade);
+  - `https://sagitalapp.com.br/api/saude` fora do ar (verificação de disponibilidade pelo domínio,
+    passando pelo Firebase: testa o caminho inteiro);
   - orçamento em 50%, 90% e 100%.
 
 ### 9. Custo
 
 - Ordem de grandeza no P3: algumas dezenas de dólares por mês, quase tudo no Cloud SQL e na instância
   mínima da API. O valor exato se confere na calculadora do Google Cloud antes de criar os recursos.
+- A API usa a cobrança por pedido (seção 3): parada, a instância mínima é cobrada a uma taxa reduzida,
+  e não pela CPU cheia o tempo todo.
+- O balanceador de carga com Cloud Armor, condição para o lançamento público (seção 3), traz um custo
+  fixo mensal a mais.
 - Orçamento com alertas (seção 8) desde o primeiro dia.
 
 ### 10. Fases
@@ -143,11 +207,11 @@ documentação do Firebase, conferida em 12/10/2026).
 | Fase | O que entra |
 |---|---|
 | **Antes do P3** | Projeto, faturamento e orçamento. Cloud SQL, Artifact Registry, Secret Manager e contas de serviço. Dockerfile do backend e workflow de deploy. API no Cloud Run e front no Firebase, com domínio e HTTPS. Jobs da CVM e da PTAX com o Cloud Scheduler. Alertas e roteiro de operação. |
-| **Depois do P3** | Ambiente de homologação. IP privado para o banco. Limite por IP na borda (Cloud Armor) ou contador compartilhado (DT-2). Infraestrutura como código (Terraform). Jobs da SEC. Deploy automático a cada merge. |
+| **Antes do lançamento público** | Balanceador de carga do Google na frente de tudo, com a entrada restrita a ele, o `run.app` desligado e o limite por IP na borda (Cloud Armor). Fecha a DT-2 e a DT-11. |
+| **Depois do P3** | Ambiente de homologação. IP privado para o banco. Infraestrutura como código (Terraform). Jobs da SEC. Deploy automático a cada merge. |
 
 ### A decidir
 
-- O domínio do produto.
 - Quem tem acesso de administrador ao projeto (proposta: Lucas e M1, com verificação em duas etapas).
 - O valor do orçamento mensal.
 - O e-mail que recebe os alertas (o e-mail do projeto, quando existir).
@@ -161,8 +225,13 @@ documentação do Firebase, conferida em 12/10/2026).
   Cloud SQL.
 - **Arquivos novos**, em PRs próprios: Dockerfile do backend, workflow de deploy, configuração do
   Firebase e o roteiro de operação (`docs/runbooks/producao.md`).
-- **O que só o Lucas pode fazer:** criar o projeto e a conta de faturamento, registrar o domínio e dar
-  os acessos. Os comandos ficam no roteiro de operação.
+- **O que só o Lucas pode fazer:** criar o projeto e a conta de faturamento, apontar o DNS do
+  `sagitalapp.com.br` para o Firebase Hosting (sem mexer nos registros de e-mail) e dar os acessos.
+  Os comandos ficam no roteiro de operação.
+- **Fase com contas:** o Firebase Hosting descarta os cookies que não se chamam `__session` antes de
+  encaminhar o pedido ao Cloud Run. O cookie de sessão terá de ter esse nome (ADR 0006, "Evolução
+  prevista").
+- **DT-11:** o endereço `run.app` contorna o limite por IP até o balanceador de carga (seção 3).
 
 ## Alternativas descartadas
 
