@@ -47,6 +47,11 @@ Status possíveis: `a escrever` · `rascunho` · `aprovado`
 | `cambio.titulo` | Câmbio | rascunho |
 | `cambio.ptax_usada` | Valores em dólar convertidos pela PTAX de venda do Banco Central de {data}: R$ {valor} por dólar. | rascunho |
 | `cambio.dia_util_anterior` | A PTAX de hoje ainda não foi divulgada; usamos a do último dia útil. | rascunho |
+| `cambio.aviso_bcb` | | a escrever |
+
+`cambio.aviso_bcb`: aviso de responsabilidade do Banco Central que a planilha de fontes (ficha FP-36)
+manda repassar ao usuário. A resposta da API PTAX e a página do conjunto de dados não trazem esse
+texto (conferido em 12/10/2026): falta o M1 indicar de onde ele vem.
 
 ## Raio-X
 
@@ -72,10 +77,27 @@ Status possíveis: `a escrever` · `rascunho` · `aprovado`
 | `raiox.classes` | Classes de ação: {classes} | rascunho |
 | `raiox.demais_empresas` | Mais {quantidade} empresas, que somam {percentual} da carteira | rascunho |
 
+### Pendente de decisão: posições confidenciais
+
+A CVM permite que um fundo mantenha parte da carteira em sigilo por um tempo, e essa parte não
+entra no raio-x (plano da carga dos dados da CVM, seções 5 e 8). Usar **uma** das opções, conforme
+a decisão do M1:
+
+| Identificador | Texto | Status |
+|---|---|---|
+| `raiox.confidencial` | Confidencial | rascunho |
+| `raiox.nota_confidencial` | Parte da carteira de alguns fundos está temporariamente em sigilo, como a CVM permite. Não sabemos o que há nessa parte. | rascunho |
+| `raiox.nota_nao_identificado` | Pode incluir a parte da carteira que alguns fundos mantêm temporariamente em sigilo, como a CVM permite. | rascunho |
+
+- Opção A, categoria própria: `raiox.confidencial` e `raiox.nota_confidencial`.
+- Opção B, junto com o não identificado: só `raiox.nota_nao_identificado`.
+
 Quando aparecem as notas:
 
 - `raiox.nota_cobertura`: sempre junto do indicador de cobertura.
 - `raiox.nota_derivativos`: sempre que o total em derivativos da carteira for diferente de zero.
+- `raiox.nota_confidencial` (opção A): sempre que a categoria confidencial for diferente de zero.
+- `raiox.nota_nao_identificado` (opção B): sempre junto do valor não identificado.
 - `raiox.nota_posicoes_vendidas`: sempre que o total em posições vendidas for diferente de zero. O texto deve seguir a linha da nota de derivativos, explicando que a identificação da exposição é limitada.
 
 ## Avisos comuns
@@ -83,7 +105,7 @@ Quando aparecem as notas:
 | Identificador | Texto | Status |
 |---|---|---|
 | `avisos.nao_e_recomendacao` | Este raio-x descreve a sua carteira. Não é recomendação de compra, venda ou de qualquer mudança nos seus investimentos. | rascunho |
-| `avisos.creditos_fontes` | Fontes: CVM, dados abertos (licença ODbL); SEC, Estados Unidos; Banco Central do Brasil (PTAX). | rascunho |
+| `avisos.creditos_fontes` | Fontes: CVM, dados abertos (licença ODbL); SEC, Estados Unidos; Banco Central do Brasil, PTAX (licença ODbL). O Projeto RX não tem vínculo com essas instituições. | rascunho |
 | `avisos.ciclo` | Alguns fundos investem uns nos outros em círculo. Seguimos esse caminho até o valor ficar abaixo de 0,1% e mostramos o restante como não aberto. | rascunho |
 | `avisos.fundo_sem_composicao` | Não encontramos a composição de um dos seus fundos. O valor dele aparece como não aberto. | rascunho |
 
@@ -96,9 +118,15 @@ Um texto para cada código que a API devolve (`avisos[].codigo` e `detail.codigo
 | `avisos.ciclo_sem_convergencia` | Um dos seus fundos entra num círculo de investimentos que não fecha. O valor que circula aparece como não aberto. | rascunho |
 | `avisos.cadeia_longa` | Um dos seus fundos investe em uma cadeia muito longa de outros fundos. A parte mais distante aparece como não aberta. | rascunho |
 | `avisos.limite_de_processamento` | Esta carteira é grande demais para abrir por completo. A parte que não deu para abrir aparece como não aberta. | rascunho |
+| `avisos.fundo_sem_identificador` | Um dos seus fundos investe em outros fundos que não conseguimos identificar, como fundos no exterior. Esse valor aparece como não aberto. | rascunho |
 | `erros.entrada_invalida` | Alguns dados da carteira não estão no formato esperado. Confira os campos marcados. | rascunho |
 | `erros.corpo_grande_demais` | A carteira enviada é grande demais. Divida em partes menores. | rascunho |
 | `erros.muitas_analises` | Você fez muitas análises em pouco tempo. Tente de novo em alguns instantes. | rascunho |
 | `erros.servidor_ocupado` | Estamos com muitas análises ao mesmo tempo. Tente de novo em alguns instantes. | rascunho |
 | `erros.cambio_indisponivel` | Não conseguimos a cotação do dólar agora. Tente de novo mais tarde ou informe os valores em reais. | rascunho |
+| `erros.dados_indisponiveis` | Não conseguimos carregar os dados dos fundos agora. Tente de novo em alguns instantes. | rascunho |
 | `erros.erro_interno` | Algo deu errado do nosso lado. Tente de novo em alguns instantes. | rascunho |
+
+`avisos.fundo_sem_identificador`: o código do aviso na API sai da etapa 1 do plano da carga da CVM
+(fundo dentro de outro fundo sem identificador, como os fundos offshore); conferir o nome quando ela
+entrar.
