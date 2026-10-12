@@ -1,5 +1,9 @@
 # Dependências de produção (diretas). Edite este arquivo e gere o requirements.txt com:
 #   python -m piptools compile --generate-hashes --strip-extras -o requirements.txt requirements.in
-fastapi==0.141.1
+fastapi==0.142.2
 pydantic==2.13.5
-uvicorn==0.53.0
+uvicorn==0.54.0
+# Banco de dados (ADR 0006): SQLAlchemy Core, driver psycopg 3 e migrações com Alembic.
+sqlalchemy==2.1.4
+psycopg[binary]==3.3.6
+alembic==1.20.0

@@ -36,7 +36,7 @@ Para qualquer outra planilha, incluindo exportações de bancos:
 
 1. **Detecção automática:** o código procura nos cabeçalhos nomes conhecidos ("ticker", "código", "ativo", "ISIN", "quantidade", "valor", "saldo", "moeda" etc.).
 2. **Se não reconhecer:** a tela mostra as colunas do arquivo e a pessoa escolhe qual é o ativo, qual é a quantidade ou o valor e qual é a moeda.
-3. **Identificação do ativo:** ticker vira ISIN pela fonte aprovada em `docs/matriz_de_dados.md`. Fundos de banco são identificados pelo CNPJ ou pelo nome, usando o cadastro de fundos da CVM.
+3. **Identificação do ativo:** ticker vira `ativo_id` (ADR 0005) pela fonte aprovada em `docs/matriz_de_dados.md`. Fundos de banco são identificados pelo CNPJ ou pelo nome, usando o cadastro de fundos da CVM.
 
 Em todas as camadas vale a regra do projeto: o arquivo é processado só em memória, nada da carteira é gravado ou registrado em log, e as mensagens de erro não repetem valores do arquivo.
 

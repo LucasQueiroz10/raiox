@@ -54,7 +54,7 @@ No protótipo atual, a carteira do usuário é processada em memória e não é 
 
 ```
 projeto-rx/
-├── backend/        API, motor do raio-x, rotinas de ingestão e testes (Python)
+├── backend/        API, motor do raio-x, rotinas de ingestão, migrações do banco e testes (Python)
 ├── frontend/       landing page e telas do produto (React + TypeScript)
 ├── docs/           ADRs, matriz de dados, textos das telas e runbooks
 ├── .github/        workflows de CI
@@ -68,7 +68,7 @@ projeto-rx/
 - [Git](https://git-scm.com/downloads/win) (no Windows, com Git Bash)
 - [Python 3.14](https://www.python.org/downloads/)
 - [Node.js LTS](https://nodejs.org)
-- PostgreSQL (local ou em contêiner)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (para o PostgreSQL do projeto)
 
 ### Back-end
 ```bash
@@ -80,6 +80,21 @@ python -m pip install -r requirements-dev.txt
 uvicorn app.main:app --reload
 ```
 A documentação interativa da API fica em `http://localhost:8000/docs`.
+
+### Banco de dados
+O PostgreSQL de desenvolvimento roda no Docker, só em `127.0.0.1:5433`. A primeira vez:
+```bash
+cd backend
+docker compose up -d --wait
+export RX_BANCO_URL_ADMIN=postgresql+psycopg://postgres@127.0.0.1:5433/postgres
+python -m banco.preparar                       # cria os usuários e o banco rx
+export RX_BANCO_URL=postgresql+psycopg://rx_dono@127.0.0.1:5433/rx
+python -m alembic upgrade head                 # aplica as migrações
+```
+Para a API ler o banco, suba o `uvicorn` com
+`RX_BANCO_URL=postgresql+psycopg://rx_api@127.0.0.1:5433/rx`. Sem essa variável, ela usa o
+conjunto de exemplo sintético.
+Os detalhes estão em `backend/CLAUDE.md` e no ADR 0006.
 
 ### Front-end
 ```bash
@@ -95,7 +110,7 @@ npm run dev
 # back-end
 cd backend
 source .venv/Scripts/activate
-python -m pytest -q
+python -m pytest -q        # os testes com banco pedem RX_BANCO_TESTE_URL (ver backend/CLAUDE.md)
 python -m ruff check .
 
 # front-end

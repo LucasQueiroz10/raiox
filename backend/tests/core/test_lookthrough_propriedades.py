@@ -20,7 +20,7 @@ itens = st.one_of(
     st.builds(lambda i, p: ItemComposicao(i, p, TipoItem.FUNDO), st.sampled_from(FUNDOS), pesos),
     st.builds(lambda i, p: ItemComposicao(i, p, TipoItem.ACAO), st.sampled_from(ACOES), pesos),
     st.builds(
-        lambda t, p, o: ItemComposicao(None, p, t, ativo_objeto_isin=o, emissor_isin=o),
+        lambda t, p, o: ItemComposicao(None, p, t, ativo_objeto=o, emissor=o),
         st.sampled_from([t for t in TipoItem if t not in (TipoItem.FUNDO, TipoItem.ACAO)]),
         pesos,
         st.none() | st.sampled_from(ACOES),

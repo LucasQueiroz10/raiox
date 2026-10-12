@@ -1,3 +1,6 @@
 dist
 coverage
 CLAUDE.md
+# Gerados (npm run gerar-tipos); nunca editados à mão
+openapi.json
+src/api/tipos.ts

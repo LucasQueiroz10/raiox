@@ -8,7 +8,14 @@ from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    WithJsonSchema,
+    field_validator,
+)
 
 from app.core.identificadores import normalizar_isin
 
@@ -23,7 +30,18 @@ def _so_texto(valor: object) -> object:
 
 
 ValorEmTexto = Annotated[
-    Decimal, BeforeValidator(_so_texto), Field(gt=0, max_digits=18, decimal_places=2)
+    Decimal,
+    BeforeValidator(_so_texto),
+    Field(gt=0, max_digits=18, decimal_places=2),
+    # Sem isto, o OpenAPI diria "número ou texto" e o tipo gerado no front aceitaria número.
+    WithJsonSchema(
+        {
+            "type": "string",
+            "description": "Valor maior que zero, em texto, com ponto e até 2 casas decimais",
+            "examples": ["1000.00"],
+        },
+        mode="validation",
+    ),
 ]
 
 
@@ -90,8 +108,17 @@ class Tema(BaseModel):
     selo: str
 
 
+class Classe(BaseModel):
+    """Uma classe de ação da empresa (ex.: PN ou ON) e a parte dela na exposição comprada."""
+
+    ativo_id: str | None  # None = chegou por fundo sem identificar a classe
+    nome: str | None
+    valor: Decimal
+    percentual_da_empresa: Decimal
+
+
 class Empresa(BaseModel):
-    isin: str
+    empresa_id: str
     nome: str | None
     setor: str | None
     selo_setor: str | None
@@ -102,6 +129,7 @@ class Empresa(BaseModel):
     percentual: Decimal
     escondida: bool
     fundos: list[str]
+    classes: list[Classe]  # maior primeiro
 
 
 class DemaisEmpresas(BaseModel):
@@ -111,7 +139,7 @@ class DemaisEmpresas(BaseModel):
 
 
 class Fundo(BaseModel):
-    isin: str
+    fundo_id: str
     nome: str | None
     data_referencia: date
     fonte: str
@@ -122,7 +150,7 @@ class Fundo(BaseModel):
 
 class Aviso(BaseModel):
     codigo: str
-    fundo_isin: str | None
+    fundo_id: str | None
 
 
 class Ptax(BaseModel):

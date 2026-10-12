@@ -14,14 +14,38 @@ def test_implementa_o_repositorio():
     assert isinstance(RepositorioExemplo(), RepositorioDados)
 
 
-def test_todos_os_isins_sao_validos_e_ficticios():
+def test_ativos_sao_isins_validos_e_ficticios_e_empresas_tem_prefixo_ficticio():
     repo = RepositorioExemplo()
-    isins = set(repo.composicoes()) | set(repo.tabela_classificacao().classificacoes)
+    ativos = set(repo.composicoes()) | set(repo.empresa_do_ativo())
     for c in repo.composicoes().values():
-        isins |= {i.isin for i in c.itens if i.isin}
+        ativos |= {i.ativo_id for i in c.itens if i.ativo_id}
+    empresas = set(repo.tabela_classificacao().classificacoes) | set(
+        repo.empresa_do_ativo().values()
+    )
 
-    assert isins
-    assert all(isin_valido(i) and i.startswith("ZZ") for i in isins)
+    assert ativos and empresas
+    assert all(isin_valido(a) and a.startswith("ZZ") for a in ativos)
+    assert all(e.startswith("ZZ:") for e in empresas)
+
+
+def test_toda_acao_dos_fundos_aponta_para_uma_empresa_com_nome():
+    repo = RepositorioExemplo()
+    ligacao = repo.empresa_do_ativo()
+    acoes = {
+        i.ativo_id for c in repo.composicoes().values() for i in c.itens if i.tipo is TipoItem.ACAO
+    }
+
+    assert acoes <= set(ligacao)
+    assert all(repo.nome(e) for e in ligacao.values())
+
+
+def test_tem_uma_empresa_com_duas_classes_de_acao():
+    ligacao = RepositorioExemplo().empresa_do_ativo()
+    classes = {}
+    for ativo, empresa in ligacao.items():
+        classes.setdefault(empresa, []).append(ativo)
+
+    assert any(len(a) == 2 for a in classes.values())
 
 
 def test_pesos_de_cada_fundo_nao_passam_de_100_por_cento():
@@ -50,7 +74,11 @@ def test_um_raio_x_com_o_exemplo_expoe_a_cadeia_de_ia():
     fundo_de_fundos = next(i for i in repo.composicoes() if "FOF" in i)
 
     r = agregar(
-        abrir_carteira([Posicao(fundo_de_fundos, D("1000"), TipoItem.FUNDO)], repo.composicoes()),
+        abrir_carteira(
+            [Posicao(fundo_de_fundos, D("1000"), TipoItem.FUNDO)],
+            repo.composicoes(),
+            empresa_do_ativo=repo.empresa_do_ativo(),
+        ),
         repo.tabela_classificacao(),
     )
 

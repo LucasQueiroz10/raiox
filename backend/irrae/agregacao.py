@@ -6,18 +6,14 @@ mais um balde 'nao_coberto' (caixa, derivativos, ações ainda sem IrRAE).
 
 Incerteza: o IrRAE de cada ação tem amostras. Como os erros de estimação das
 ações podem ser correlacionados (mesmo método de mapeamento, mesmos kappa),
-o intervalo do ETF é reportado em dois casos-limite:
-  - independente: erros das ações independentes (intervalo mais estreito);
-  - comonotônico: erros perfeitamente alinhados (intervalo mais largo). Para
+a faixa do ETF é reportada em dois cenários de referência (D-01):
+  - independente: erros das ações independentes (em geral, faixa mais estreita);
+  - comonotônico: erros perfeitamente alinhados (em geral, faixa mais larga). Para
     somas comonotônicas os quantis se somam: Q_ETF(p) = soma_i peso_i Q_i(p)
     (Dhaene et al. 2002). Entre todas as dependências possíveis com as mesmas
     marginais, a comonotônica maximiza a variância da soma.
-A verdade fica entre os dois.
-
-Circularidade: o componente E (Enquadramento) de cada ação usa as carteiras de
-ETFs. Ao analisar um ETF, recalcule o E das ações SEM esse ETF
-(posicoes_sem_etf), senão o rótulo do ETF confirma a si mesmo. Para auditar se
-um "ETF de IA" é mesmo de IA, o mais limpo é desligar o E.
+Nenhum dos dois é limite: a faixa alinhada pode sair mais estreita que a independente (contraexemplo
+na D-01 de docs/decisoes_m1_irrae_v1.1.md), e a verdade não fica necessariamente entre elas.
 """
 
 from __future__ import annotations
@@ -30,13 +26,6 @@ import pandas as pd
 from .taxonomia import Taxonomia
 
 NAO_COBERTO = "nao_coberto"
-
-
-def posicoes_sem_etf(
-    posicoes_e: list[tuple[str, str, float]], etf_id: str
-) -> list[tuple[str, str, float]]:
-    """Remove o ETF analisado das posições usadas para montar o componente E de uma ação."""
-    return [p for p in posicoes_e if p[0] != etf_id]
 
 
 @dataclass

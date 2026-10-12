@@ -4,20 +4,28 @@ RX_AMBIENTE: "desenvolvimento" (padrão) ou "producao". Em produção a document
     /redoc, /openapi.json) é desligada e o HSTS é ligado.
 RX_ORIGENS_PERMITIDAS: origens do front liberadas no CORS, separadas por vírgula. Sem ela,
     desenvolvimento libera só o Vite local e produção não libera nenhuma.
+RX_BANCO_URL: conexão com o PostgreSQL (postgresql+psycopg://...), com o usuário rx_api
+    (ADR 0006). Sem ela, a API usa o conjunto de exemplo sintético; em produção é obrigatória.
 """
 
 import os
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from sqlalchemy.engine import make_url
+from sqlalchemy.exc import ArgumentError
 
 AMBIENTES = ("desenvolvimento", "producao")
 FRONT_LOCAL = "http://localhost:5173"
+DRIVER_BANCO = "postgresql+psycopg://"
 
 
 @dataclass(frozen=True)
 class Config:
     producao: bool
     origens_permitidas: tuple[str, ...]
+    # Em produção leva a senha: fica fora do repr, para não acabar em log.
+    banco_url: str | None = field(default=None, repr=False)
 
     @classmethod
     def do_ambiente(cls, ambiente: Mapping[str, str] = os.environ) -> Config:
@@ -36,4 +44,16 @@ class Config:
                 raise ValueError(
                     "RX_ORIGENS_PERMITIDAS: cada origem precisa do esquema, ex.: https://rx.exemplo"
                 )
-        return cls(producao=producao, origens_permitidas=origens)
+
+        # As mensagens nunca repetem a URL, que pode levar a senha.
+        banco_url = ambiente.get("RX_BANCO_URL") or None
+        if banco_url is None and producao:
+            raise ValueError("RX_BANCO_URL é obrigatória em produção")
+        if banco_url is not None:
+            if not banco_url.startswith(DRIVER_BANCO):
+                raise ValueError(f"RX_BANCO_URL deve começar com {DRIVER_BANCO}")
+            try:
+                make_url(banco_url)
+            except ValueError, ArgumentError:
+                raise ValueError("RX_BANCO_URL malformada") from None
+        return cls(producao=producao, origens_permitidas=origens, banco_url=banco_url)

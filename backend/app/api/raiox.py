@@ -14,7 +14,7 @@ from app.core.agregacao import NUCLEO, Fatia, RaioX, agregar
 from app.core.cambio import PtaxUsada, para_reais
 from app.core.composicao import Categoria, Posicao, TipoItem
 from app.core.lookthrough import abrir_carteira
-from app.dados.exemplo import RepositorioExemplo
+from app.dados.postgres import DadosIndisponiveis
 from app.dados.ptax import CambioIndisponivel, FontePtax
 from app.dados.repositorio import RepositorioDados
 
@@ -27,10 +27,12 @@ _CENTAVOS = Decimal("0.01")
 _QUATRO_CASAS = Decimal("0.0001")
 
 
-@cache
-def obter_repositorio() -> RepositorioDados:
-    # Até o banco existir, a API usa o conjunto de exemplo sintético.
-    return RepositorioExemplo()
+def obter_repositorio(request: Request) -> RepositorioDados:
+    """Uma foto dos dados por análise, para não misturar dois momentos do banco (ADR 0006)."""
+    try:
+        return request.app.state.dados.foto()
+    except DadosIndisponiveis as erro:
+        raise HTTPException(503, detail={"codigo": "dados_indisponiveis"}) from erro
 
 
 @cache
@@ -146,8 +148,8 @@ def _montar_resposta(
         vendido_por_setor=_fatias(raio_x.vendido_por_setor),
         empresas=[
             e.Empresa(
-                isin=emp.isin,
-                nome=repo.nome(emp.isin),
+                empresa_id=emp.empresa_id,
+                nome=repo.nome(emp.empresa_id),
                 setor=emp.setor,
                 selo_setor=emp.selo_setor.value if emp.selo_setor else None,
                 temas=[
@@ -160,6 +162,15 @@ def _montar_resposta(
                 percentual=_fracao(emp.percentual),
                 escondida=emp.escondida,
                 fundos=sorted(emp.fundos),
+                classes=[
+                    e.Classe(
+                        ativo_id=c.ativo_id,
+                        nome=repo.nome(c.ativo_id) if c.ativo_id else None,
+                        valor=_reais(c.valor),
+                        percentual_da_empresa=_fracao(c.percentual_da_empresa),
+                    )
+                    for c in emp.classes
+                ],
             )
             for emp in exibidas
         ],
@@ -203,23 +214,25 @@ def _analisar(
         Posicao(p.isin, para_reais(p.valor, p.moeda, ptax), TipoItem(p.tipo))
         for p in entrada.posicoes
     ]
-    resultado = abrir_carteira(posicoes, repo.composicoes())
+    resultado = abrir_carteira(
+        posicoes, repo.composicoes(), empresa_do_ativo=repo.empresa_do_ativo()
+    )
     raio_x = agregar(resultado, repo.tabela_classificacao())
 
     fundos = [
         e.Fundo(
-            isin=f.isin,
-            nome=repo.nome(f.isin),
+            fundo_id=f.fundo_id,
+            nome=repo.nome(f.fundo_id),
             data_referencia=f.data_referencia,
             fonte=f.fonte,
             aproximado_por=f.aproximado_por,
             valor_recebido=_reais(f.valor_recebido),
             pesos={cat.value: _fracao(p) for cat, p in f.pesos.items()},
         )
-        for f in sorted(resultado.fundos.values(), key=lambda f: f.isin)
+        for f in sorted(resultado.fundos.values(), key=lambda f: f.fundo_id)
     ]
     avisos = [
-        e.Aviso(codigo=a.codigo.value, fundo_isin=a.fundo_isin)
-        for a in sorted(resultado.avisos, key=lambda a: (a.codigo, a.fundo_isin or ""))
+        e.Aviso(codigo=a.codigo.value, fundo_id=a.fundo_id)
+        for a in sorted(resultado.avisos, key=lambda a: (a.codigo, a.fundo_id or ""))
     ]
     return _montar_resposta(raio_x, resultado.categorias, fundos, avisos, repo, ptax)

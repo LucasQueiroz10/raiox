@@ -20,6 +20,7 @@ from app.dados.ptax import CambioIndisponivel
 from app.main import app
 
 FOF, BANCO, CHIPS = "ZZFOF0000016", "ZZBANCO00013", "ZZCHIPS00019"
+ETF_BR, PETRO_PN, PETRO_ON = "ZZETFBR00018", "ZZPETRO00010", "ZZPETRO00028"
 PTAX = PtaxUsada(date(2026, 9, 28), date(2026, 9, 25), D("5.0000"))
 
 
@@ -94,7 +95,7 @@ def test_empresas_com_nome_e_escondidas_marcadas(cliente):
     corpo = cliente.post("/raiox", json=REFERENCIA).json()
 
     primeira = corpo["empresas"][0]
-    assert primeira["isin"] == BANCO
+    assert primeira["empresa_id"] == "ZZ:BANCO"
     assert primeira["nome"] == "Banco Exemplo S.A."
     assert (primeira["direto"], primeira["via_fundos"], primeira["escondida"]) == (
         "500.00",
@@ -110,9 +111,41 @@ def test_categorias_fundos_e_derivativos(cliente):
     assert corpo["categorias"]["titulos_publicos"] == "100.00"
     assert corpo["categorias"]["caixa"] == "35.00"
     assert corpo["categorias"]["nao_identificado"] == "5.00"
-    assert {f["isin"] for f in corpo["fundos"]} == {FOF, "ZZETFIA00019", "ZZETFBR00018"}
+    assert {f["fundo_id"] for f in corpo["fundos"]} == {FOF, "ZZETFIA00019", ETF_BR}
     derivativo = corpo["derivativos_por_setor"][0]
     assert (derivativo["nome"], derivativo["valor"]) == ("Tecnologia", "5.00")
+
+
+def test_classes_da_mesma_empresa_aparecem_numa_empresa_so_com_a_parte_de_cada_uma(cliente):
+    carteira_petro = carteira(
+        pos(PETRO_PN, "100.00"), pos(PETRO_ON, "50.00"), pos(ETF_BR, "1000.00", "fundo")
+    )
+
+    corpo = cliente.post("/raiox", json=carteira_petro).json()
+
+    petro = [e for e in corpo["empresas"] if e["empresa_id"] == "ZZ:PETRO"]
+    assert len(petro) == 1
+    (e,) = petro
+    assert (e["nome"], e["direto"], e["via_fundos"], e["escondida"]) == (
+        "Petróleo Exemplo S.A.",
+        "150.00",
+        "350.00",  # 35% do ETF Brasil, na classe PN
+        True,
+    )
+    assert e["classes"] == [
+        {
+            "ativo_id": PETRO_PN,
+            "nome": "Petróleo Exemplo PN",
+            "valor": "450.00",
+            "percentual_da_empresa": "0.9000",
+        },
+        {
+            "ativo_id": PETRO_ON,
+            "nome": "Petróleo Exemplo ON",
+            "valor": "50.00",
+            "percentual_da_empresa": "0.1000",
+        },
+    ]
 
 
 def test_dolar_e_convertido_pela_ptax_e_a_resposta_mostra_a_cotacao(cliente, ptax):
@@ -145,7 +178,7 @@ def test_cambio_indisponivel_so_afeta_carteira_em_dolar(cliente, ptax):
 
 
 def test_isin_desconhecido_entra_como_sem_classificacao(cliente):
-    desconhecido = "US0378331005"  # ISIN válido, fora do conjunto de exemplo
+    desconhecido = "USZQ4X7K2W17"  # ISIN válido e fictício, fora do conjunto de exemplo
 
     corpo = cliente.post("/raiox", json=carteira(pos(desconhecido, "100.00"))).json()
 
@@ -157,7 +190,7 @@ def test_isin_desconhecido_entra_como_sem_classificacao(cliente):
     "entrada",
     [
         carteira(),  # vazia
-        carteira(pos("US0378331006", "100.00")),  # dígito verificador errado
+        carteira(pos("USZQ4X7K2W18", "100.00")),  # dígito verificador errado
         carteira(pos(BANCO, "-1.00")),  # valor negativo
         carteira(pos(BANCO, "0")),  # valor zero
         carteira(pos(BANCO, "1.001")),  # mais de 2 casas

@@ -10,7 +10,7 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 - python -m pytest                            testes (Hypothesis incluso)
 - python -m ruff check . && python -m ruff format --check .
 - uvicorn app.main:app --reload               servidor local
-- python -m app.exportar_openapi              gera ../frontend/openapi.json (vem em chore/tipos-openapi)
+- python -m app.exportar_openapi              gera ../frontend/openapi.json (depois: npm run gerar-tipos no front)
 - pip-audit --require-hashes --disable-pip -r requirements.txt   auditoria de dependências
 
 ## Dependências (travadas com hash pelo pip-tools)
@@ -29,11 +29,15 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 ## Regras
 - yfinance é proibido (bloqueado no ruff por flake8-tidy-imports.banned-api).
 - app/core/ é puro: sem FastAPI, sem banco, sem rede. O I/O fica em app/api/, app/dados/ e ingest/.
-- app/dados/: de onde vêm composições, classificação e nomes (protocolo RepositorioDados) e a
-  PTAX (FontePtax, com cache). Até o banco existir, a API usa RepositorioExemplo, sintético.
+- app/dados/: de onde vêm composições, ligação ativo -> empresa, classificação e nomes (protocolo
+  RepositorioDados) e a PTAX (FontePtax, com cache). Com RX_BANCO_URL a API usa o
+  RepositorioPostgres (app/dados/postgres.py): lê as visões vigentes como rx_api, guarda uma foto em
+  memória e só relê quando sai carga nova (DT-10). Sem RX_BANCO_URL, usa o RepositorioExemplo,
+  sintético. Cada análise pede uma foto só (FonteDados.foto(), em app.state.dados), para não
+  misturar dois momentos do banco.
   Testes da API trocam repositório e PTAX por app.dependency_overrides; nenhum teste usa rede.
 - Valores em dinheiro e pesos usam Decimal, nunca float.
-- ISIN validado com dígito verificador em core/identificadores.
+- ISIN e CNPJ (numérico e alfanumérico) validados com dígito verificador em core/identificadores.
 - POST /raiox não grava nem registra em log o conteúdo da carteira. Respostas de erro também
   não repetem a entrada: 422 traz só campo, motivo e mensagem; exceção inesperada vira 500
   genérico e o log guarda só o tipo e o arquivo:linha (app/api/erros.py).
@@ -46,6 +50,35 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 - ingest/ SEC: User-Agent declarado e no máximo 10 req/s. ingest/ CVM: registrar o crédito ODbL
   para aparecer em GET /fontes.
 - Todo XML externo passa por ingest/xml_seguro.ler_xml (nunca etree.fromstring direto).
+
+## Banco: PostgreSQL (ver ADR 0006)
+Comandos dentro de backend/, com o Docker Desktop aberto:
+- docker compose up -d --wait                 sobe o PostgreSQL de desenvolvimento (127.0.0.1:5433)
+- export RX_BANCO_URL_ADMIN=postgresql+psycopg://postgres@127.0.0.1:5433/postgres
+  python -m banco.preparar                    cria os usuários e o banco rx (uma vez)
+- export RX_BANCO_URL=postgresql+psycopg://rx_dono@127.0.0.1:5433/rx
+  python -m alembic upgrade head              aplica as migrações (só como rx_dono)
+- export RX_BANCO_TESTE_URL=postgresql+psycopg://postgres@127.0.0.1:5433/postgres
+  python -m pytest tests/banco                testes com banco; sem a variável, são pulados
+- docker compose down                         para o banco (os dados ficam no volume; -v apaga)
+O PostgreSQL do compose aceita conexão sem senha e só escuta em 127.0.0.1: serve só para
+desenvolvimento e CI (job "banco"). A porta é a 5433 para não brigar com um PostgreSQL local.
+Regras:
+- banco/preparar.py só cria os usuários e o banco. Tudo dentro do banco (esquemas, tabelas, visões e
+  permissões) vem das migrações, em banco/migracoes/versions/.
+- Migrações só para frente (downgrade levanta erro): um erro se corrige com uma migração nova.
+  Escritas em SQL à mão e revisadas no PR. Nova migração:
+    python -m alembic revision -m "descrição curta" --rev-id 0002   (número seguinte)
+- Esquemas: ref (dados públicos) e app (lista de espera e a versão das migrações). O public fica
+  sem uso e sem permissão.
+- Toda tabela, visão ou função nova diz, na mesma migração, quem pode o quê (GRANT), com teste em
+  tests/banco. Valores e pesos em NUMERIC, nunca real nem double precision.
+- Dados de ref só entram por carga: abrir a carga (nasce "carregando"), inserir as linhas e
+  publicar numa transação só. Linha só entra em carga aberta do tipo certo; carga publicada não muda;
+  ninguém além do rx_dono altera ou apaga linhas (gatilhos e permissões da migração 0002).
+- A API lê só as visões *_vigente e carga_publicada, nunca as tabelas.
+- Identificadores nas colunas com os domínios ref.ativo_id, ref.empresa_id e ref.isin_permitido:
+  o próprio banco recusa CUSIP, SEDOL e ISIN de país fora da lista do ADR 0005.
 
 ## Lote: ingest/ e irrae/ (ver ADR 0004)
 - ingest/: leitores de dados externos, compartilhados pelo produto e pelo IrRAE.
@@ -61,10 +94,14 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 - Limites (app/api/raiox.py, esquemas.py e main.py): 500 posições, das quais até 100 fundos;
   200 empresas na resposta (o resto somado em demais_empresas); 20 análises por minuto por IP
   (429); 4 análises simultâneas por servidor (503); corpo de até 1 MB (413).
+- Banco fora do ar antes da primeira leitura: 503 dados_indisponiveis (conexão espera até 5 s).
+  Depois da primeira leitura, a API segue com a última foto.
 - Contadores em memória, por servidor (DT-2 em docs/divida_tecnica.md).
 - Configuração pelas variáveis de ambiente do processo (app/config.py):
     RX_AMBIENTE=desenvolvimento|producao   produção desliga /docs, /redoc e /openapi.json e liga o HSTS
     RX_ORIGENS_PERMITIDAS=https://...       origens do front no CORS, separadas por vírgula
+    RX_BANCO_URL=postgresql+psycopg://rx_api@...   banco (ADR 0006); sem ela, dados de exemplo;
+                                            obrigatória em produção; nunca em log nem em mensagem
   Valor inválido derruba o servidor na partida, de propósito.
 - Produção: uvicorn app.main:app --no-server-header --forwarded-allow-ips=<IP do proxy>
   O IP do limite é o da conexão; o uvicorn só aceita o X-Forwarded-For vindo desses IPs.
