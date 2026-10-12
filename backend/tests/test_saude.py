@@ -6,7 +6,7 @@ from app.main import app
 def test_saude_responde_ok():
     cliente = TestClient(app)
 
-    resposta = cliente.get("/saude")
+    resposta = cliente.get("/api/saude")
 
     assert resposta.status_code == 200
     assert resposta.json() == {"status": "ok"}

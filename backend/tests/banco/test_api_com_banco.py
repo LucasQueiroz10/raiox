@@ -60,7 +60,7 @@ def _analisar(config: Config, dados=None) -> dict:
     if dados is not None:
         app.state.dados = dados
     with TestClient(app) as cliente:
-        resposta = cliente.post("/raiox", json=CARTEIRA)
+        resposta = cliente.post("/api/raiox", json=CARTEIRA)
     assert resposta.status_code == 200
     corpo = resposta.json()
     del corpo["versao_classificacao"]  # a do banco vem da carga publicada

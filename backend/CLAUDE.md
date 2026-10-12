@@ -38,7 +38,7 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
   Testes da API trocam repositório e PTAX por app.dependency_overrides; nenhum teste usa rede.
 - Valores em dinheiro e pesos usam Decimal, nunca float.
 - ISIN e CNPJ (numérico e alfanumérico) validados com dígito verificador em core/identificadores.
-- POST /raiox não grava nem registra em log o conteúdo da carteira. Respostas de erro também
+- POST /api/raiox não grava nem registra em log o conteúdo da carteira. Respostas de erro também
   não repetem a entrada: 422 traz só campo, motivo e mensagem; exceção inesperada vira 500
   genérico e o log guarda só o tipo e o arquivo:linha (app/api/erros.py).
 - Valores em dinheiro trafegam como texto ("1000.00"), nunca como número JSON.
@@ -48,7 +48,7 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 - Reaproveitamento do tracker.py: portar função por função, com o teste antes.
   Nada que dependa de yfinance ou de rentabilidade.
 - ingest/ SEC: User-Agent declarado e no máximo 10 req/s. ingest/ CVM: registrar o crédito ODbL
-  para aparecer em GET /fontes.
+  para aparecer em GET /api/fontes.
 - Todo XML externo passa por ingest/xml_seguro.ler_xml (nunca etree.fromstring direto).
 
 ## Banco: PostgreSQL (ver ADR 0006)
