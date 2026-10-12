@@ -76,3 +76,21 @@ def test_url_do_banco_malformada_falha_na_partida_sem_repetir_pedacos_dela():
     assert "porta" not in str(erro.value)
     assert "servidor-sintetico" not in str(erro.value)
     assert erro.value.__suppress_context__  # o erro original não aparece no traceback
+
+
+def test_segredo_do_aquecimento_e_opcional_e_fica_fora_do_repr():
+    segredo = "segredo-sintetico-de-teste-com-mais-de-32-caracteres"
+
+    sem = Config.do_ambiente({})
+    com = Config.do_ambiente({"RX_SEGREDO_AQUECIMENTO": segredo})
+
+    assert sem.segredo_aquecimento is None
+    assert com.segredo_aquecimento == segredo
+    assert segredo not in repr(com)
+
+
+def test_segredo_do_aquecimento_curto_falha_na_partida_sem_repetir_o_valor():
+    with pytest.raises(ValueError) as erro:
+        Config.do_ambiente({"RX_SEGREDO_AQUECIMENTO": "curto-sintetico"})
+
+    assert "curto-sintetico" not in str(erro.value)

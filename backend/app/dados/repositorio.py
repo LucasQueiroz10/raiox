@@ -35,3 +35,8 @@ class FonteDados(Protocol):
     def foto(self) -> RepositorioDados:
         """Os dados de um momento só: uma análise inteira lê dados coerentes entre si."""
         ...
+
+    def aquecer(self) -> bool:
+        """Relê agora, se saiu carga nova (partida do servidor e aquecimento). Devolve se há
+        dados prontos."""
+        ...

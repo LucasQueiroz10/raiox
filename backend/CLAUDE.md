@@ -32,7 +32,11 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 - app/dados/: de onde vêm composições, ligação ativo -> empresa, classificação e nomes (protocolo
   RepositorioDados) e a PTAX (FontePtax, com cache). Com RX_BANCO_URL a API usa o
   RepositorioPostgres (app/dados/postgres.py): lê as visões vigentes como rx_api, guarda uma foto em
-  memória e só relê quando sai carga nova (DT-10). Sem RX_BANCO_URL, usa o RepositorioExemplo,
+  memória e só relê quando sai carga nova (DT-10), sem travar as análises: um pedido só relê,
+  fora da trava, e os outros seguem com a foto anterior. Nada roda em segundo plano (no Cloud
+  Run não há CPU fora dos pedidos): relê um pedido, a partida do servidor ou o aquecimento
+  interno (POST /interno/aquecer, fora do /api, com o segredo no cabeçalho x-rx-aquecimento;
+  sem ele, 404). Sem RX_BANCO_URL, usa o RepositorioExemplo,
   sintético. Cada análise pede uma foto só (FonteDados.foto(), em app.state.dados), para não
   misturar dois momentos do banco.
   Testes da API trocam repositório e PTAX por app.dependency_overrides; nenhum teste usa rede.
@@ -102,6 +106,8 @@ Regras:
     RX_ORIGENS_PERMITIDAS=https://...       origens do front no CORS, separadas por vírgula
     RX_BANCO_URL=postgresql+psycopg://rx_api@...   banco (ADR 0006); sem ela, dados de exemplo;
                                             obrigatória em produção; nunca em log nem em mensagem
+    RX_SEGREDO_AQUECIMENTO=...              segredo do aquecimento interno (32+ caracteres); sem
+                                            ele, o aquecimento responde 404
   Valor inválido derruba o servidor na partida, de propósito.
 - Produção: uvicorn app.main:app --no-server-header --forwarded-allow-ips=<IP do proxy>
   O IP do limite é o da conexão; o uvicorn só aceita o X-Forwarded-For vindo desses IPs.
