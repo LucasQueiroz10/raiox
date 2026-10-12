@@ -1,7 +1,7 @@
 # PostgreSQL de desenvolvimento e do CI (ADR 0006). Rodar dentro de backend/:
 #   docker compose up -d --wait
 # Só para desenvolvimento: aceita conexão sem senha (trust), por isso só escuta em 127.0.0.1.
-# Nenhum segredo no repositório. A versão (17) vale até o ADR de hospedagem confirmar a do provedor.
+# Nenhum segredo no repositório. A versão (17) é a mesma do Cloud SQL em produção (ADR 0007).
 name: rx
 
 services:

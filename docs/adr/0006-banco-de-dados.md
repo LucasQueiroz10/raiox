@@ -21,8 +21,8 @@ lista de espera.
 
 ### 1. Tecnologia
 
-- PostgreSQL, na versão que o provedor oferecer: a confirmar no ADR de hospedagem (hoje existem o 17 e
-  o 18). No desenvolvimento, a imagem oficial dessa versão no Docker, fixada por digest, acessível só
+- PostgreSQL, na versão que o provedor oferecer: **17**, confirmada no ADR 0007 (Cloud SQL, que também
+  oferece o 18). No desenvolvimento, a imagem oficial dessa versão no Docker, fixada por digest, acessível só
   por 127.0.0.1 e sem senha (nenhum segredo no repositório).
 - SQLAlchemy 2 Core (sem ORM), driver psycopg 3 e migrações com Alembic.
 - Conexão pela variável de ambiente `RX_BANCO_URL`, nunca em arquivo do repositório.
