@@ -93,10 +93,12 @@ Derivado só de identificadores públicos e sem licença, na ordem de prioridade
   da CGS, por decisão conjunta.
 - **Cobertura:** para a empresa "escondida" ser detectada, a tabela precisa cobrir as empresas de todos os
   ETFs americanos que o produto abre, e não só as do escopo do IrRAE: cerca de 500 no IVV e 3.500 no VTI.
-- **Fonte da ligação:** `company_tickers.json` (ticker → CIK) e GLEIF (LEI) estão em espera (seção 4 de
-  `docs/decisoes_m1_irrae_v1.1.md`). Até a autorização, a tabela é curada à mão num arquivo de configuração
-  versionado, só com fontes já liberadas *(a conferir no PR: se os dados de submissions da SEC, fonte 7,
-  trazem tickers e LEI por CIK)*. A cobertura da tabela entra como dívida técnica no PR de código.
+- **Fonte da ligação:** `company_tickers.json` (ticker → CIK) e GLEIF (LEI), liberados pelo M1 em 11/10/2026
+  (fontes 7 e 16 de `docs/matriz_de_dados.md`; antes estavam em espera, na seção 4 de
+  `docs/decisoes_m1_irrae_v1.1.md`). O CIK é a chave e o ticker é só um atributo, porque a SEC não garante
+  que o arquivo de tickers esteja correto ou completo. A curadoria à mão continua para o que essas fontes não
+  ligarem *(a conferir no PR: se os dados de submissions da SEC, fonte 7, trazem tickers e LEI por CIK)*. A
+  cobertura da tabela entra como dívida técnica no PR de código.
 - **Nomes:** um nome só liga a uma empresa se for igual a um nome da lista dela, depois de uma
   normalização simples definida no código (maiúsculas e espaços). Nunca pelo "mais parecido".
 - **Sem ligação:** ação com LEI fora da tabela vira a empresa `LEI:` + LEI, sem classificação, até a

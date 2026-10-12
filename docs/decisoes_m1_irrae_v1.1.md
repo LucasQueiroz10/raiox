@@ -5,6 +5,9 @@
 - **Destino:** Claude Code do repositório `raiox`, e o Lucas (M2) para as decisões conjuntas
 - **Caminho sugerido no repositório:** `docs/decisoes_m1_irrae_v1.1.md`
 - **Aprovação do M1:** [x] aprovado em 01/10/2026 (versão 4 confirmada pelo Lucas)
+- **Atualização de 11/10/2026:** o M1 liberou as fontes da seção 4 pela planilha de fontes
+  (`docs/irrae/fontes_de_dados.md`), que ele preencheu e confirmou valer como autorização. R-03 e R-06
+  resolvidos; as condições de cada fonte estão na ficha dela e em `docs/matriz_de_dados.md`.
 
 ---
 
@@ -134,10 +137,10 @@ O demo usa dados reais da SEC, e o `CLAUDE.md` só permite dados sintéticos no 
 |---|---|---|---|---|
 | R-01 | CUSIP como chave | `irrae/agregacao.py`, `pesos_da_carteira(campo="cusip")` | Depois da T-01: se ela der ≥ 95%, trocar o padrão para LEI, com ticker e nome como alternativas, e deixar o CUSIP como opção desligável. Se der bem menos, manter como está até a resposta da CGS ao formulário UOSS. **Não mudar antes da T-01.** | Aguarda T-01 |
 | R-02 | "A chave de empresa é o ISIN" | `CLAUDE.md` da raiz e ADR 0003 | Funciona para ISINs brasileiros. ISINs americanos são CGS ISINs (mesma licença do CUSIP). Proposta: `empresa_id` interno, com uma tabela de identificadores (ticker, CIK, LEI, ISIN BR; CUSIP e ISIN US em campo opcional). Decisão de arquitetura. **Precisa ser decidida antes de começar a DT-3 (R-08)**, porque a DT-3 cria a tabela de emissores que a R-02 redesenha. **Usa o resultado da T-01 como insumo**: a T-01 responde só pelo lado do N-PORT; a R-02 cobre também a entrada do usuário (tickers, CSV da Avenue), a CVM e o banco. A licença CGS só fica dispensável se **nenhuma** parte do sistema guardar CUSIP ou ISIN americano. | CONJUNTA (Lucas) |
-| R-03 | Matriz de dados defasada (AIPD, FSN, Patent Assignment, GLEIF, `company_tickers`, PatentsView no ODP) | `docs/matriz_de_dados.md` | **Não mexer.** As fontes ainda aguardam autorização do M1. Ver seção 4. | EM ESPERA |
+| R-03 | Matriz de dados defasada (AIPD, FSN, Patent Assignment, GLEIF, `company_tickers`, PatentsView no ODP) | `docs/matriz_de_dados.md` | ~~Não mexer. As fontes ainda aguardam autorização do M1.~~ Fontes liberadas pelo M1 em 11/10/2026; matriz atualizada (seção 4). | FEITO |
 | R-04 | Duas fontes da verdade (planilha do M1 × matriz) | Planilha `Fontes_de_dados_IrRAE.xlsx` e `docs/matriz_de_dados.md` | O M1 passa os status validados para a matriz quando terminar as autorizações. O agente não altera a matriz por conta própria. | EM ESPERA |
 | R-05 | E-mail do User-Agent | Matriz, ponto de atenção 3 | Precisa ser um e-mail do projeto no domínio `sagitalapp.com.br`, real e monitorado (sugestão: `dados@sagitalapp.com.br`). O M1 está criando o e-mail. **Bloqueia a T-01 até ficar pronto.** | EM EXECUÇÃO (M1) |
-| R-06 | GLEIF | Fora da matriz | Não usar. Quando for autorizado, as condições já levantadas são: licença CC0, mas proibido sugerir vínculo com o GLEIF ou usar o logo, sob multa contratual de CHF 100.000 e foro em Basileia. | EM ESPERA |
+| R-06 | GLEIF | Fora da matriz | Liberado pelo M1 em 11/10/2026, com as condições já levantadas: licença CC0, mas proibido sugerir vínculo com o GLEIF ou usar o logo, sob multa contratual de CHF 100.000 e foro em Basileia (a ficha FP-16 da planilha não traz esta condição; ela continua valendo). | FEITO |
 | R-07 | ADR 0004, ponto em aberto 3 ("faixa pelo limite comonotônico") | `docs/adr/0004-modelo-irrae.md` | Reescrever: são dois cenários de referência, nenhum é limite da faixa; o nome é "faixa estimada". Ligar com X-02. | FEITO no branch; entra na `main` com o merge do PR |
 | R-08 | DT-3 × v1.1 | O produto separa classes de ações pelo ISIN (DT-3); a v1.1 consolida pela empresa | Alinhar: no lado do N-PORT, consolidar pelo LEI (D-08); no lado da B3, pelo emissor no Formulário Cadastral da CVM (já previsto na DT-3). **Prazo da DT-3: portão P3, 23/10.** | DECIDIDO |
 | R-09 | Nome do produto | O README diz "Projeto RX"; o domínio é Sagital | Os sócios vão decidir. **Não alterar** README, textos nem identificadores até a decisão. | EM ANDAMENTO (sócios) |
@@ -185,7 +188,11 @@ E também: o número de LEIs repetidos entre posições diferentes (indica class
 
 ---
 
-## 4. EM ESPERA: não implementar
+## 4. ~~EM ESPERA: não implementar~~ LIBERADO em 11/10/2026
+
+**Atualização de 11/10/2026:** o M1 liberou as fontes abaixo pela planilha de fontes
+(`docs/irrae/fontes_de_dados.md`), com as condições de cada ficha (resumidas em `docs/matriz_de_dados.md`).
+O texto original da seção fica abaixo, como registro.
 
 Aguardando a autorização de cada fonte pelo M1. **Não desenvolver leitores, APIs, ingestões nem mudanças na matriz** para:
 
