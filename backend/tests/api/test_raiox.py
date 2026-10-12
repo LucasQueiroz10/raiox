@@ -61,7 +61,7 @@ REFERENCIA = carteira(pos(FOF, "1000.00", "fundo"), pos(BANCO, "500.00"))
 
 
 def test_raio_x_da_carteira_de_referencia(cliente):
-    r = cliente.post("/raiox", json=REFERENCIA)
+    r = cliente.post("/api/raiox", json=REFERENCIA)
 
     assert r.status_code == 200
     corpo = r.json()
@@ -76,7 +76,7 @@ def test_raio_x_da_carteira_de_referencia(cliente):
 
 
 def test_setores_e_cobertura(cliente):
-    corpo = cliente.post("/raiox", json=REFERENCIA).json()
+    corpo = cliente.post("/api/raiox", json=REFERENCIA).json()
 
     setores = {s["nome"]: s["valor"] for s in corpo["por_setor"]}
     assert setores["Financeiro"] == "660.00"  # 500 direto + 160 pelo ETF Brasil
@@ -92,7 +92,7 @@ def test_setores_e_cobertura(cliente):
 
 
 def test_empresas_com_nome_e_escondidas_marcadas(cliente):
-    corpo = cliente.post("/raiox", json=REFERENCIA).json()
+    corpo = cliente.post("/api/raiox", json=REFERENCIA).json()
 
     primeira = corpo["empresas"][0]
     assert primeira["empresa_id"] == "ZZ:BANCO"
@@ -106,7 +106,7 @@ def test_empresas_com_nome_e_escondidas_marcadas(cliente):
 
 
 def test_categorias_fundos_e_derivativos(cliente):
-    corpo = cliente.post("/raiox", json=REFERENCIA).json()
+    corpo = cliente.post("/api/raiox", json=REFERENCIA).json()
 
     assert corpo["categorias"]["titulos_publicos"] == "100.00"
     assert corpo["categorias"]["caixa"] == "35.00"
@@ -121,7 +121,7 @@ def test_classes_da_mesma_empresa_aparecem_numa_empresa_so_com_a_parte_de_cada_u
         pos(PETRO_PN, "100.00"), pos(PETRO_ON, "50.00"), pos(ETF_BR, "1000.00", "fundo")
     )
 
-    corpo = cliente.post("/raiox", json=carteira_petro).json()
+    corpo = cliente.post("/api/raiox", json=carteira_petro).json()
 
     petro = [e for e in corpo["empresas"] if e["empresa_id"] == "ZZ:PETRO"]
     assert len(petro) == 1
@@ -149,7 +149,7 @@ def test_classes_da_mesma_empresa_aparecem_numa_empresa_so_com_a_parte_de_cada_u
 
 
 def test_dolar_e_convertido_pela_ptax_e_a_resposta_mostra_a_cotacao(cliente, ptax):
-    corpo = cliente.post("/raiox", json=carteira(pos(CHIPS, "100.00", moeda="USD"))).json()
+    corpo = cliente.post("/api/raiox", json=carteira(pos(CHIPS, "100.00", moeda="USD"))).json()
 
     assert corpo["total"] == "500.00"  # 100 x 5,0000
     assert corpo["ptax"] == {
@@ -161,7 +161,7 @@ def test_dolar_e_convertido_pela_ptax_e_a_resposta_mostra_a_cotacao(cliente, pta
 
 
 def test_carteira_so_em_reais_nao_consulta_a_ptax(cliente, ptax):
-    cliente.post("/raiox", json=REFERENCIA)
+    cliente.post("/api/raiox", json=REFERENCIA)
 
     assert ptax.chamadas == 0
 
@@ -169,8 +169,8 @@ def test_carteira_so_em_reais_nao_consulta_a_ptax(cliente, ptax):
 def test_cambio_indisponivel_so_afeta_carteira_em_dolar(cliente, ptax):
     ptax.falhar = True
 
-    em_dolar = cliente.post("/raiox", json=carteira(pos(CHIPS, "100.00", moeda="USD")))
-    em_reais = cliente.post("/raiox", json=REFERENCIA)
+    em_dolar = cliente.post("/api/raiox", json=carteira(pos(CHIPS, "100.00", moeda="USD")))
+    em_reais = cliente.post("/api/raiox", json=REFERENCIA)
 
     assert em_dolar.status_code == 503
     assert em_dolar.json()["detail"]["codigo"] == "cambio_indisponivel"
@@ -180,7 +180,7 @@ def test_cambio_indisponivel_so_afeta_carteira_em_dolar(cliente, ptax):
 def test_isin_desconhecido_entra_como_sem_classificacao(cliente):
     desconhecido = "USZQ4X7K2W17"  # ISIN válido e fictício, fora do conjunto de exemplo
 
-    corpo = cliente.post("/raiox", json=carteira(pos(desconhecido, "100.00"))).json()
+    corpo = cliente.post("/api/raiox", json=carteira(pos(desconhecido, "100.00"))).json()
 
     assert corpo["cobertura"]["sem_classificacao"] == "100.00"
     assert corpo["empresas"][0]["nome"] is None
@@ -202,21 +202,21 @@ def test_isin_desconhecido_entra_como_sem_classificacao(cliente):
     ],
 )
 def test_entrada_invalida_da_422(cliente, entrada):
-    assert cliente.post("/raiox", json=entrada).status_code == 422
+    assert cliente.post("/api/raiox", json=entrada).status_code == 422
 
 
 def test_limite_de_500_posicoes(cliente):
     muitas = [pos(BANCO, "1.00")] * 501
 
-    assert cliente.post("/raiox", json=carteira(*muitas)).status_code == 422
-    assert cliente.post("/raiox", json=carteira(*muitas[:500])).status_code == 200
+    assert cliente.post("/api/raiox", json=carteira(*muitas)).status_code == 422
+    assert cliente.post("/api/raiox", json=carteira(*muitas[:500])).status_code == 200
 
 
 def test_limite_de_100_fundos(cliente):
     fundos = [pos(FOF, "1.00", "fundo")] * 101
 
-    assert cliente.post("/raiox", json=carteira(*fundos)).status_code == 422
-    assert cliente.post("/raiox", json=carteira(*fundos[:100])).status_code == 200
+    assert cliente.post("/api/raiox", json=carteira(*fundos)).status_code == 422
+    assert cliente.post("/api/raiox", json=carteira(*fundos[:100])).status_code == 200
 
 
 def test_lista_de_empresas_limitada_as_200_maiores_e_o_resto_somado():
@@ -229,7 +229,7 @@ def test_lista_de_empresas_limitada_as_200_maiores_e_o_resto_somado():
     posicoes = [pos(isin, f"{1000 - i}.00") for i, isin in enumerate(isins)]
     app.dependency_overrides[obter_repositorio] = RepositorioExemplo
     try:
-        corpo = TestClient(app).post("/raiox", json=carteira(*posicoes)).json()
+        corpo = TestClient(app).post("/api/raiox", json=carteira(*posicoes)).json()
     finally:
         app.dependency_overrides.clear()
 

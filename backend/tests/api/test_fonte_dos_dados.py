@@ -21,7 +21,7 @@ def _config(banco_url: str | None = None) -> Config:
 def test_sem_banco_a_api_usa_o_conjunto_de_exemplo():
     app = criar_app(_config())
 
-    resposta = TestClient(app).post("/raiox", json=CARTEIRA)
+    resposta = TestClient(app).post("/api/raiox", json=CARTEIRA)
 
     assert isinstance(app.state.dados, RepositorioExemplo)
     assert resposta.status_code == 200
@@ -36,7 +36,7 @@ def test_com_banco_a_api_usa_o_postgres_e_nao_conecta_na_partida():
 
 def test_banco_fora_do_ar_sem_dados_lidos_responde_503():
     with TestClient(criar_app(_config(BANCO_FORA_DO_AR))) as cliente:
-        resposta = cliente.post("/raiox", json=CARTEIRA)
+        resposta = cliente.post("/api/raiox", json=CARTEIRA)
 
     assert resposta.status_code == 503
     assert resposta.json() == {"detail": {"codigo": "dados_indisponiveis"}}
@@ -55,7 +55,7 @@ def test_cada_analise_pede_uma_foto_so_dos_dados():
     app = criar_app(_config())
     app.state.dados = dados = DadosQueFalham()
 
-    resposta = TestClient(app).post("/raiox", json=CARTEIRA)
+    resposta = TestClient(app).post("/api/raiox", json=CARTEIRA)
 
     assert resposta.status_code == 503
     assert dados.fotos == 1

@@ -10,7 +10,7 @@ aproximação nos ETFs UCITS; créditos às fontes; landing page com lista de es
 Fora: contas, alertas, rentabilidade, cotações automáticas, IR, Open Finance, recomendações.
 Dados:
 - Carteiras de usuários não são gravadas no PostgreSQL nem no navegador.
-  POST /raiox processa em memória e descarta.
+  POST /api/raiox processa em memória e descarta.
 - O único dado pessoal gravado é o e-mail da lista de espera.
 Estas regras só mudam com decisão registrada em ADR em docs/adr/ (previsto para o MVP 1.1).
 
@@ -21,7 +21,8 @@ Estas regras só mudam com decisão registrada em ADR em docs/adr/ (previsto par
 - PostgreSQL: dados públicos (composições por data, classificação versionada) e a lista
   de espera (e-mail, data, versão do aviso de privacidade). O que pode ou não ser
   gravado sobre carteiras depende da fase: ver "Fase atual: protótipo 1" neste arquivo.
-- Rotas: POST /raiox, GET /fontes, POST /lista-espera, GET /saude.
+- Rotas, todas sob /api (o Firebase repassa o caminho inteiro; ADR 0007): POST /api/raiox,
+  GET /api/fontes, POST /api/lista-espera, GET /api/saude.
 - Fontes: CVM (CDA, ODbL, crédito obrigatório) e SEC (N-PORT). UCITS é aproximado pelo
   ETF americano do mesmo índice.
 - Tipos do front gerados do OpenAPI do FastAPI (openapi-typescript); nunca editados à mão.

@@ -47,20 +47,20 @@ def test_carteira_nunca_aparece_no_log(caplog):
 
     try:
         with caplog.at_level(logging.DEBUG):
-            status.append(cliente.post("/raiox", json=CARTEIRA).status_code)
-            status.append(cliente.post("/raiox", json=INVALIDA).status_code)
+            status.append(cliente.post("/api/raiox", json=CARTEIRA).status_code)
+            status.append(cliente.post("/api/raiox", json=INVALIDA).status_code)
             status.append(
                 cliente.post(
-                    "/raiox", content=grande, headers={"content-type": "application/json"}
+                    "/api/raiox", content=grande, headers={"content-type": "application/json"}
                 ).status_code
             )
             limite = obter_limite_de_analises()
             with limite.vaga(), limite.vaga(), limite.vaga(), limite.vaga():
-                status.append(cliente.post("/raiox", json=CARTEIRA).status_code)
+                status.append(cliente.post("/api/raiox", json=CARTEIRA).status_code)
             app.dependency_overrides[obter_repositorio] = RepositorioQuebrado
-            status.append(cliente.post("/raiox", json=CARTEIRA).status_code)
+            status.append(cliente.post("/api/raiox", json=CARTEIRA).status_code)
             while status[-1] != 429:
-                status.append(cliente.post("/raiox", json=CARTEIRA).status_code)
+                status.append(cliente.post("/api/raiox", json=CARTEIRA).status_code)
     finally:
         app.dependency_overrides.clear()
 

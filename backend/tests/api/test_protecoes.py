@@ -28,7 +28,7 @@ def cliente():
 
 
 def test_21a_analise_no_mesmo_minuto_da_429_com_retry_after(cliente):
-    respostas = [cliente.post("/raiox", json=CARTEIRA) for _ in range(21)]
+    respostas = [cliente.post("/api/raiox", json=CARTEIRA) for _ in range(21)]
 
     assert [r.status_code for r in respostas[:20]] == [200] * 20
     ultima = respostas[20]
@@ -39,25 +39,25 @@ def test_21a_analise_no_mesmo_minuto_da_429_com_retry_after(cliente):
 
 def test_trocar_o_x_forwarded_for_nao_burla_o_limite(cliente):
     for i in range(20):
-        cliente.post("/raiox", json=CARTEIRA, headers={"x-forwarded-for": f"203.0.113.{i}"})
+        cliente.post("/api/raiox", json=CARTEIRA, headers={"x-forwarded-for": f"203.0.113.{i}"})
 
-    r = cliente.post("/raiox", json=CARTEIRA, headers={"x-forwarded-for": "198.51.100.7"})
+    r = cliente.post("/api/raiox", json=CARTEIRA, headers={"x-forwarded-for": "198.51.100.7"})
 
     assert r.status_code == 429
 
 
 def test_entrada_invalida_tambem_conta_no_limite(cliente):
     for _ in range(20):
-        cliente.post("/raiox", json={"posicoes": []})
+        cliente.post("/api/raiox", json={"posicoes": []})
 
-    assert cliente.post("/raiox", json=CARTEIRA).status_code == 429
+    assert cliente.post("/api/raiox", json=CARTEIRA).status_code == 429
 
 
 def test_limite_de_analises_nao_bloqueia_a_saude(cliente):
     for _ in range(21):
-        cliente.post("/raiox", json=CARTEIRA)
+        cliente.post("/api/raiox", json=CARTEIRA)
 
-    assert cliente.get("/saude").status_code == 200
+    assert cliente.get("/api/saude").status_code == 200
 
 
 # ---- análises simultâneas ------------------------------------------------------------------
@@ -67,14 +67,14 @@ def test_com_4_analises_em_andamento_a_quinta_recebe_503(cliente):
     limite = obter_limite_de_analises()
 
     with limite.vaga(), limite.vaga(), limite.vaga():
-        assert cliente.post("/raiox", json=CARTEIRA).status_code == 200
+        assert cliente.post("/api/raiox", json=CARTEIRA).status_code == 200
         with limite.vaga():
-            r = cliente.post("/raiox", json=CARTEIRA)
+            r = cliente.post("/api/raiox", json=CARTEIRA)
 
     assert r.status_code == 503
     assert r.json() == {"detail": {"codigo": "servidor_ocupado"}}
     assert "retry-after" in r.headers
-    assert cliente.post("/raiox", json=CARTEIRA).status_code == 200
+    assert cliente.post("/api/raiox", json=CARTEIRA).status_code == 200
 
 
 # ---- tamanho do corpo ----------------------------------------------------------------------
@@ -89,11 +89,11 @@ def test_corpo_de_ate_1_mb_passa(cliente):
     corpo = _com_tamanho(CARTEIRA, UM_MB)
 
     assert len(corpo) == UM_MB
-    assert cliente.post("/raiox", content=corpo, headers=JSON).status_code == 200
+    assert cliente.post("/api/raiox", content=corpo, headers=JSON).status_code == 200
 
 
 def test_corpo_acima_de_1_mb_da_413(cliente):
-    r = cliente.post("/raiox", content=_com_tamanho(CARTEIRA, UM_MB + 1), headers=JSON)
+    r = cliente.post("/api/raiox", content=_com_tamanho(CARTEIRA, UM_MB + 1), headers=JSON)
 
     assert r.status_code == 413
     assert r.json() == {"detail": {"codigo": "corpo_grande_demais"}}
@@ -106,7 +106,7 @@ def test_corpo_em_partes_sem_content_length_tambem_e_limitado(cliente):
             yield b" " * 65536
         yield b"]}"
 
-    r = cliente.post("/raiox", content=partes(), headers=JSON)
+    r = cliente.post("/api/raiox", content=partes(), headers=JSON)
 
     assert r.status_code == 413
 
@@ -116,10 +116,10 @@ def test_corpo_em_partes_sem_content_length_tambem_e_limitado(cliente):
 
 def test_cabecalhos_de_seguranca_em_toda_resposta(cliente):
     respostas = [
-        cliente.get("/saude"),
-        cliente.post("/raiox", json=CARTEIRA),
-        cliente.post("/raiox", json={}),
-        cliente.post("/raiox", content=_com_tamanho(CARTEIRA, UM_MB + 1), headers=JSON),
+        cliente.get("/api/saude"),
+        cliente.post("/api/raiox", json=CARTEIRA),
+        cliente.post("/api/raiox", json={}),
+        cliente.post("/api/raiox", content=_com_tamanho(CARTEIRA, UM_MB + 1), headers=JSON),
         cliente.get("/nao-existe"),
     ]
 
@@ -135,7 +135,7 @@ def test_cabecalhos_de_seguranca_em_toda_resposta(cliente):
 def test_producao_tem_hsts_e_nao_expoe_a_documentacao():
     c = TestClient(criar_app(Config(producao=True, origens_permitidas=())))
 
-    r = c.get("/saude")
+    r = c.get("/api/saude")
 
     assert r.headers["strict-transport-security"] == "max-age=63072000; includeSubDomains"
     for caminho in ("/docs", "/redoc", "/openapi.json"):
@@ -156,9 +156,9 @@ def test_cors_libera_so_a_origem_do_front():
         "access-control-request-headers": "content-type",
     }
 
-    do_front = c.options("/raiox", headers={"origin": ORIGEM, **pedido})
-    de_fora = c.options("/raiox", headers={"origin": "https://outro.exemplo", **pedido})
-    simples_de_fora = c.get("/saude", headers={"origin": "https://outro.exemplo"})
+    do_front = c.options("/api/raiox", headers={"origin": ORIGEM, **pedido})
+    de_fora = c.options("/api/raiox", headers={"origin": "https://outro.exemplo", **pedido})
+    simples_de_fora = c.get("/api/saude", headers={"origin": "https://outro.exemplo"})
 
     assert do_front.status_code == 200
     assert do_front.headers["access-control-allow-origin"] == ORIGEM

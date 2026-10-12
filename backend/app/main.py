@@ -15,6 +15,9 @@ from app.dados.postgres import RepositorioPostgres
 from app.dados.repositorio import FonteDados
 
 MAX_CORPO = 1024 * 1024  # 1 MB; 500 posições ocupam uns 50 KB
+# O Firebase Hosting repassa o caminho inteiro (/api/raiox chega como /api/raiox): as rotas ficam
+# sob /api em todos os ambientes (ADR 0007, seção 2).
+PREFIXO_API = "/api"
 ESPERA_CONEXAO_S = 5  # com o banco fora do ar, a análise responde 503 logo, sem ficar presa
 
 
@@ -61,8 +64,8 @@ def criar_app(config: Config) -> FastAPI:
     )
     app.add_middleware(CabecalhosDeSeguranca, hsts=config.producao, documentacao=documentacao)
 
-    app.include_router(saude.router)
-    app.include_router(raiox.router)
+    app.include_router(saude.router, prefix=PREFIXO_API)
+    app.include_router(raiox.router, prefix=PREFIXO_API)
     return app
 
 

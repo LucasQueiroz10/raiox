@@ -5,10 +5,10 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/saude": {
+    "/api/saude": {
       "get": {
         "summary": "Saude",
-        "operationId": "saude_saude_get",
+        "operationId": "saude_api_saude_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -23,10 +23,10 @@
         }
       }
     },
-    "/raiox": {
+    "/api/raiox": {
       "post": {
         "summary": "Raiox",
-        "operationId": "raiox_raiox_post",
+        "operationId": "raiox_api_raiox_post",
         "requestBody": {
           "content": {
             "application/json": {

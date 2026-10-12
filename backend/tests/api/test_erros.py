@@ -35,7 +35,7 @@ def test_422_informa_campo_e_motivo_sem_repetir_os_valores(cliente):
         ]
     }
 
-    r = cliente.post("/raiox", json=entrada)
+    r = cliente.post("/api/raiox", json=entrada)
 
     assert r.status_code == 422
     detalhe = r.json()["detail"]
@@ -55,7 +55,7 @@ def test_422_informa_campo_e_motivo_sem_repetir_os_valores(cliente):
 def test_limite_de_fundos_aponta_o_campo_sem_devolver_a_carteira(cliente):
     fundos = [{"isin": FOF, "valor": "1.00", "moeda": "BRL", "tipo": "fundo"}] * 101
 
-    r = cliente.post("/raiox", json={"posicoes": fundos})
+    r = cliente.post("/api/raiox", json={"posicoes": fundos})
 
     assert r.status_code == 422
     assert [e["campo"] for e in r.json()["detail"]["erros"]] == [["posicoes"]]
@@ -64,7 +64,7 @@ def test_limite_de_fundos_aponta_o_campo_sem_devolver_a_carteira(cliente):
 
 def test_json_malformado_da_422_sem_repetir_o_corpo(cliente):
     r = cliente.post(
-        "/raiox",
+        "/api/raiox",
         content=b'{"posicoes": [MARCADOR_SINTETICO',
         headers={"content-type": "application/json"},
     )
@@ -88,7 +88,7 @@ def test_erro_inesperado_da_500_generico_e_o_log_so_tem_o_tipo(cliente, caplog):
     carteira = {"posicoes": [{"isin": FOF, "valor": "1.00", "moeda": "BRL", "tipo": "fundo"}]}
 
     with caplog.at_level(logging.DEBUG):
-        r = cliente.post("/raiox", json=carteira)
+        r = cliente.post("/api/raiox", json=carteira)
 
     assert r.status_code == 500
     assert r.json() == {"detail": {"codigo": "erro_interno"}}

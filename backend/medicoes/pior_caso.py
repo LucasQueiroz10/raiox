@@ -124,7 +124,7 @@ def medir(nome: str, universo: Universo, fundos: list[str], acoes: list[str]) ->
     tempos, resposta = [], None
     for _ in range(REPETICOES):
         inicio = time.perf_counter()
-        resposta = cliente.post("/raiox", json=corpo)
+        resposta = cliente.post("/api/raiox", json=corpo)
         tempos.append(time.perf_counter() - inicio)
         if resposta.status_code != 200:
             raise RuntimeError(f"a análise respondeu {resposta.status_code}")
@@ -141,7 +141,7 @@ def medir(nome: str, universo: Universo, fundos: list[str], acoes: list[str]) ->
     fim = time.perf_counter()
 
     tracemalloc.start()
-    cliente.post("/raiox", json=corpo)
+    cliente.post("/api/raiox", json=corpo)
     pico_mb = tracemalloc.get_traced_memory()[1] / 2**20
     tracemalloc.stop()
 
@@ -163,7 +163,7 @@ def medir_simultaneas(universo: Universo, fundos: list[str], acoes: list[str], v
 
     def uma() -> None:
         inicio = time.perf_counter()
-        codigos.append(cliente.post("/raiox", json=corpo).status_code)
+        codigos.append(cliente.post("/api/raiox", json=corpo).status_code)
         tempos.append(time.perf_counter() - inicio)
 
     threads = [threading.Thread(target=uma) for _ in range(vezes)]

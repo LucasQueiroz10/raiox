@@ -8,7 +8,7 @@ from app.exportar_openapi import esquema, exportar
 def test_esquema_tem_as_rotas_e_sai_igual_toda_vez():
     a, b = esquema(), esquema()
 
-    assert {"/raiox", "/saude"} <= set(a["paths"])
+    assert {"/api/raiox", "/api/saude"} <= set(a["paths"])
     assert json.dumps(a) == json.dumps(b)
 
 

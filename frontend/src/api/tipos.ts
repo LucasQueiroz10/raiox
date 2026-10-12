@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/saude": {
+    "/api/saude": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,7 +12,7 @@ export interface paths {
             cookie?: never;
         };
         /** Saude */
-        get: operations["saude_saude_get"];
+        get: operations["saude_api_saude_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -21,7 +21,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/raiox": {
+    "/api/raiox": {
         parameters: {
             query?: never;
             header?: never;
@@ -31,7 +31,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Raiox */
-        post: operations["raiox_raiox_post"];
+        post: operations["raiox_api_raiox_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -294,7 +294,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    saude_saude_get: {
+    saude_api_saude_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -314,7 +314,7 @@ export interface operations {
             };
         };
     };
-    raiox_raiox_post: {
+    raiox_api_raiox_post: {
         parameters: {
             query?: never;
             header?: never;
