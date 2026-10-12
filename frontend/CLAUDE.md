@@ -21,7 +21,7 @@
   com a referência da seção. Nenhuma palavra alterada; nenhum texto solto nos componentes.
 - A interface descreve exposição; nunca sugere comprar, vender ou rebalancear.
 - Toda tela de resultado mostra a cobertura, a data das composições, o rótulo de aproximação
-  UCITS e os créditos (GET /fontes).
+  UCITS e os créditos (GET /api/fontes).
 - Números e datas formatados em pt-BR com Intl.
 - No protótipo 1, a carteira não é persistida no navegador (ver "Fase atual" no CLAUDE.md da raiz).
 - A carteira nunca é enviada a terceiros (nenhum serviço externo recebe posições ou valores).

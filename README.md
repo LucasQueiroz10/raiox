@@ -37,7 +37,7 @@ Ficam para versões seguintes: contas de usuário, alertas de concentração, re
 [ Navegador ]  React + TypeScript
       │  JSON (tipos gerados do OpenAPI)
       ▼
-[ API FastAPI ]  POST /raiox · GET /fontes · POST /lista-espera · GET /saude
+[ API FastAPI ]  POST /api/raiox · GET /api/fontes · POST /api/lista-espera · GET /api/saude
       │
       ▼
 [ Motor (core) ]  importação → câmbio → look-through → classificação → agregação
