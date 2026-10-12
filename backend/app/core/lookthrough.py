@@ -22,10 +22,11 @@ PRECISAO = 50
 CONVERGENCIA_CICLO = Decimal("0.001")
 MAX_FUNDOS_DISTINTOS = 10  # fundos diferentes numa mesma cadeia
 MAX_NIVEIS = 100  # trava para ciclos que não convergem (ex.: A 100% em B e B 100% em A)
-# Trava total contra composições com erro (pesos somando mais de 100% dentro de ciclos
-# multiplicam os caminhos). Carteiras reais, mesmo com ETFs de milhares de ações, ficam
-# bem abaixo.
-MAX_PASSOS = 1_000_000
+# Trava total de itens abertos por análise. Limita o tempo de uma análise (DT-4: uns 1,6 s numa
+# máquina de mesa) e protege contra composições com erro (pesos somando mais de 100% dentro de
+# ciclos multiplicam os caminhos). Cobre carteiras de até uns 33 ETFs globais (9.000 ações cada);
+# acima disso, o resto vira "não aberto", com aviso.
+MAX_PASSOS = 300_000
 
 
 class CodigoAviso(StrEnum):

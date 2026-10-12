@@ -236,7 +236,7 @@ def main() -> None:
     globais = [u.etf(0, 9_000) for _ in range(100)]
     base = [u.etf(0, 9_000) for _ in range(10)]
     fofs = [u.fundo_de_fundos(base) for _ in range(100)]
-    for trava in (MAX_PASSOS, 500_000, 300_000):
+    for trava in sorted({1_000_000, 500_000, MAX_PASSOS}, reverse=True):
         comparar_trava(u, trava, globais, fofs, acoes)
 
     print()
