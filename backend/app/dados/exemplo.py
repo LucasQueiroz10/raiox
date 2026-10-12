@@ -87,6 +87,10 @@ class RepositorioExemplo:
             nomes.update({a["ativo_id"]: a["nome"] for a in e["ativos"] if "nome" in a})
         return nomes
 
+    def aquecer(self) -> bool:
+        """Os dados de exemplo já estão na memória: nada a reler."""
+        return True
+
     def foto(self) -> RepositorioExemplo:
         """Os dados de exemplo não mudam: a foto é o próprio repositório."""
         return self

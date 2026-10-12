@@ -4,8 +4,12 @@ Lê só as visões dos dados vigentes (o usuário da API, rx_api, não enxerga m
 transação só de leitura e REPEATABLE READ: todas as consultas veem o mesmo momento do banco.
 
 Guarda uma foto dos dados em memória e só relê quando sai uma carga nova, conferindo no máximo a
-cada INTERVALO_S segundos. Se o banco cair ou trouxer um dado inválido depois da primeira leitura,
-segue com a última foto. DT-10 (docs/divida_tecnica.md): a foto tem todas as composições vigentes.
+cada INTERVALO_S segundos. A releitura nunca trava as análises (ADR 0007, seção 3): um pedido só
+relê, fora da trava, e os outros seguem com a foto anterior; a foto nova entra de uma vez só. Sem
+CPU fora dos pedidos no Cloud Run, nada roda em segundo plano: quem relê é um pedido, o
+aquecimento (aquecer()) ou a partida do servidor. Se o banco cair ou trouxer um dado inválido,
+segue com a última foto e só tenta de novo depois de ESPERA_APOS_FALHA_S. DT-10
+(docs/divida_tecnica.md): a foto tem todas as composições vigentes, e durante a releitura há duas.
 """
 
 import logging
@@ -28,6 +32,9 @@ from app.core.classificacao import (
 from app.core.composicao import Composicao, ItemComposicao, TipoItem
 
 INTERVALO_S = 60  # de quanto em quanto tempo, no máximo, confere se saiu carga nova
+# Depois de uma falha, espera mais antes de tentar de novo: sem isso, com o banco fora do ar, um
+# usuário por minuto esperaria o tempo limite de conexão.
+ESPERA_APOS_FALHA_S = 300
 SEM_CLASSIFICACAO = "nenhuma"  # versão da tabela enquanto nenhuma classificação foi publicada
 
 log = logging.getLogger(__name__)
@@ -191,40 +198,74 @@ class RepositorioPostgres:
         motor: Engine,
         *,
         intervalo_s: float = INTERVALO_S,
+        espera_apos_falha_s: float = ESPERA_APOS_FALHA_S,
         relogio: Callable[[], float] = time.monotonic,
     ) -> None:
         self._motor = motor
         self._intervalo_s = intervalo_s
+        self._espera_apos_falha_s = espera_apos_falha_s
         self._relogio = relogio
+        # A trava protege só a marcação e a troca da foto, que são instantâneas: ninguém espera
+        # nela enquanto o banco é lido.
         self._trava = threading.Lock()
+        self._relendo = False
         self._foto: FotoDados | None = None
         self._versao: tuple | None = None
         self._proxima_conferencia = 0.0
 
     def foto(self) -> FotoDados:
+        """A foto atual. Se for hora de conferir e ninguém estiver relendo, este pedido confere (e
+        relê, se saiu carga nova); os outros seguem com a foto atual, sem esperar."""
+        if self._tomar_a_vez(forcar=False):
+            self._conferir()
+        foto = self._foto
+        if foto is None:
+            raise DadosIndisponiveis("dados públicos indisponíveis")
+        return foto
+
+    def aquecer(self) -> bool:
+        """Confere agora, sem esperar o intervalo, e relê se saiu carga nova. Se outra releitura
+        estiver em andamento, não faz nada. Devolve se há uma foto pronta."""
+        if self._tomar_a_vez(forcar=True):
+            self._conferir()
+        return self._foto is not None
+
+    def _tomar_a_vez(self, *, forcar: bool) -> bool:
         with self._trava:
-            if self._foto is not None and self._relogio() < self._proxima_conferencia:
-                return self._foto
-            try:
-                self._atualizar()
-            except (SQLAlchemyError, ValueError) as erro:
-                # Só o tipo do erro: a mensagem do driver pode trazer o endereço do banco.
-                if self._foto is None:
-                    log.warning("Dados públicos indisponíveis (%s).", type(erro).__name__)
-                    raise DadosIndisponiveis("dados públicos indisponíveis") from erro
+            if self._relendo:
+                return False
+            if not forcar and self._relogio() < self._proxima_conferencia:
+                return False
+            self._relendo = True
+            return True
+
+    def _conferir(self) -> None:
+        espera = self._intervalo_s
+        try:
+            with self._motor.connect() as conexao:
+                conexao.execution_options(
+                    isolation_level="REPEATABLE READ", postgresql_readonly=True
+                )
+                versao = versao_dos_dados(conexao)
+                if self._foto is None or versao != self._versao:
+                    nova = ler_foto(conexao)
+                    with self._trava:
+                        self._foto, self._versao = nova, versao
+        except (SQLAlchemyError, ValueError) as erro:
+            # Com uma foto para servir, a espera é longa; sem nenhuma, a API está fora do ar e tenta
+            # de novo no intervalo normal (um pedido por vez espera a conexão; os outros, 503).
+            espera = self._intervalo_s if self._foto is None else self._espera_apos_falha_s
+            # Só o tipo do erro: a mensagem do driver pode trazer o endereço do banco.
+            if self._foto is None:
+                log.warning("Dados públicos indisponíveis (%s).", type(erro).__name__)
+            else:
                 log.warning(
                     "Falha ao reler os dados (%s); segue com a última foto.", type(erro).__name__
                 )
-            self._proxima_conferencia = self._relogio() + self._intervalo_s
-            return self._foto
-
-    def _atualizar(self) -> None:
-        with self._motor.connect() as conexao:
-            conexao.execution_options(isolation_level="REPEATABLE READ", postgresql_readonly=True)
-            versao = versao_dos_dados(conexao)
-            if self._foto is None or versao != self._versao:
-                self._foto = ler_foto(conexao)
-                self._versao = versao
+        finally:
+            with self._trava:
+                self._proxima_conferencia = self._relogio() + espera
+                self._relendo = False
 
     def fechar(self) -> None:
         """Fecha as conexões abertas com o banco (ao desligar o servidor)."""

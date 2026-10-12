@@ -6,6 +6,8 @@ RX_ORIGENS_PERMITIDAS: origens do front liberadas no CORS, separadas por vírgul
     desenvolvimento libera só o Vite local e produção não libera nenhuma.
 RX_BANCO_URL: conexão com o PostgreSQL (postgresql+psycopg://...), com o usuário rx_api
     (ADR 0006). Sem ela, a API usa o conjunto de exemplo sintético; em produção é obrigatória.
+RX_SEGREDO_AQUECIMENTO: segredo que o Cloud Scheduler manda no aquecimento interno (ADR 0007,
+    seção 3), com pelo menos 32 caracteres. Sem ele, o aquecimento não existe (responde 404).
 """
 
 import os
@@ -18,6 +20,7 @@ from sqlalchemy.exc import ArgumentError
 AMBIENTES = ("desenvolvimento", "producao")
 FRONT_LOCAL = "http://localhost:5173"
 DRIVER_BANCO = "postgresql+psycopg://"
+MIN_SEGREDO = 32
 
 
 @dataclass(frozen=True)
@@ -26,6 +29,7 @@ class Config:
     origens_permitidas: tuple[str, ...]
     # Em produção leva a senha: fica fora do repr, para não acabar em log.
     banco_url: str | None = field(default=None, repr=False)
+    segredo_aquecimento: str | None = field(default=None, repr=False)
 
     @classmethod
     def do_ambiente(cls, ambiente: Mapping[str, str] = os.environ) -> Config:
@@ -56,4 +60,15 @@ class Config:
                 make_url(banco_url)
             except ValueError, ArgumentError:
                 raise ValueError("RX_BANCO_URL malformada") from None
-        return cls(producao=producao, origens_permitidas=origens, banco_url=banco_url)
+
+        segredo = ambiente.get("RX_SEGREDO_AQUECIMENTO") or None
+        if segredo is not None and len(segredo) < MIN_SEGREDO:
+            raise ValueError(
+                f"RX_SEGREDO_AQUECIMENTO precisa de pelo menos {MIN_SEGREDO} caracteres"
+            )
+        return cls(
+            producao=producao,
+            origens_permitidas=origens,
+            banco_url=banco_url,
+            segredo_aquecimento=segredo,
+        )

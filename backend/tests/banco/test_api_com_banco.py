@@ -42,6 +42,9 @@ class ExemploSoAprovado:
     def foto(self):
         return self
 
+    def aquecer(self):
+        return True
+
     def composicoes(self):
         return self._exemplo.composicoes()
 
