@@ -246,6 +246,8 @@ desenho já prepara:
 - **Alertas de concentração:** as regras por conta e o histórico dos avisos enviados.
 - **Permissões:** a API ganha acesso às tabelas de conta e carteira, com a Row-Level Security; o
   `rx_admin_lista` continua só com a lista de espera.
+- **Cookie de sessão:** o Firebase Hosting (ADR 0007) só repassa à API o cookie chamado `__session`;
+  o cookie de sessão da fase com contas terá esse nome.
 
 ## Alternativas descartadas
 
