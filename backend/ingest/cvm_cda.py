@@ -170,6 +170,10 @@ class MesCDA:
     soma_das_linhas: dict[str, Decimal]
     isin_do_ticker: dict[str, str]  # pares do bloco de ações, sem os tickers com dois ISINs
     descartes: Counter[str]  # linhas (ou fundos) deixados de fora, por motivo; nunca o conteúdo
+    # Para auditar e recalcular (ADR 0006, seção 4): o patrimônio de cada fundo com composição e o
+    # valor em reais de cada item, na mesma ordem dos itens, com o sinal da seção 4 do ADR 0008.
+    patrimonio: dict[str, Decimal]
+    valores: dict[str, tuple[Decimal, ...]]
 
 
 def nome_do_arquivo(arquivo: str, mes: str) -> str:
@@ -385,7 +389,7 @@ class _Leitor:
         return f"BR:CNPJ:{cnpj}" if cnpj else None
 
     def resultado(self) -> MesCDA:
-        composicoes, nomes, confidencial, soma = {}, {}, {}, {}
+        composicoes, nomes, confidencial, soma, patrimonio, valores = {}, {}, {}, {}, {}, {}
         sem_composicao = set()
         with localcontext(prec=PRECISAO):
             for cnpj, fundo in self.fundos.items():
@@ -398,15 +402,19 @@ class _Leitor:
                     motivo = "sem_patrimonio" if pl is None else "com_patrimonio_zero_ou_negativo"
                     self.descartes[f"fundo_{motivo}"] += 1
                     continue
-                itens = [
-                    ItemComposicao(ativo_id, valor / pl, tipo, emissor=emissor, empresa_id=empresa)
-                    for (tipo, ativo_id, empresa, emissor), valor in self.valores[cnpj].items()
-                    if valor != 0
-                ]
-                itens.sort(
-                    key=lambda i: (i.tipo, i.ativo_id or "", i.empresa_id or "", i.emissor or "")
+                # Ordem estável (tipo e identificadores), para a carga comparar uma composição
+                # com a publicada antes sem depender da ordem das linhas no arquivo.
+                linhas = sorted(
+                    ((chave, valor) for chave, valor in self.valores[cnpj].items() if valor != 0),
+                    key=lambda par: tuple(parte or "" for parte in par[0]),
                 )
-                composicoes[fundo_id] = Composicao(fundo_id, fundo.data, FONTE, tuple(itens))
+                itens = tuple(
+                    ItemComposicao(ativo_id, valor / pl, tipo, emissor=emissor, empresa_id=empresa)
+                    for (tipo, ativo_id, empresa, emissor), valor in linhas
+                )
+                composicoes[fundo_id] = Composicao(fundo_id, fundo.data, FONTE, itens)
+                valores[fundo_id] = tuple(valor for _, valor in linhas)
+                patrimonio[fundo_id] = pl
                 nomes[fundo_id] = fundo.nome
                 soma[fundo_id] = fundo.soma / pl
                 if fundo.confidencial:
@@ -421,4 +429,6 @@ class _Leitor:
             soma_das_linhas=soma,
             isin_do_ticker={t: next(iter(i)) for t, i in self.pares.items() if t not in ambiguos},
             descartes=+self.descartes,
+            patrimonio=patrimonio,
+            valores=valores,
         )
