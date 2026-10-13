@@ -170,7 +170,7 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 - **Onde:** API de dados abertos do BCB (serviço PTAX no portal Olinda).
 - **Método exato:** para a data da análise, buscamos a PTAX de venda de fechamento do dólar. Se a data não for dia útil, usamos o último dia útil anterior. Se o BCB não tiver cotação nesse dia, voltamos mais um dia. A tela mostra a PTAX usada e a data dela.
 - **Licença:** ODbL, indicada na página do conjunto de dados no portal de dados abertos do BCB (conferido em 12/10/2026). Exige crédito, como a fonte 1.
-- **Condições (FP-36):** só a PTAX do dólar, que o BCB apura (as outras moedas vêm de terceiros). **O aviso de responsabilidade que vem nas respostas da API Olinda deve ser repassado ao usuário.** A resposta da API e a página do conjunto não trazem esse aviso (conferido em 12/10/2026): falta o M1 indicar a fonte do texto (`cambio.aviso_bcb` em `textos_telas.md`).
+- **Condições (FP-36):** só a PTAX do dólar, que o BCB apura (as outras moedas vêm de terceiros). **O aviso de responsabilidade que vem nas respostas da API Olinda deve ser repassado ao usuário.** A resposta da API e a página do conjunto não trazem esse aviso (conferido em 12/10/2026). O M1 propôs o texto em 13/10/2026 (`cambio.aviso_bcb` em `textos_telas.md`); falta confirmar se a frase do aviso é oficial do Banco Central.
 - **Frequência:** hoje, a cada análise, com cache diário (DT-1); com o banco, uma carga diária.
 
 ### 13. B3 – Serviço de códigos ISIN (pendente)

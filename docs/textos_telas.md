@@ -47,11 +47,13 @@ Status possíveis: `a escrever` · `rascunho` · `aprovado`
 | `cambio.titulo` | Câmbio | rascunho |
 | `cambio.ptax_usada` | Valores em dólar convertidos pela PTAX de venda do Banco Central de {data}: R$ {valor} por dólar. | rascunho |
 | `cambio.dia_util_anterior` | A PTAX de hoje ainda não foi divulgada; usamos a do último dia útil. | rascunho |
-| `cambio.aviso_bcb` | | a escrever |
+| `cambio.aviso_bcb` | Fonte: Banco Central do Brasil – PTAX (API Olinda), consultado em {data_consulta}. Valores em reais calculados pelo Sagital a partir da PTAX de venda. O BCB não se responsabiliza pelo uso destas informações. | rascunho |
 
 `cambio.aviso_bcb`: aviso de responsabilidade do Banco Central que a planilha de fontes (ficha FP-36)
-manda repassar ao usuário. A resposta da API PTAX e a página do conjunto de dados não trazem esse
-texto (conferido em 12/10/2026): falta o M1 indicar de onde ele vem.
+manda repassar ao usuário. Redação proposta pelo M1 em 13/10/2026. `{data_consulta}` é a data em que
+a PTAX foi obtida do Banco Central (a data da própria cotação está em `cambio.ptax_usada`). Falta
+confirmar se a última frase é texto oficial do Banco Central ou redação nossa: a resposta da API PTAX e
+a página do conjunto de dados não trazem aviso (conferido em 12/10/2026).
 
 ## Raio-X
 
