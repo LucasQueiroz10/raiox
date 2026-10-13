@@ -93,7 +93,7 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
   - os blocos de cada mês (`cda_fi_BLC_n_AAAAMM.csv`);
   - os fundos de índice (ETFs) ficam em arquivo próprio: `cda_fiim_AAAAMM.csv`, renomeado para `cda_fie_AAAAMM.csv` a partir de 15/11/2025 (que passou a trazer também FIDC e FIAGRO);
   - as aplicações sob confidencialidade vêm consolidadas em `cda_fi_CONFID_AAAAMM.csv` e `cda_fie_CONFID_AAAAMM.csv`, sem o detalhe de cada ativo, e entram numa categoria própria, "confidencial", pelo valor líquido (ADR 0008, seção 3).
-- **Atualização (FP-25):** o portal guarda os últimos 12 meses. Os 3 meses mais recentes são reapresentados todos os dias (terça a sábado, às 8h); os meses 4 a 12, toda segunda-feira.
+- **Atualização (FP-25):** o portal guarda os últimos 12 meses. Os 3 meses mais recentes são reapresentados todos os dias (terça a sábado, às 8h); os meses 4 a 12, toda segunda-feira. Conferido no portal em 12/10/2026: havia os meses desde 01/2023, todos já no formato novo (`cda_fie`); os 3 mais recentes tinham sido atualizados naquela madrugada, e o mais recente ainda estava incompleto (os fundos entregam ao longo do mês seguinte).
 - **Método exato:**
   1. De terça a sábado, às 9h, baixamos os 3 meses mais recentes; toda semana, os demais. Uma reapresentação vira uma carga nova, e a composição vigente passa a ser a publicada por último no mesmo mês (ADR 0006, seção 3).
   2. Lemos os blocos de ativos (títulos públicos, cotas de outros fundos, ações, derivativos, depósitos etc.) e os arquivos dos ETFs.

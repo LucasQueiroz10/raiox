@@ -94,6 +94,24 @@ Regras:
     python -m pip install --require-hashes -r requirements-dev.txt -r requirements-lote.txt
     python -m pytest tests/ingest tests/irrae     (no CI: job "lote")
 
+## Cargas: cargas/ (ver ADR 0006, seção 5, e ADR 0008)
+- Jobs em lote que gravam os dados públicos no banco, como rx_ingestao. Só dependências de
+  produção (requirements.txt): os leitores que usam (ex.: ingest/cvm_cda.py) não podem importar
+  pandas nem lxml.
+- cargas/rotina.py: o caminho comum (trava por tipo, carga parada vira com_erro, gravação e
+  publicação numa transação só). Toda carga nova usa publicar_carga e registrar_falha.
+- Nenhum arquivo bruto é guardado: o download fica só na memória (cargas/baixar.py, só https e só
+  o endereço da fonte). Antes de publicar, a varredura de CPF (cargas/validacao.py).
+- CVM (CDA), carga incremental (só os fundos que mudaram):
+    export RX_BANCO_URL=postgresql+psycopg://rx_ingestao@127.0.0.1:5433/rx
+    python -m cargas.cvm                        os 3 meses mais recentes
+    python -m cargas.cvm --pular 3 --meses 9    os 9 meses seguintes (semanal)
+    python -m cargas.cvm --zip cda_fi_AAAAMM.zip    um zip local
+- Testes: tests/cargas (sem banco, job "backend") e tests/banco/test_rotina_carga.py e
+  test_carga_cvm.py (com banco, job "banco").
+- Medição da foto da API (DT-10), com o banco carregado e RX_BANCO_URL do rx_api:
+    python -m medicoes.foto_dos_dados
+
 ## API: limites e configuração
 - Limites (app/api/raiox.py, esquemas.py e main.py): 500 posições, das quais até 100 fundos;
   200 empresas na resposta (o resto somado em demais_empresas); 20 análises por minuto por IP
