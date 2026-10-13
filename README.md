@@ -1,4 +1,4 @@
-# Projeto RX · Raio-X da Carteira
+# Projeto SAGITAL · Raio-X da Carteira
 
 Descubra onde seu dinheiro realmente está.
 
