@@ -128,7 +128,3 @@ Um texto para cada código que a API devolve (`avisos[].codigo` e `detail.codigo
 | `erros.cambio_indisponivel` | Não conseguimos a cotação do dólar agora. Tente de novo mais tarde ou informe os valores em reais. | rascunho |
 | `erros.dados_indisponiveis` | Não conseguimos carregar os dados dos fundos agora. Tente de novo em alguns instantes. | rascunho |
 | `erros.erro_interno` | Algo deu errado do nosso lado. Tente de novo em alguns instantes. | rascunho |
-
-`avisos.fundo_sem_identificador`: o código do aviso na API sai da etapa 1 do plano da carga da CVM
-(fundo dentro de outro fundo sem identificador, como os fundos offshore); conferir o nome quando ela
-entrar.

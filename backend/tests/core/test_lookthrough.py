@@ -227,6 +227,35 @@ def test_fundo_sem_composicao_vai_para_nao_aberto():
     assert isin("SEMDADOS") not in r.empresas
 
 
+def test_fundo_sem_identificador_vai_para_nao_aberto_com_aviso_no_fundo_que_o_tem():
+    # Como os fundos offshore do CDA: cota de fundo sem ativo_id (ADR 0008).
+    fof = fundo(FUNDO_A, (ACAO_A, "0.6", TipoItem.ACAO), (None, "0.4", TipoItem.FUNDO))
+
+    r = abrir_carteira([Posicao(FUNDO_A, D("1000"), TipoItem.FUNDO)], indexar(fof))
+
+    assert r.categorias[Categoria.NAO_ABERTO] == D("400")
+    assert r.categorias[Categoria.ACOES] == D("600")
+    assert r.avisos == {Aviso(CodigoAviso.FUNDO_SEM_IDENTIFICADOR, FUNDO_A)}
+    assert FUNDO_A in r.fundos  # o aviso aponta um fundo que a visão por fundo mostra
+    assert sum(r.categorias.values()) == r.total
+
+
+def test_fundo_sem_identificador_num_ciclo_aponta_o_fundo_que_o_tem():
+    # Na volta do ciclo o caminho não cresce: o último fundo do caminho é o B, não o A.
+    a = fundo(
+        FUNDO_A,
+        (FUNDO_B, "0.5", TipoItem.FUNDO),
+        (None, "0.1", TipoItem.FUNDO),
+        (ACAO_A, "0.4", TipoItem.ACAO),
+    )
+    b = fundo(FUNDO_B, (FUNDO_A, "0.5", TipoItem.FUNDO), (ACAO_B, "0.5", TipoItem.ACAO))
+
+    r = abrir_carteira([Posicao(FUNDO_A, D("1000"), TipoItem.FUNDO)], indexar(a, b))
+
+    sem_identificador = {av for av in r.avisos if av.codigo is CodigoAviso.FUNDO_SEM_IDENTIFICADOR}
+    assert sem_identificador == {Aviso(CodigoAviso.FUNDO_SEM_IDENTIFICADOR, FUNDO_A)}
+
+
 def test_visao_por_fundo_mostra_a_composicao_propria_sem_normalizar():
     etf = fundo_completo()
 

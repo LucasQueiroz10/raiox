@@ -34,6 +34,7 @@ class CodigoAviso(StrEnum):
     CICLO_SEM_CONVERGENCIA = "ciclo_sem_convergencia"
     CADEIA_LONGA = "cadeia_longa"
     FUNDO_SEM_COMPOSICAO = "fundo_sem_composicao"
+    FUNDO_SEM_IDENTIFICADOR = "fundo_sem_identificador"  # ex.: fundo offshore do CDA
     LIMITE_DE_PROCESSAMENTO = "limite_de_processamento"
 
 
@@ -103,6 +104,7 @@ class _Pendente:
     # Fundos já abertos neste caminho, com o valor da primeira entrada de cada um.
     caminho: tuple[tuple[str, Decimal], ...] = ()
     nivel: int = 0
+    fundo_pai: str | None = None  # fundo cuja composição traz o item; None = posição direta
 
 
 def abrir_carteira(
@@ -142,6 +144,8 @@ def abrir_carteira(
                 pilha.extend(_abrir_fundo(r, atual, composicao))
             elif item.tipo is TipoItem.FUNDO and item.ativo_id:
                 r._nao_aberto(atual.valor, CodigoAviso.FUNDO_SEM_COMPOSICAO, item.ativo_id)
+            elif item.tipo is TipoItem.FUNDO:
+                r._nao_aberto(atual.valor, CodigoAviso.FUNDO_SEM_IDENTIFICADOR, atual.fundo_pai)
             else:
                 _registrar(r, atual, ligacao)
     return r
@@ -184,7 +188,7 @@ def _abrir_fundo(
     r.categorias[Categoria.NAO_IDENTIFICADO] += atual.valor * sobra
     origem = atual.fundo_da_carteira or fundo
     return [
-        _Pendente(filho, atual.valor * filho.peso, origem, caminho, atual.nivel + 1)
+        _Pendente(filho, atual.valor * filho.peso, origem, caminho, atual.nivel + 1, fundo)
         for filho in composicao.itens
         if filho.peso != 0
     ]
