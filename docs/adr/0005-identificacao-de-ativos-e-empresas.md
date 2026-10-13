@@ -128,7 +128,9 @@ Cada posição passa a ter `identificador` e `tipo_identificador`, no lugar do c
 
 - **Composições da CVM (CDA):** um ISIN de país fora da lista (ex.: ação americana dentro de um fundo
   brasileiro) é trocado pelo ticker na ingestão, e o ISIN é descartado. Sem ticker, o ativo vai para "não
-  identificado". Confirmado pelo M1.
+  identificado". Confirmado pelo M1. O CDA traz ticker e ISIN juntos no bloco de ações e só o ticker
+  no arquivo dos ETFs: a tradução pelo bloco de ações e a ligação de reserva pelo CNPJ do emissor
+  estão no ADR 0008.
 - **N-PORT:**
   - A ação é ligada à empresa pelo LEI (válido pelo ISO 17442) ou, sem LEI, pelo nome (seção 4). Classes
     da mesma empresa somam pelo LEI (D-08). O ticker é lido quando vier preenchido.
