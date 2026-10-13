@@ -2,7 +2,8 @@
 
 - **Status:** proposto
 - **Data:** 2026-10-12. Revisado no mesmo dia: rotas sob `/api`, endereço `run.app`, releitura dos
-  dados sem trava, provedor de identidade restrito ao repositório, domínio e cookies.
+  dados sem trava, provedor de identidade restrito ao repositório, domínio e cookies; à noite, o
+  horário da carga da CDA (ADR 0008).
 - **Decisor:** Lucas (Membro 2), por ser decisão de engenharia (ADR 0004). O M1 revisa a região dos
   dados, os logs e a retenção (LGPD e Marco Civil da Internet) e o custo.
 - **Relacionados:** ADR 0003 (stack), ADR 0006 (banco de dados), DT-1, DT-2, DT-4 e DT-10.
@@ -87,7 +88,7 @@ desenvolvimento e a produção se comportarem igual: `/api/raiox`, `/api/saude` 
   foto, a API já responde 503 a tudo, então tenta de novo no intervalo normal (1 minuto) para voltar
   logo que o banco responder.
 - **Aquecimento:** o Cloud Scheduler chama o endpoint interno `POST /interno/aquecer` depois da
-  carga diária da CDA (seção 5), para nenhum usuário pagar a releitura. O endpoint monta a foto
+  carga da CDA (seção 5), para nenhum usuário pagar a releitura. O endpoint monta a foto
   dentro do próprio pedido e só depois responde (não há CPU fora dos pedidos); não devolve dados;
   e fica fora do `/api`, então o Firebase não o encaminha. Como o endereço `run.app` é público
   (abaixo), ele exige um segredo num cabeçalho (Secret Manager, enviado pelo Cloud Scheduler) e
@@ -135,11 +136,11 @@ desenvolvimento e a produção se comportarem igual: `/api/raiox`, `/api/saude` 
 
 | Carga | Quando (horário de Brasília) |
 |---|---|
-| CVM, composição dos fundos (CDA) | Todo dia às 9h (a CVM atualiza de terça a sábado, às 8h) |
+| CVM, composição dos fundos (CDA) | De terça a sábado às 9h (a CVM atualiza nesses dias, às 8h; ADR 0008, seção 5) |
 | CVM, FCA e cadastros | Toda segunda às 9h |
 | PTAX | Dias úteis às 13h30, com nova tentativa às 18h |
-| Aquecimento da API (`POST /interno/aquecer`, seção 3) | Todo dia às 9h45, depois da carga da CDA; ajustar ao tempo medido da carga |
-| SEC (tickers e N-PORT) | Quando o e-mail do projeto e a liberação do N-PORT estiverem prontos |
+| Aquecimento da API (`POST /interno/aquecer`, seção 3) | De terça a sábado às 9h45, depois da carga da CDA; ajustar ao tempo medido da carga |
+| SEC (tickers e N-PORT) | Depois da carga da CVM; o e-mail do projeto e o N-PORT foram liberados pelo M1 em 12/10/2026 |
 
 - Cada carga é um Cloud Run Job disparado pelo Cloud Scheduler, com o usuário `rx_ingestao`, uma
   nova tentativa automática e tempo limite.

@@ -108,3 +108,14 @@ Fazer com pedidos nossos, nunca com dados de usuários.
    - `POST` em `<run.app>/interno/aquecer` sem o cabeçalho do segredo responde 404;
    - `https://sagitalapp.com.br/interno/aquecer` não chega à API (o Firebase não encaminha);
    - o job do Cloud Scheduler que chama o aquecimento termina com sucesso.
+
+---
+
+## 4. Rotinas manuais do M1
+
+Combinadas na aprovação da carga da CVM (ADR 0008, seção 7):
+
+- **Uma vez por mês:** olhar a página do CDA no portal de dados abertos da CVM em busca de avisos de
+  mudança de arquivo (como a troca de `cda_fiim` para `cda_fie` em 15/11/2025). A carga também para e
+  avisa sozinha quando o nome ou as colunas mudam (ADR 0008, etapa 3).
+- **A cada 6 meses:** rever os termos de uso das fontes da matriz de dados (`docs/matriz_de_dados.md`).
