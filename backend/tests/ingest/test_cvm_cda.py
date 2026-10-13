@@ -42,6 +42,24 @@ def test_peso_e_o_valor_dividido_pelo_patrimonio_da_classe():
     assert lido.nomes[f"CNPJ:{FUNDO}"] == "FUNDO SINTETICO"
 
 
+def test_guarda_o_patrimonio_e_o_valor_de_cada_item_para_auditar():
+    # ADR 0006, seção 4: o valor como a fonte informa (com o sinal da seção 4 do ADR 0008).
+    mes = (
+        mes_com_patrimonio()
+        .aplicacao("fi_BLC_4", FUNDO, ACOES, "250.00", CD_ISIN=ACAO)
+        .aplicacao("fi_BLC_8", FUNDO, "Valores a pagar", "50.00", TP_ATIVO="Outros")
+    )
+
+    lido = ler_mes(mes.zip())
+
+    fundo = f"CNPJ:{FUNDO}"
+    assert lido.patrimonio[fundo] == D("1000.00")
+    assert lido.valores[fundo] == (D("250.00"), D("-50.00"))
+    # Um valor para cada item, na mesma ordem: valor ÷ patrimônio = peso.
+    for item, valor in zip(lido.composicoes[fundo].itens, lido.valores[fundo], strict=True):
+        assert valor / lido.patrimonio[fundo] == item.peso
+
+
 @pytest.mark.parametrize(
     ("arquivo", "tp_aplic", "tp_ativo", "tipo", "sinal"),
     [
