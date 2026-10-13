@@ -1,6 +1,6 @@
 # Textos das telas
 
-Fonte única de todos os textos da interface do Sagital.
+Fonte única de todos os textos da interface da Sagital.
 
 ## Regras
 
@@ -47,7 +47,7 @@ Status possíveis: `a escrever` · `rascunho` · `aprovado`
 | `cambio.titulo` | Câmbio | rascunho |
 | `cambio.ptax_usada` | Valores em dólar convertidos pela PTAX de venda do Banco Central de {data}: R$ {valor} por dólar. | rascunho |
 | `cambio.dia_util_anterior` | A PTAX de hoje ainda não foi divulgada; usamos a do último dia útil. | rascunho |
-| `cambio.aviso_bcb` | Fonte: Banco Central do Brasil – PTAX (API Olinda), consultado em {data_consulta}. Valores em reais calculados pelo Sagital a partir da PTAX de venda. O BCB não se responsabiliza pelo uso destas informações. | rascunho |
+| `cambio.aviso_bcb` | Fonte: Banco Central do Brasil – PTAX (API Olinda), consultado em {data_consulta}. Valores em reais calculados pela Sagital a partir da PTAX de venda. O BCB não se responsabiliza pelo uso destas informações. | rascunho |
 
 `cambio.aviso_bcb`: aviso de responsabilidade do Banco Central que a planilha de fontes (ficha FP-36)
 manda repassar ao usuário. Redação proposta pelo M1 em 13/10/2026. `{data_consulta}` é a data em que
@@ -107,7 +107,7 @@ Quando aparecem as notas:
 | Identificador | Texto | Status |
 |---|---|---|
 | `avisos.nao_e_recomendacao` | Este raio-x descreve a sua carteira. Não é recomendação de compra, venda ou de qualquer mudança nos seus investimentos. | rascunho |
-| `avisos.creditos_fontes` | Fontes: CVM, dados abertos (licença ODbL); SEC, Estados Unidos; Banco Central do Brasil, PTAX (licença ODbL). O Sagital não tem vínculo com essas instituições. | rascunho |
+| `avisos.creditos_fontes` | Fontes: CVM, dados abertos (licença ODbL); SEC, Estados Unidos; Banco Central do Brasil, PTAX (licença ODbL). A Sagital não tem vínculo com essas instituições. | rascunho |
 | `avisos.ciclo` | Alguns fundos investem uns nos outros em círculo. Seguimos esse caminho até o valor ficar abaixo de 0,1% e mostramos o restante como não aberto. | rascunho |
 | `avisos.fundo_sem_composicao` | Não encontramos a composição de um dos seus fundos. O valor dele aparece como não aberto. | rascunho |
 
