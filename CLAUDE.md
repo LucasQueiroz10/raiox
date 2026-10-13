@@ -35,6 +35,7 @@ Estas regras só mudam com decisão registrada em ADR em docs/adr/ (previsto par
 - Use só fontes marcadas como permitidas em docs/matriz_de_dados.md.
 - Nunca leia, crie ou altere .env, .env.* ou secrets/.
 - Só dados sintéticos em código, testes, logs e conversa. Nada de nomes, e-mails ou carteiras reais.
+- Arquivos de escritório (.xlsx, .xls, .docx, .doc, .pptx) não entram no repositório: os metadados guardam o nome de quem editou. O conteúdo vira .md, com a fonte (ex.: "planilha do M1") e a data da versão transcrita no topo, sem nome de pessoa; fórmula que importa para a metodologia vira texto no .md ou código com teste. Exceção: outro binário só entra com os metadados removidos (PDF sem autor, imagem sem EXIF).
 - Os textos da interface vêm literalmente de docs/textos_telas.md.
 - Classificação gerada por IA entra com status "rascunho".
 - Uma tarefa por vez. Mudança em mais de um módulo exige um plano aprovado antes.

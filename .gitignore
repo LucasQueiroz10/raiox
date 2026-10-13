@@ -13,6 +13,17 @@ __pycache__/
 .hypothesis/
 *.egg-info/
 
+# Arquivos de escritório: os metadados guardam o nome de quem editou (regra no CLAUDE.md).
+# O conteúdo entra transcrito em .md. Se o leitor da B3 precisar de .xlsx (ADR 0002), os testes
+# geram o arquivo sintético em código, sem versionar binário.
+*.xlsx
+*.xlsm
+*.xls
+*.docx
+*.doc
+*.pptx
+*.ppt
+
 # Cobertura
 .coverage
 .coverage.*
