@@ -27,8 +27,8 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 | 1 | CVM – Composição das carteiras de fundos (CDA) | O que tem dentro de cada fundo brasileiro, inclusive os ETFs | ODbL | FP-25 | permitida |
 | 2 | CVM – Cadastro de fundos | Nome, tipo e situação dos fundos | ODbL | FP-26 | permitida |
 | 3 | CVM – Cadastro de companhias abertas | Setor oficial das empresas brasileiras | ODbL | FP-24 | permitida |
-| 4 | CVM – Formulário Cadastral (FCA) | Ligar o ticker da B3 à empresa (CNPJ) | ODbL | fora da planilha | provisória: liberação pedida ao M1 em 11/10/2026 |
-| 6 | SEC – Form N-PORT | O que tem dentro de cada ETF americano | Domínio público (SEC) | FP-09, FP-10 | provisória: o M1 pediu a explicação do uso em 11/10/2026 |
+| 4 | CVM – Formulário Cadastral (FCA) | Ligar o ticker da B3 à empresa (CNPJ) | ODbL | fora da planilha | permitida: liberada pelo M1 em 12/10/2026, só as tabelas de valores mobiliários e geral |
+| 6 | SEC – Form N-PORT | O que tem dentro de cada ETF americano | Domínio público (SEC) | FP-09, FP-10 | permitida: liberada pelo M1 em 12/10/2026, sem gravar CUSIP nem ISIN fora da lista do ADR 0005 |
 | 7 | SEC – Submissions, lista de tickers e lista SIC | Ticker americano → empresa (CIK) e setor oficial (SIC) | Domínio público (SEC) | FP-02, FP-07, FP-08 | permitida |
 | 11 | Wikidata | Setor de empresas fora dos EUA e do Brasil, como preliminar | CC0 | FA-09 | permitida (só como referência cruzada) |
 | 12 | Banco Central – PTAX | Câmbio do dólar | ODbL | FP-36 | permitida (só o dólar) |
@@ -92,17 +92,17 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 - **Arquivos (FP-25):**
   - os blocos de cada mês (`cda_fi_BLC_n_AAAAMM.csv`);
   - os fundos de índice (ETFs) ficam em arquivo próprio: `cda_fiim_AAAAMM.csv`, renomeado para `cda_fie_AAAAMM.csv` a partir de 15/11/2025 (que passou a trazer também FIDC e FIAGRO);
-  - as aplicações sob confidencialidade vêm consolidadas em `cda_fi_CONFID_AAAAMM.csv` e `cda_fie_CONFID_AAAAMM.csv`, sem o detalhe de cada ativo, e entram como "não coberto".
+  - as aplicações sob confidencialidade vêm consolidadas em `cda_fi_CONFID_AAAAMM.csv` e `cda_fie_CONFID_AAAAMM.csv`, sem o detalhe de cada ativo, e entram numa categoria própria, "confidencial", pelo valor líquido (ADR 0008, seção 3).
 - **Atualização (FP-25):** o portal guarda os últimos 12 meses. Os 3 meses mais recentes são reapresentados todos os dias (terça a sábado, às 8h); os meses 4 a 12, toda segunda-feira.
 - **Método exato:**
-  1. Todo dia útil, baixamos os 3 meses mais recentes; toda semana, os demais. Uma reapresentação vira uma carga nova, e a composição vigente passa a ser a publicada por último no mesmo mês (ADR 0006, seção 3).
+  1. De terça a sábado, às 9h, baixamos os 3 meses mais recentes; toda semana, os demais. Uma reapresentação vira uma carga nova, e a composição vigente passa a ser a publicada por último no mesmo mês (ADR 0006, seção 3).
   2. Lemos os blocos de ativos (títulos públicos, cotas de outros fundos, ações, derivativos, depósitos etc.) e os arquivos dos ETFs.
   3. Para cada ativo, calculamos o peso = valor de mercado do ativo ÷ patrimônio líquido do fundo na mesma data.
-  4. Classificamos cada ativo em um tipo: ação, fundo, caixa, derivativo, crédito, título público ou outro.
+  4. Classificamos cada ativo em um tipo: ação, fundo, caixa, derivativo, crédito, título público, confidencial ou outro.
   5. Gravamos a composição de cada fundo com a data de referência, para uso no look-through.
 - **Identificação do fundo:** depois da Resolução CVM 175, os fundos têm estrutura de fundo, classe e subclasse (FP-26). Nos arquivos, o fundo é identificado pelo CNPJ da classe (`CNPJ_FUNDO_CLASSE`; conferido em 12/10/2026).
-- **Formato dos arquivos:** latin-1, separador `;`, números com ponto decimal e sinal negativo. A tradução de cada linha para o motor está no ADR 0008.
-- **Crédito exigido:** sim. A tela mostra algo como "Fonte: CVM, dados abertos", com texto final no `textos_telas.md`.
+- **Formato dos arquivos:** latin-1, separador `;`, números com ponto decimal. Os passivos (valores a pagar, obrigações, opções lançadas e outros) vêm com valor positivo, e o leitor troca o sinal (conferido em agosto de 2026). A tradução de cada linha para o motor está no ADR 0008.
+- **Crédito exigido:** sim. No rodapé da tela do raio-x (`avisos.creditos_fontes` em `textos_telas.md`).
 - **Dado pessoal:** os blocos 6 e 8 e o arquivo dos ETFs (`cda_fie`) trazem o CPF ou CNPJ do emissor (`CPF_CNPJ_EMISSOR`, com `PF_PJ_EMISSOR`), e algumas linhas são de pessoa física (4 em agosto de 2026). **O CPF nunca é gravado**: o item entra sem emissor. O resto são dados de fundos.
 - **Atenção:** a ODbL tem cláusula de "compartilhamento pela mesma licença" para bases derivadas. Ver os pontos de atenção.
 
@@ -125,6 +125,7 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 - **Método exato:** do pacote de cada ano, lemos **só** duas tabelas:
   - `fca_cia_aberta_valor_mobiliario`: código de negociação na B3 (ex.: PETR4), CNPJ da companhia, tipo do valor mobiliário (ON, PN, unit, BDR), mercado e datas de listagem. É o que liga o ticker do CSV da B3 à empresa e junta as classes da mesma empresa (DT-3);
   - `fca_cia_aberta_geral`: setor de atividade e situação da companhia.
+- **Liberação:** pelo M1 em 12/10/2026, nas condições desta ficha.
 - **Não traz o ISIN** (conferido no dicionário de dados da CVM em 11/10/2026). A ligação com o ISIN fica para a fonte 13 ou para o ISIN informado pelo usuário.
 - **Dado pessoal:** o mesmo pacote traz `fca_cia_aberta_dri`, `fca_cia_aberta_departamento_acionistas` e `fca_cia_aberta_endereco`, com nome, CPF, e-mail e telefone de pessoas. **Esses arquivos nunca são importados** (LGPD).
 - **Crédito exigido:** sim, o mesmo da fonte 1.
@@ -142,7 +143,8 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 - **Dois usos:**
   - composição dos ETFs americanos da carteira do usuário;
   - **aproximação dos ETFs UCITS:** um ETF UCITS (listado na Europa) é aproximado pelo ETF americano que segue o mesmo índice, e a tela mostra um rótulo de aproximação.
-- **Regras de acesso da SEC (BL-03):** `User-Agent` com o nome do projeto e o e-mail do projeto (ponto de atenção 3) e no máximo 10 requisições por segundo.
+- **Liberação:** pelo M1 em 12/10/2026, com a condição já prevista no ADR 0005: ligar as posições pelo LEI e nunca gravar CUSIP nem ISIN fora da lista permitida (que já exclui US e CA).
+- **Regras de acesso da SEC (BL-03):** `User-Agent` com o nome do projeto e o e-mail do projeto (ponto de atenção 3) e no máximo 10 requisições por segundo. O e-mail fica fora do repositório, numa variável de ambiente da carga.
 - **Marca (BL-02):** citar a SEC como fonte, sem usar o nome "SEC" ou o logo do EDGAR de forma que sugira vínculo.
 - **Risco (FP-09):** em 02/2026 a SEC propôs flexibilizar a divulgação do N-PORT; a frequência ou a defasagem podem mudar.
 - **Frequência:** trimestral.
@@ -226,11 +228,11 @@ As condições de cada uma estão na ficha. Os pontos que mudam o método:
 ## Pontos de atenção para o M1
 
 1. **ODbL (CVM).** Além do crédito, a ODbL exige que uma base de dados derivada, se usada publicamente, seja compartilhada pela mesma licença. A nota da FP-29 entende que gráficos e escores exibidos no produto contam como "trabalho produzido" e pedem só o aviso de atribuição. Confirmar com advogado antes do lançamento público.
-2. **N-PORT (fonte 6):** o M1 pediu em 11/10/2026 a explicação do uso, para decidir a liberação.
-3. **Contato no `User-Agent`** da SEC e do Wikimedia: o M1 está criando o e-mail do projeto (R-05). Sem ele, nenhum acesso automatizado à SEC pode rodar.
-4. **FCA (fonte 4):** liberação pedida ao M1 em 11/10/2026, lendo só as tabelas de valores mobiliários e geral.
+2. **N-PORT (fonte 6):** liberado em 12/10/2026, sem gravar CUSIP nem ISIN fora da lista do ADR 0005.
+3. **Contato no `User-Agent`** da SEC e do Wikimedia: o e-mail do projeto (R-05) foi passado pelo M1 em 12/10/2026. Ele fica fora do repositório, numa variável de ambiente das cargas.
+4. **FCA (fonte 4):** liberado em 12/10/2026, lendo só as tabelas de valores mobiliários e geral.
 5. **B3:** dados da B3 não são usados na v1 (FP-28 a FP-31). A planilha cita a Política Comercial de Market Data v3.0.4; segundo o revisor da planilha, uma política nova vale desde 01/01/2026. Atualizar a referência antes de qualquer uso de dados da B3.
-6. **Créditos e avisos na tela:** CVM (ODbL), PTAX (o aviso do Banco Central) e, quando usadas, as fontes do IrRAE (detalhe acima). SEC e GLEIF: citar como fonte, sem logo e sem sugerir vínculo. Textos finais no `textos_telas.md`.
+6. **Créditos e avisos na tela:** CVM (ODbL, no rodapé do raio-x), PTAX (o aviso do Banco Central) e, quando usadas, as fontes do IrRAE (detalhe acima). SEC e GLEIF: citar como fonte, sem logo e sem sugerir vínculo. Textos finais no `textos_telas.md`.
 7. **IA:** definir o provedor e verificar os termos sobre o conteúdo gerado.
 8. **Riscos das fontes de composição:** a SEC (02/2026) e a CVM propuseram flexibilizar a divulgação das carteiras ao mercado. Se isso mudar o que é publicado, a frequência ou a defasagem das fontes 1 e 6 podem piorar.
 9. **CDI como referência de renda fixa:** segundo o revisor da planilha, a Taxa DI é apurada pela B3. O protótipo 1 não mostra rentabilidade; vale só para depois.
