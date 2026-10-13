@@ -2,7 +2,7 @@
 
 import hashlib
 
-from app.core.identificadores import digito_verificador
+from app.core.identificadores import digito_verificador, digitos_verificadores_cnpj
 
 
 def isin(nome: str) -> str:
@@ -12,3 +12,12 @@ def isin(nome: str) -> str:
     """
     corpo = "ZZ" + hashlib.sha256(nome.encode("utf-8")).hexdigest()[:9].upper()
     return corpo + digito_verificador(corpo)
+
+
+def cnpj(nome: str) -> str:
+    """CNPJ alfanumérico fictício, válido e estável para cada nome, sem máscara, ex.: cnpj("ETF").
+
+    Começa com ZZ e usa letras, como os CNPJs sintéticos dos testes com banco.
+    """
+    corpo = "ZZ" + hashlib.sha256(nome.encode("utf-8")).hexdigest()[:10].upper()
+    return corpo + digitos_verificadores_cnpj(corpo)
