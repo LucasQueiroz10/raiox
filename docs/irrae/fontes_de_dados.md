@@ -1,5 +1,10 @@
 # IrRAE — Fontes de dados (transcrição integral do Excel para o Claude Code)
 
+> **Fonte:** planilha de fontes de dados do M1 (`Fontes_de_dados_IrRAE.xlsx`), versão modificada em
+> 10/10/2026, conferida célula a célula contra a planilha original em 12/10/2026. As fórmulas da
+> planilha são só contagens da aba `Leia-me`, transcritas como texto na Seção 1; nenhuma entra na
+> metodologia.
+
 > **Para o Claude Code que vai ler este arquivo.** Este documento é a transcrição *integral e literal* da planilha `Fontes_de_dados_IrRAE.xlsx` (4 abas), feita por script e conferida célula a célula. Nenhum texto do Excel foi resumido, corrigido ou reescrito. Tudo o que **não** veio do Excel está isolado nas seções marcadas **[REVISOR]** (Seções 0, 5, 6 e 7) e nas linhas iniciadas por '> Nota do revisor', e nunca dentro das fichas de fonte.
 
 ## Seção 0 — [REVISOR] Como ler este arquivo

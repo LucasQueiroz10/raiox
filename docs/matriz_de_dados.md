@@ -100,9 +100,10 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
   3. Para cada ativo, calculamos o peso = valor de mercado do ativo ÷ patrimônio líquido do fundo na mesma data.
   4. Classificamos cada ativo em um tipo: ação, fundo, caixa, derivativo, crédito, título público ou outro.
   5. Gravamos a composição de cada fundo com a data de referência, para uso no look-through.
-- **Atenção:** depois da Resolução CVM 175, os fundos têm estrutura de fundo, classe e subclasse (FP-26). Conferir nos arquivos qual CNPJ identifica o fundo na composição.
+- **Identificação do fundo:** depois da Resolução CVM 175, os fundos têm estrutura de fundo, classe e subclasse (FP-26). Nos arquivos, o fundo é identificado pelo CNPJ da classe (`CNPJ_FUNDO_CLASSE`; conferido em 12/10/2026).
+- **Formato dos arquivos:** latin-1, separador `;`, números com ponto decimal e sinal negativo. A tradução de cada linha para o motor está no ADR 0008.
 - **Crédito exigido:** sim. A tela mostra algo como "Fonte: CVM, dados abertos", com texto final no `textos_telas.md`.
-- **Dado pessoal:** não. São dados de fundos.
+- **Dado pessoal:** os blocos 6 e 8 e o arquivo dos ETFs (`cda_fie`) trazem o CPF ou CNPJ do emissor (`CPF_CNPJ_EMISSOR`, com `PF_PJ_EMISSOR`), e algumas linhas são de pessoa física (4 em agosto de 2026). **O CPF nunca é gravado**: o item entra sem emissor. O resto são dados de fundos.
 - **Atenção:** a ODbL tem cláusula de "compartilhamento pela mesma licença" para bases derivadas. Ver os pontos de atenção.
 
 ### 2. CVM – Cadastro de fundos
