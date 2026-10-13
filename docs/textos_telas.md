@@ -1,6 +1,6 @@
 # Textos das telas
 
-Fonte única de todos os textos da interface do Projeto RX.
+Fonte única de todos os textos da interface do Sagital.
 
 ## Regras
 
@@ -107,7 +107,7 @@ Quando aparecem as notas:
 | Identificador | Texto | Status |
 |---|---|---|
 | `avisos.nao_e_recomendacao` | Este raio-x descreve a sua carteira. Não é recomendação de compra, venda ou de qualquer mudança nos seus investimentos. | rascunho |
-| `avisos.creditos_fontes` | Fontes: CVM, dados abertos (licença ODbL); SEC, Estados Unidos; Banco Central do Brasil, PTAX (licença ODbL). O Projeto RX não tem vínculo com essas instituições. | rascunho |
+| `avisos.creditos_fontes` | Fontes: CVM, dados abertos (licença ODbL); SEC, Estados Unidos; Banco Central do Brasil, PTAX (licença ODbL). O Sagital não tem vínculo com essas instituições. | rascunho |
 | `avisos.ciclo` | Alguns fundos investem uns nos outros em círculo. Seguimos esse caminho até o valor ficar abaixo de 0,1% e mostramos o restante como não aberto. | rascunho |
 | `avisos.fundo_sem_composicao` | Não encontramos a composição de um dos seus fundos. O valor dele aparece como não aberto. | rascunho |
 
