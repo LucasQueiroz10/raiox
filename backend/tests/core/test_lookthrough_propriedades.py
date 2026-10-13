@@ -17,7 +17,11 @@ pesos = st.decimals(min_value=D("-0.5"), max_value=D("1.5"), places=4)
 valores = st.decimals(min_value=D("0"), max_value=D("1000000"), places=2)
 
 itens = st.one_of(
-    st.builds(lambda i, p: ItemComposicao(i, p, TipoItem.FUNDO), st.sampled_from(FUNDOS), pesos),
+    st.builds(
+        lambda i, p: ItemComposicao(i, p, TipoItem.FUNDO),
+        st.none() | st.sampled_from(FUNDOS),  # None: fundo sem identificador (ex.: offshore)
+        pesos,
+    ),
     st.builds(lambda i, p: ItemComposicao(i, p, TipoItem.ACAO), st.sampled_from(ACOES), pesos),
     st.builds(
         lambda t, p, o: ItemComposicao(None, p, t, ativo_objeto=o, emissor=o),
