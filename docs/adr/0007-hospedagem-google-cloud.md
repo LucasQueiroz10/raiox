@@ -82,8 +82,10 @@ desenvolvimento e a produção se comportarem igual: `/api/raiox`, `/api/saude` 
   foto nova, fora da trava, com a marcação de releitura em andamento. Os demais seguem com a foto
   anterior, sem esperar. A foto nova entra de uma vez só, quando fica pronta. Durante a releitura há
   duas fotos na memória.
-- Depois de uma falha (banco fora do ar), a próxima conferência espera alguns minutos, para não
-  fazer um usuário por minuto esperar o tempo limite de conexão.
+- Depois de uma falha (banco fora do ar) com uma foto para servir, a próxima conferência espera
+  5 minutos, para não fazer um usuário por minuto esperar o tempo limite de conexão. Sem nenhuma
+  foto, a API já responde 503 a tudo, então tenta de novo no intervalo normal (1 minuto) para voltar
+  logo que o banco responder.
 - **Aquecimento:** o Cloud Scheduler chama o endpoint interno `POST /interno/aquecer` depois da
   carga diária da CDA (seção 5), para nenhum usuário pagar a releitura. O endpoint monta a foto
   dentro do próprio pedido e só depois responde (não há CPU fora dos pedidos); não devolve dados;
@@ -161,7 +163,9 @@ desenvolvimento e a produção se comportarem igual: `/api/raiox`, `/api/saude` 
   não são reaproveitados. A conta `rx-deploy` aceita só os jobs do ambiente `producao` do GitHub.
   Comandos no roteiro de operação (`docs/runbooks/producao.md`).
 - O segredo do aquecimento (seção 3) fica no Secret Manager: a API o lê, e o deploy o grava no
-  cabeçalho do job do Cloud Scheduler.
+  cabeçalho do job do Cloud Scheduler. Na API ele é opcional (`RX_SEGREDO_AQUECIMENTO`, com pelo
+  menos 32 caracteres): sem ele, o aquecimento responde 404 e o job falha, o que dispara o alerta
+  da seção 8.
 - Segredos nunca entram no repositório, na imagem ou nos logs. A troca de senha fica no roteiro de
   operação.
 
@@ -186,6 +190,7 @@ desenvolvimento e a produção se comportarem igual: `/api/raiox`, `/api/saude` 
   guardá-los por 6 meses *(a confirmar com o M1)*.
 - **Alertas por e-mail**, para o e-mail do projeto (R-05):
   - carga com erro;
+  - falha no job de aquecimento (avisa também se faltar o segredo na API);
   - fonte sem carga nova além do esperado (ex.: CDA sem publicação há 3 dias);
   - API respondendo com erros 5xx;
   - `https://sagitalapp.com.br/api/saude` fora do ar (verificação de disponibilidade pelo domínio,
