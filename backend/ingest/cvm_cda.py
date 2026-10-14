@@ -9,8 +9,6 @@ nunca `float`. Um arquivo, uma coluna ou um tipo de aplicação fora do esperado
 (LayoutInesperado): a carga não publica e avisa (pedido do M1).
 """
 
-import csv
-import io
 import re
 import zipfile
 from collections import Counter, defaultdict
@@ -22,8 +20,10 @@ from pathlib import Path
 from typing import IO
 
 from app.core.composicao import Composicao, ItemComposicao, TipoItem
-from app.core.identificadores import isin_valido, normalizar_cnpj
+from app.core.identificadores import isin_valido
 from app.core.lookthrough import PRECISAO
+from ingest import arquivos_cvm
+from ingest.arquivos_cvm import LayoutInesperado, linhas_csv
 
 FONTE = "CVM (CDA)"
 
@@ -86,7 +86,6 @@ _PAISES_ISIN = ("BR", "IE", "LU", "ZZ")
 _BOLSAS_EUA = frozenset({"A1", "A11", "A12"})
 # Ticker americano, sozinho ou com o código da bolsa (ex.: "AAPL", "AAPL US", "BRK.B UN").
 _TICKER_EUA = re.compile(r"([A-Z]{1,5}(?:\.[A-Z])?)(?: U[A-Z])?")
-_VALOR = re.compile(r"-?[0-9]+(?:\.[0-9]+)?")
 
 _ACAO, _FUNDO, _CAIXA = TipoItem.ACAO, TipoItem.FUNDO, TipoItem.CAIXA
 _DERIVATIVO, _CREDITO, _OUTRO = TipoItem.DERIVATIVO, TipoItem.CREDITO, TipoItem.OUTRO
@@ -152,10 +151,11 @@ _POR_TIPO_DE_ATIVO: dict[str, TipoItem] = {
     "Outros instrumentos derivativos": _DERIVATIVO,
 }
 _MUDA_PELO_ATIVO = (_ACAO, _OUTRO)
-
-
-class LayoutInesperado(ValueError):
-    """Os arquivos do mês não estão no formato que o leitor conhece. A carga não publica."""
+# Cotas de fundos negociados em bolsa (ETF e FII) emprestadas, no bloco 8: a descrição traz o ticker
+# (ex.: "BOVA11 - ETF") e o emissor é o próprio fundo. É a única fonte liberada que liga o ticker
+# de um ETF ou FII ao CNPJ (ADR 0008, etapa 4).
+_FUNDO_LISTADO = frozenset({"Fundos de Índice", "FI Imobiliário"})
+_TICKER_NA_DESCRICAO = re.compile(r"([A-Z0-9]{4}[0-9]{2})\b")
 
 
 @dataclass(frozen=True, slots=True)
@@ -169,6 +169,8 @@ class MesCDA:
     # Soma de todas as linhas de cada fundo ÷ patrimônio, para o relatório da carga (verificação a).
     soma_das_linhas: dict[str, Decimal]
     isin_do_ticker: dict[str, str]  # pares do bloco de ações, sem os tickers com dois ISINs
+    # Ticker de ETF ou FII -> CNPJ do fundo (cotas emprestadas), sem os tickers com dois CNPJs.
+    cnpj_do_fundo_listado: dict[str, str]
     descartes: Counter[str]  # linhas (ou fundos) deixados de fora, por motivo; nunca o conteúdo
     # Para auditar e recalcular (ADR 0006, seção 4): o patrimônio de cada fundo com composição e o
     # valor em reais de cada item, na mesma ordem dos itens, com o sinal da seção 4 do ADR 0008.
@@ -207,30 +209,7 @@ def _mes_do_zip(nomes: list[str]) -> str:
 
 
 def _linhas(z: zipfile.ZipFile, arquivo: str, mes: str) -> Iterator[dict[str, str]]:
-    nome = nome_do_arquivo(arquivo, mes)
-    with z.open(nome) as bruto:
-        texto = io.TextIOWrapper(bruto, encoding="latin-1", newline="")
-        leitor = csv.DictReader(texto, delimiter=";")
-        colunas = set(leitor.fieldnames or ())
-        esperadas = set(COLUNAS[arquivo])
-        if colunas != esperadas:
-            raise LayoutInesperado(
-                f"{nome}: colunas fora do esperado: faltam {sorted(esperadas - colunas)}; "
-                f"sobram {sorted(colunas - esperadas)}"
-            )
-        yield from leitor
-
-
-def _valor(texto: str) -> Decimal | None:
-    texto = texto.strip()
-    return Decimal(texto) if _VALOR.fullmatch(texto) else None
-
-
-def _cnpj(texto: str) -> str | None:
-    try:
-        return normalizar_cnpj(texto)
-    except ValueError:
-        return None
+    return linhas_csv(z, nome_do_arquivo(arquivo, mes), COLUNAS[arquivo])
 
 
 def _traduzir(tp_aplic: str, tp_ativo: str) -> tuple[TipoItem, bool]:
@@ -266,10 +245,11 @@ class _Leitor:
         self.fundos: dict[str, _Fundo] = defaultdict(_Fundo)
         self.valores: dict[str, dict[_Chave, Decimal]] = defaultdict(lambda: defaultdict(Decimal))
         self.pares: dict[str, set[str]] = defaultdict(set)
+        self.fundos_listados: dict[str, set[str]] = defaultdict(set)
         self.descartes: Counter[str] = Counter()
 
     def _fundo(self, linha: dict[str, str]) -> tuple[str, _Fundo] | None:
-        cnpj = _cnpj(linha["CNPJ_FUNDO_CLASSE"])
+        cnpj = arquivos_cvm.cnpj(linha["CNPJ_FUNDO_CLASSE"])
         if cnpj is None:
             self.descartes["cnpj_do_fundo_invalido"] += 1
             return None
@@ -284,7 +264,7 @@ class _Leitor:
             self._guardar_patrimonio(fundo, linha)
 
     def _guardar_patrimonio(self, fundo: _Fundo, linha: dict[str, str]) -> None:
-        fundo.patrimonio = _valor(linha["VL_PATRIM_LIQ"])
+        fundo.patrimonio = arquivos_cvm.valor(linha["VL_PATRIM_LIQ"])
         fundo.nome = linha["DENOM_SOCIAL"].strip()
         try:
             fundo.data = date.fromisoformat(linha["DT_COMPTC"].strip())
@@ -301,6 +281,8 @@ class _Leitor:
             if arquivo == "fie" and fundo.patrimonio is None:
                 self._guardar_patrimonio(fundo, linha)
             tipo, passivo = _traduzir(linha["TP_APLIC"].strip(), linha["TP_ATIVO"].strip())
+            if arquivo == "fi_BLC_8":
+                self._guardar_fundo_listado(linha)
             valor = self._somar(fundo, linha, passivo)
             if valor is None:
                 continue
@@ -309,6 +291,18 @@ class _Leitor:
                 self.descartes["acao_sem_identificacao"] += 1
                 continue
             self.valores[cnpj][chave] += valor
+
+    def _guardar_fundo_listado(self, linha: dict[str, str]) -> None:
+        """Guarda o par ticker -> CNPJ de uma cota de ETF ou FII. Só pessoa jurídica: o campo do
+        emissor pessoa física (CPF) nunca é lido."""
+        if linha["TP_ATIVO"].strip() not in _FUNDO_LISTADO:
+            return
+        if linha["PF_PJ_EMISSOR"].strip() != "PJ":
+            return
+        ticker = _TICKER_NA_DESCRICAO.match(linha["DS_ATIVO"].strip().upper())
+        cnpj = arquivos_cvm.cnpj(linha["CPF_CNPJ_EMISSOR"])
+        if ticker and cnpj:
+            self.fundos_listados[ticker.group(1)].add(cnpj)
 
     def ler_confidencial(self, linhas: Iterator[dict[str, str]]) -> None:
         for linha in linhas:
@@ -325,7 +319,7 @@ class _Leitor:
         """O valor da linha com o sinal certo, já somado ao fundo; None se for inválido. O fundo
         com linha fica com composição, mesmo que nenhuma linha seja aproveitada."""
         fundo.tem_linhas = True
-        valor = _valor(linha["VL_MERC_POS_FINAL"])
+        valor = arquivos_cvm.valor(linha["VL_MERC_POS_FINAL"])
         if valor is None:
             self.descartes["valor_invalido"] += 1
             return None
@@ -369,11 +363,11 @@ class _Leitor:
 
     def _cota(self, arquivo: str, linha: dict[str, str]) -> str | None:
         if arquivo == "fi_BLC_2":
-            cnpj = _cnpj(linha["CNPJ_FUNDO_CLASSE_COTA"])
+            cnpj = arquivos_cvm.cnpj(linha["CNPJ_FUNDO_CLASSE_COTA"])
         elif arquivo == "fie" and linha["PF_PJ_EMISSOR"].strip() == "PJ":
             # O arquivo dos ETFs não tem a coluna da classe investida: vale o CNPJ do emissor da
             # cota. Se não for o de uma classe com composição, a tela avisa "fundo sem composição".
-            cnpj = _cnpj(linha["CPF_CNPJ_EMISSOR"])
+            cnpj = arquivos_cvm.cnpj(linha["CPF_CNPJ_EMISSOR"])
         else:
             cnpj = None
         return f"CNPJ:{cnpj}" if cnpj else None
@@ -381,9 +375,9 @@ class _Leitor:
     def _emissor(self, arquivo: str, linha: dict[str, str]) -> str | None:
         """Empresa emissora pelo CNPJ. Só pessoa jurídica: o CPF nunca é lido."""
         if arquivo == "fi_BLC_5":
-            cnpj = _cnpj(linha["CNPJ_EMISSOR"])
+            cnpj = arquivos_cvm.cnpj(linha["CNPJ_EMISSOR"])
         elif "PF_PJ_EMISSOR" in linha and linha["PF_PJ_EMISSOR"].strip() == "PJ":
-            cnpj = _cnpj(linha["CPF_CNPJ_EMISSOR"])
+            cnpj = arquivos_cvm.cnpj(linha["CPF_CNPJ_EMISSOR"])
         else:
             cnpj = None
         return f"BR:CNPJ:{cnpj}" if cnpj else None
@@ -421,6 +415,10 @@ class _Leitor:
                     confidencial[fundo_id] = fundo.confidencial / pl
         ambiguos = {t for t, isins in self.pares.items() if len(isins) > 1}
         self.descartes["ticker_com_dois_isins"] += len(ambiguos)
+        listados = {t: c for t, c in self.fundos_listados.items() if len(c) == 1}
+        self.descartes["ticker_de_fundo_com_dois_cnpjs"] += len(self.fundos_listados) - len(
+            listados
+        )
         return MesCDA(
             composicoes=composicoes,
             nomes=nomes,
@@ -428,6 +426,7 @@ class _Leitor:
             sem_composicao_utilizavel=frozenset(sem_composicao),
             soma_das_linhas=soma,
             isin_do_ticker={t: next(iter(i)) for t, i in self.pares.items() if t not in ambiguos},
+            cnpj_do_fundo_listado={t: next(iter(c)) for t, c in listados.items()},
             descartes=+self.descartes,
             patrimonio=patrimonio,
             valores=valores,

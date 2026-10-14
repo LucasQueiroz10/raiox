@@ -152,6 +152,53 @@ def test_acoes_cedidas_em_emprestimo_somam_com_as_do_bloco_de_acoes():
     assert itens(mes) == (ItemComposicao(ACAO, D("0.15"), TipoItem.ACAO),)
 
 
+def cota_emprestada(ds_ativo: str, emissor: str, tp_ativo: str = "Fundos de Índice", **kw):
+    """Campos de uma linha do bloco 8 com cota de fundo listado emprestada."""
+    campos = dict(
+        TP_ATIVO=tp_ativo, DS_ATIVO=ds_ativo, PF_PJ_EMISSOR="PJ", CPF_CNPJ_EMISSOR=emissor
+    )
+    return campos | kw
+
+
+@pytest.mark.parametrize("tp_ativo", ["Fundos de Índice", "FI Imobiliário"])
+@pytest.mark.parametrize("ds_ativo", ["ZZTF11 - ETF", "ZZTF11", "zztf11 - ci "])
+def test_cota_emprestada_de_fundo_listado_liga_o_ticker_ao_cnpj_do_fundo(tp_ativo, ds_ativo):
+    # ADR 0008, etapa 4: a única fonte liberada que liga o ticker de um ETF ou FII ao CNPJ.
+    mes = mes_com_patrimonio().aplicacao(
+        "fi_BLC_8", FUNDO, CEDIDAS, "100.00", **cota_emprestada(ds_ativo, ETF, tp_ativo)
+    )
+
+    assert ler_mes(mes.zip()).cnpj_do_fundo_listado == {"ZZTF11": ETF}
+
+
+def test_ticker_de_fundo_listado_com_dois_cnpjs_nao_e_usado():
+    mes = (
+        mes_com_patrimonio()
+        .aplicacao("fi_BLC_8", FUNDO, CEDIDAS, "1.00", **cota_emprestada("ZZTF11", ETF))
+        .aplicacao("fi_BLC_8", FUNDO, CEDIDAS, "1.00", **cota_emprestada("ZZTF11", INVESTIDO))
+    )
+
+    lido = ler_mes(mes.zip())
+
+    assert lido.cnpj_do_fundo_listado == {}
+    assert lido.descartes["ticker_de_fundo_com_dois_cnpjs"] == 1
+
+
+@pytest.mark.parametrize(
+    "campos",
+    [
+        cota_emprestada("12.345.678/9", ETF),  # descrição sem ticker
+        cota_emprestada("ZZTF11", ETF, PF_PJ_EMISSOR="PF"),  # emissor pessoa física: nem lido
+        cota_emprestada("ZZTF11", "123"),  # CNPJ inválido
+        cota_emprestada("ZZTF11", ETF, tp_ativo="Ação ordinária"),  # não é cota de fundo
+    ],
+)
+def test_linha_sem_ticker_ou_sem_cnpj_valido_nao_liga_nada(campos):
+    mes = mes_com_patrimonio().aplicacao("fi_BLC_8", FUNDO, CEDIDAS, "100.00", **campos)
+
+    assert ler_mes(mes.zip()).cnpj_do_fundo_listado == {}
+
+
 @pytest.mark.parametrize("tp_ativo", ["Fundos de Índice", "FI Imobiliário", "BDR de ETF"])
 def test_cota_de_fundo_dentro_de_linha_de_acao_vira_fundo_sem_identificador(tp_ativo):
     mes = mes_com_patrimonio().aplicacao("fi_BLC_8", FUNDO, CEDIDAS, "100.00", TP_ATIVO=tp_ativo)
