@@ -14,6 +14,13 @@ def isin(nome: str) -> str:
     return corpo + digito_verificador(corpo)
 
 
+def isin_da_raiz(raiz: str, resto: str = "ACNOR") -> str:
+    """ISIN fictício (prefixo ZZ) com a raiz de 4 caracteres escolhida, ex.: isin_da_raiz("ZZAA")
+    tem a mesma raiz que o ticker ZZAA3 (a raiz é o código do emissor na B3)."""
+    corpo = "ZZ" + raiz + resto
+    return corpo + digito_verificador(corpo)
+
+
 def cnpj(nome: str) -> str:
     """CNPJ alfanumérico fictício, válido e estável para cada nome, sem máscara, ex.: cnpj("ETF").
 

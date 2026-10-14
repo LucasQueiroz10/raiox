@@ -33,7 +33,7 @@ from pathlib import Path
 from typing import IO
 
 from ingest import arquivos_cvm
-from ingest.arquivos_cvm import LayoutInesperado, linhas_csv
+from ingest.arquivos_cvm import TICKER_B3, LayoutInesperado, linhas_csv
 
 # Colunas das duas tabelas lidas, como a CVM publica (conferidas no pacote de 2026, em 13/10/2026).
 COLUNAS: dict[str, tuple[str, ...]] = {
@@ -57,7 +57,6 @@ COLUNAS: dict[str, tuple[str, ...]] = {
 }  # fmt: skip
 
 TIPOS_DE_ACAO = frozenset({"Ações Ordinárias", "Ações Preferenciais", "Units"})
-_TICKER_B3 = re.compile(r"[A-Z][A-Z0-9]{3}[0-9]{1,2}")
 _TABELA_GERAL = re.compile(r"fca_cia_aberta_geral_(\d{4})\.csv")
 
 
@@ -111,7 +110,7 @@ def ler_fca(pacotes: Iterable[Path | IO[bytes]]) -> CadastroFCA:
             ticker = linha["Codigo_Negociacao"].strip().upper()
             if not ticker:
                 continue
-            if not _TICKER_B3.fullmatch(ticker):
+            if not TICKER_B3.fullmatch(ticker):
                 descartes["codigo_fora_do_formato"] += 1
                 continue
             negociada = not linha["Data_Fim_Negociacao"].strip()
