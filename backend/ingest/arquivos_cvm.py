@@ -12,11 +12,16 @@ import zipfile
 from collections.abc import Iterator, Sequence
 from decimal import Decimal
 
-from app.core.identificadores import normalizar_cnpj
+from app.core.identificadores import isin_valido, normalizar_cnpj
 
 # Só o formato "-123.45": recusa vírgula decimal, notação científica, "NaN" e "Infinity" (que o
 # Decimal aceitaria).
 _VALOR = re.compile(r"-?[0-9]+(?:\.[0-9]+)?")
+
+
+# Países de ISIN que podem ser guardados: a mesma lista do domínio ref.ativo_id (ADR 0005). ZZ não
+# é país: é o prefixo dos ISINs sintéticos dos testes.
+PAISES_ISIN = ("BR", "IE", "LU", "ZZ")
 
 
 class LayoutInesperado(ValueError):
@@ -44,6 +49,13 @@ def valor(texto: str) -> Decimal | None:
     """O número do texto, ou None se estiver fora do formato."""
     texto = texto.strip()
     return Decimal(texto) if _VALOR.fullmatch(texto) else None
+
+
+def isin_permitido(texto: str) -> str | None:
+    """O ISIN em maiúsculas, ou None se for inválido ou de país fora da lista (ADR 0005: CUSIP e
+    ISIN americano nunca são guardados)."""
+    isin = texto.strip().upper()
+    return isin if isin_valido(isin) and isin.startswith(PAISES_ISIN) else None
 
 
 def cnpj(texto: str) -> str | None:

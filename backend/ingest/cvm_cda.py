@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import IO
 
 from app.core.composicao import Composicao, ItemComposicao, TipoItem
-from app.core.identificadores import isin_valido
 from app.core.lookthrough import PRECISAO
 from ingest import arquivos_cvm
 from ingest.arquivos_cvm import LayoutInesperado, linhas_csv
@@ -79,9 +78,6 @@ COLUNAS: dict[str, tuple[str, ...]] = {
 _APLICACOES = tuple(f"fi_BLC_{n}" for n in range(1, 9)) + ("fie",)
 _CONFIDENCIAIS = ("fi_CONFID", "fie_CONFID")
 
-# Países de ISIN que podem ser guardados: a mesma lista do domínio ref.ativo_id (ADR 0005). ZZ não
-# é país: é o prefixo dos ISINs sintéticos dos testes.
-_PAISES_ISIN = ("BR", "IE", "LU", "ZZ")
 # Bolsas americanas pelo código da CVM: AMEX, Nasdaq e NYSE.
 _BOLSAS_EUA = frozenset({"A1", "A11", "A12"})
 # Ticker americano, sozinho ou com o código da bolsa (ex.: "AAPL", "AAPL US", "BRK.B UN").
@@ -347,8 +343,8 @@ class _Leitor:
                 return (_ACAO, "US:" + ticker.group(1), None, None)
             return None
         if arquivo == "fi_BLC_4":
-            isin = linha["CD_ISIN"].strip().upper()
-            if not (isin_valido(isin) and isin.startswith(_PAISES_ISIN)):
+            isin = arquivos_cvm.isin_permitido(linha["CD_ISIN"])
+            if isin is None:
                 return None
             ticker = linha["CD_ATIVO"].strip().upper()
             if ticker:
