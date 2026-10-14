@@ -155,7 +155,7 @@ _MUDA_PELO_ATIVO = (_ACAO, _OUTRO)
 # (ex.: "BOVA11 - ETF") e o emissor é o próprio fundo. É a única fonte liberada que liga o ticker
 # de um ETF ou FII ao CNPJ (ADR 0008, etapa 4).
 _FUNDO_LISTADO = frozenset({"Fundos de Índice", "FI Imobiliário"})
-_TICKER_NA_DESCRICAO = re.compile(r"([A-Z0-9]{4}[0-9]{2})\b")
+_TICKER_NA_DESCRICAO = re.compile(r"([A-Z][A-Z0-9]{3}[0-9]{2})\b")
 
 
 @dataclass(frozen=True, slots=True)
