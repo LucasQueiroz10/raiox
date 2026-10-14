@@ -45,6 +45,9 @@ class ExemploSoAprovado:
     def aquecer(self):
         return True
 
+    def identificacao(self):
+        return self._exemplo.identificacao()
+
     def composicoes(self):
         return self._exemplo.composicoes()
 

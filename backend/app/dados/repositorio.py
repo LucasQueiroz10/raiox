@@ -1,5 +1,5 @@
-"""De onde a API tira os dados públicos: composições, ligação ativo -> empresa, classificação e
-nomes.
+"""De onde a API tira os dados públicos: identificação, composições, ligação ativo -> empresa,
+classificação e nomes.
 
 Duas implementações: o PostgreSQL (app/dados/postgres.py), quando RX_BANCO_URL está definida, e o
 conjunto de exemplo sintético (app/dados/exemplo.py), no desenvolvimento sem banco.
@@ -10,10 +10,16 @@ from typing import Protocol, runtime_checkable
 
 from app.core.classificacao import TabelaClassificacao
 from app.core.composicao import Composicao
+from app.core.traducao import TabelaIdentificacao
 
 
 @runtime_checkable
 class RepositorioDados(Protocol):
+    def identificacao(self) -> TabelaIdentificacao:
+        """Como cada posição da carteira chega ao ativo_id: tickers, ISINs e o tipo de cada ativo
+        da identificação vigente (ADR 0005, seção 5)."""
+        ...
+
     def composicoes(self) -> Mapping[str, Composicao]:
         """Composição mais recente de cada fundo, pelo fundo_id."""
         ...

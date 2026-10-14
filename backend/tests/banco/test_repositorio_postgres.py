@@ -16,6 +16,7 @@ from sqlalchemy.engine import make_url
 
 from app.core.classificacao import Origem, ParticipacaoTema, Status
 from app.core.composicao import ItemComposicao, TipoItem
+from app.core.traducao import traduzir
 from app.dados.exemplo import RepositorioExemplo
 from app.dados.postgres import (
     INTERVALO_S,
@@ -32,7 +33,7 @@ from tests.banco.apoio import (
     inserir_composicao,
     publicar,
 )
-from tests.ficticios import isin
+from tests.ficticios import cnpj, isin, isin_da_raiz
 
 UCITS = "IEZZUCITS001"  # ISIN sintético de ETF UCITS (IE é da lista permitida; ZZ, não)
 ETF_EUA = "US:ZZETF"
@@ -123,6 +124,34 @@ def test_le_as_mesmas_composicoes_ligacoes_e_nomes_do_exemplo(repo, ingestao):
     assert repo.empresa_do_ativo() == ligacao
     assert {i: repo.nome(i) for i in nomeados} == {i: exemplo.nome(i) for i in nomeados}
     assert repo.nome("ZZ0000000000") is None
+
+
+def test_le_a_mesma_identificacao_do_exemplo(repo, ingestao):
+    carregar_exemplo(ingestao)
+
+    assert repo.identificacao() == RepositorioExemplo().identificacao()
+
+
+def test_identificacao_traz_tickers_isin_e_o_fii_pela_raiz(repo, ingestao):
+    carga = abrir_carga(ingestao, "identificacao")
+    fii, isin_do_fii = f"CNPJ:{cnpj('FII-RAIZ')}", isin_da_raiz("ZZFI", "CTF00")
+    ingestao.execute(
+        "INSERT INTO ref.ativo (carga_id, ativo_id, tipo, isin, fii_tipo, fii_segmento)"
+        " VALUES (%s, %s, 'fundo', %s, 'tijolo', 'Logística')",
+        (carga, fii, isin_do_fii),
+    )
+    ingestao.execute(
+        "INSERT INTO ref.ativo (carga_id, ativo_id, tipo, ticker_eua)"
+        " VALUES (%s, %s, 'fundo', 'ZZETF')",
+        (carga, ETF_EUA),
+    )
+    publicar(ingestao, carga)
+
+    t = repo.identificacao()
+
+    assert traduzir("ticker_b3", "ZZFI11", TipoItem.ACAO, t) == (fii, TipoItem.FUNDO)
+    assert traduzir("isin", isin_do_fii, TipoItem.ACAO, t) == (fii, TipoItem.FUNDO)
+    assert traduzir("ticker_eua", "ZZETF", TipoItem.ACAO, t) == (ETF_EUA, TipoItem.FUNDO)
 
 
 def test_le_a_classificacao_do_exemplo_so_com_as_linhas_aprovadas(repo, ingestao):
