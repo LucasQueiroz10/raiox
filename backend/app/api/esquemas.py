@@ -13,11 +13,20 @@ from pydantic import (
     BeforeValidator,
     ConfigDict,
     Field,
+    ValidationInfo,
     WithJsonSchema,
     field_validator,
 )
+from pydantic_core import PydanticCustomError
 
-from app.core.identificadores import normalizar_isin
+from app.core.identificadores import (
+    IsinForaDaLista,
+    normalizar_cnpj,
+    normalizar_isin_permitido,
+    normalizar_ticker_b3,
+    normalizar_ticker_eua,
+)
+from app.core.traducao import TipoIdentificador
 
 MAX_POSICOES = 500
 MAX_FUNDOS = 100
@@ -49,16 +58,41 @@ class _Estrito(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+# Validação e normalização de cada tipo de identificador (ADR 0005, seção 5). As mensagens de erro
+# nunca repetem o valor enviado.
+_NORMALIZAR = {
+    "isin": normalizar_isin_permitido,
+    "ticker_b3": normalizar_ticker_b3,
+    "ticker_eua": normalizar_ticker_eua,
+    "cnpj": normalizar_cnpj,
+}
+
+
 class PosicaoEntrada(_Estrito):
-    isin: str
+    """Uma posição da carteira, pelo identificador (ADR 0005, seção 5).
+
+    `tipo` é o que a pessoa declarou; para um ativo que a base conhece, vale o tipo da base. A ação
+    americana entra só pelo ticker: o ISIN de país fora da lista permitida recebe 422 com o motivo
+    "isin_fora_da_lista".
+    """
+
+    # Antes do identificador: o validador dele lê o tipo já validado.
+    tipo_identificador: TipoIdentificador
+    identificador: str
     valor: ValorEmTexto
     moeda: Literal["BRL", "USD"]
     tipo: Literal["acao", "fundo"]
 
-    @field_validator("isin")
+    @field_validator("identificador")
     @classmethod
-    def _isin_valido(cls, isin: str) -> str:
-        return normalizar_isin(isin)
+    def _identificador_valido(cls, identificador: str, info: ValidationInfo) -> str:
+        tipo_identificador = info.data.get("tipo_identificador")
+        if tipo_identificador is None:
+            return identificador  # o tipo_identificador inválido já tem o seu erro
+        try:
+            return _NORMALIZAR[tipo_identificador](identificador)
+        except IsinForaDaLista as erro:
+            raise PydanticCustomError("isin_fora_da_lista", str(erro)) from None
 
 
 class EntradaRaioX(_Estrito):

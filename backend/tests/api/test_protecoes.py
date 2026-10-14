@@ -11,7 +11,17 @@ from app.config import Config
 from app.dados.exemplo import RepositorioExemplo
 from app.main import app, criar_app
 
-CARTEIRA = {"posicoes": [{"isin": "ZZBANCO00013", "valor": "1.00", "moeda": "BRL", "tipo": "acao"}]}
+CARTEIRA = {
+    "posicoes": [
+        {
+            "tipo_identificador": "isin",
+            "identificador": "ZZBANCO00013",
+            "valor": "1.00",
+            "moeda": "BRL",
+            "tipo": "acao",
+        }
+    ]
+}
 UM_MB = 1024 * 1024
 ORIGEM = "https://rx.exemplo"
 JSON = {"content-type": "application/json"}

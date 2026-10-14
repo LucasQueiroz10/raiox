@@ -93,8 +93,20 @@ def test_cadastro_publica_identificacao_e_setor_e_a_api_soma_as_classes(
     config = Config(producao=False, origens_permitidas=(), banco_url=banco_novo.url("rx_api"))
     carteira = {
         "posicoes": [
-            {"isin": ON, "valor": "100.00", "moeda": "BRL", "tipo": "acao"},
-            {"isin": PN, "valor": "50.00", "moeda": "BRL", "tipo": "acao"},
+            {
+                "tipo_identificador": "isin",
+                "identificador": ON,
+                "valor": "100.00",
+                "moeda": "BRL",
+                "tipo": "acao",
+            },
+            {
+                "tipo_identificador": "isin",
+                "identificador": PN,
+                "valor": "50.00",
+                "moeda": "BRL",
+                "tipo": "acao",
+            },
         ]
     }
     with TestClient(criar_app(config)) as cliente:
@@ -107,6 +119,33 @@ def test_cadastro_publica_identificacao_e_setor_e_a_api_soma_as_classes(
         "150.00",
     )
     assert [c["ativo_id"] for c in empresa["classes"]] == [ON, PN]
+
+
+def test_carteira_pelo_ticker_soma_as_classes_e_acha_o_fii_pela_raiz(banco_novo, curadoria_vazia):
+    # O FII não tem ticker na identificação (não aparece emprestado no CDA): a API o acha pela raiz
+    # do ISIN do informe mensal (ADR 0005, seção 5) e, marcado como ação, ele continua fundo.
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        carregar_cadastro(ingestao, fontes(curadoria_vazia))
+    config = Config(producao=False, origens_permitidas=(), banco_url=banco_novo.url("rx_api"))
+
+    def ticker(codigo: str, valor: str) -> dict:
+        return {
+            "tipo_identificador": "ticker_b3",
+            "identificador": codigo,
+            "valor": valor,
+            "moeda": "BRL",
+            "tipo": "acao",
+        }
+
+    carteira = {
+        "posicoes": [ticker("ZZAA3", "100.00"), ticker("ZZAA4", "50.00"), ticker("ZZFI11", "30.00")]
+    }
+    with TestClient(criar_app(config)) as cliente:
+        corpo = cliente.post("/api/raiox", json=carteira).json()
+
+    (empresa,) = corpo["empresas"]
+    assert (empresa["empresa_id"], empresa["total"]) == (f"BR:CNPJ:{EMPRESA}", "150.00")
+    assert corpo["avisos"] == [{"codigo": "fundo_sem_composicao", "fundo_id": f"CNPJ:{FII}"}]
 
 
 def test_queda_grande_no_numero_de_ativos_nao_publica(banco_novo, curadoria_vazia):

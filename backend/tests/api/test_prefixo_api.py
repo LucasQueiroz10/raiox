@@ -7,7 +7,15 @@ from app.config import Config
 from app.main import criar_app
 
 CARTEIRA = {
-    "posicoes": [{"isin": "ZZBANCO00013", "valor": "500.00", "moeda": "BRL", "tipo": "acao"}]
+    "posicoes": [
+        {
+            "tipo_identificador": "isin",
+            "identificador": "ZZBANCO00013",
+            "valor": "500.00",
+            "moeda": "BRL",
+            "tipo": "acao",
+        }
+    ]
 }
 
 
