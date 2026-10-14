@@ -90,3 +90,49 @@ def normalizar_cnpj(texto: str) -> str:
     if digitos_verificadores_cnpj(cnpj[:12]) != cnpj[12:]:
         raise ValueError("CNPJ com dígito verificador inválido")
     return cnpj
+
+
+# --- Entrada da carteira por identificador (ADR 0005, seção 5) ---
+
+
+class IsinForaDaLista(ValueError):
+    """ISIN válido, mas de país fora da lista permitida (ex.: ação americana). Nunca é guardado nem
+    usado: a ação americana entra pelo ticker (ADR 0005, seção 5)."""
+
+
+def normalizar_isin_permitido(texto: str) -> str:
+    """Como normalizar_isin, e o país precisa estar em PAISES_ISIN; fora da lista, IsinForaDaLista
+    com uma mensagem que pede o ticker."""
+    isin = normalizar_isin(texto)
+    if not isin.startswith(PAISES_ISIN):
+        raise IsinForaDaLista("ISIN de país fora da lista permitida; envie o ticker")
+    return isin
+
+
+# O mercado fracionário usa o mesmo ticker com "F" no fim (PETR4F): é a mesma ação.
+_FRACIONARIO = re.compile(r"(?P<ticker>[A-Z][A-Z0-9]{3}[0-9]{1,2})F")
+
+
+def normalizar_ticker_b3(texto: str) -> str:
+    """Remove espaços, põe em maiúsculas e tira o "F" do fracionário; lança ValueError fora do
+    formato da B3 (TICKER_B3)."""
+    ticker = "".join(texto.split()).upper()
+    if fracionario := _FRACIONARIO.fullmatch(ticker):
+        ticker = fracionario["ticker"]
+    # Sem repetir o ticker: ele é dado da carteira e pode acabar em um log.
+    if TICKER_B3.fullmatch(ticker) is None:
+        raise ValueError("ticker da B3 com formato inválido")
+    return ticker
+
+
+# Ticker americano: 1 a 5 letras e a classe opcional depois do ponto (ex.: BRK.B); o mesmo formato
+# do "US:" no domínio ref.ativo_id.
+TICKER_EUA = re.compile(r"[A-Z]{1,5}(\.[A-Z])?")
+
+
+def normalizar_ticker_eua(texto: str) -> str:
+    """Remove espaços e põe em maiúsculas; lança ValueError fora do formato (TICKER_EUA)."""
+    ticker = "".join(texto.split()).upper()
+    if TICKER_EUA.fullmatch(ticker) is None:
+        raise ValueError("ticker americano com formato inválido")
+    return ticker
