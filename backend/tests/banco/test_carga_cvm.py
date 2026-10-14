@@ -163,6 +163,23 @@ def test_ativo_objeto_e_gravado_e_o_mes_igual_nao_e_regravado(banco_novo, monkey
         assert gravado == [(ACAO,)]
 
 
+def test_log_do_mes_com_erro_nao_repete_a_mensagem_da_excecao(
+    banco_novo, monkeypatch, tmp_path, caplog
+):
+    def falhar(conexao, mes, obter_zip):
+        raise ValueError("valor inválido: ZZMARCADOR")
+
+    monkeypatch.setattr(cvm, "carregar_mes", falhar)
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+    arquivo = tmp_path / "cda_fi_202608.zip"
+    arquivo.write_bytes(b"")
+
+    assert cvm.main(["--zip", str(arquivo)]) == 1
+
+    assert "mês 202608: carga com erro (ValueError)" in caplog.text
+    assert "ZZMARCADOR" not in caplog.text
+
+
 def test_relatorio_lista_os_fundos_gravados_fora_de_1_por_cento(banco_novo):
     # O fundo B informa aplicações que somam metade do patrimônio.
     with banco_novo.conectar("rx_ingestao") as ingestao:

@@ -48,11 +48,13 @@ from cargas.rotina import (
     ErroDeValidacao,
     Gravar,
     expirar_paradas,
+    motivo,
     publicar_carga,
     registrar_falha,
     trava,
 )
 from cargas.validacao import conferir_sem_cpf
+from ingest.arquivos_cvm import LayoutInesperado
 from ingest.cvm_cda import ler_mes
 from ingest.cvm_fca import ler_fca
 from ingest.cvm_fii import ler_informes_fii
@@ -199,10 +201,11 @@ def _copiar(
 
 
 def _mais_recentes(indice: str, padrao: str, quantidade: int) -> list[str]:
-    """Os `quantidade` arquivos mais recentes do índice do portal (o ano ou mês está no nome)."""
+    """Os `quantidade` arquivos mais recentes do índice do portal (o ano ou mês está no nome).
+    Sem nenhum, o portal mudou ou está fora do ar: LayoutInesperado, com a mensagem no motivo."""
     nomes = sorted(set(re.findall(padrao, indice)), reverse=True)
     if not nomes:
-        raise ValueError(f"nenhum arquivo {padrao} no índice do portal")
+        raise LayoutInesperado(f"nenhum arquivo {padrao} no índice do portal")
     return nomes[:quantidade]
 
 
@@ -255,8 +258,8 @@ def main(argv: list[str] | None = None) -> int:
             fontes = ler_pasta(args.pasta) if args.pasta else baixar_fontes()
             relatorio = carregar_cadastro(conexao, fontes)
         except Exception as erro:
-            # O motivo completo fica na carga (ref.carga.motivo_erro); aqui, só o resumo.
-            log.error("cadastro com erro (%s: %s)", type(erro).__name__, erro)
+            # O mesmo motivo da carga (ref.carga.motivo_erro), sem valores das linhas.
+            log.error("cadastro com erro (%s)", motivo(erro))
             return 1
     log.info(
         "cadastro publicado: %d empresas, ativos %s, %d setores; descartes: %s",

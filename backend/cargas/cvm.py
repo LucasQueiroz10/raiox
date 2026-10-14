@@ -51,11 +51,13 @@ from cargas.rotina import (
     ErroDeValidacao,
     Gravar,
     expirar_paradas,
+    motivo,
     publicar_carga,
     registrar_falha,
     trava,
 )
 from cargas.validacao import conferir_sem_cpf
+from ingest.arquivos_cvm import LayoutInesperado
 from ingest.cvm_cda import FONTE, MesCDA, ler_mes
 
 PORTAL = "https://dados.cvm.gov.br/dados/FI/DOC/CDA/DADOS/"
@@ -95,10 +97,11 @@ class Relatorio:
 
 
 def meses_do_portal(indice: str) -> list[str]:
-    """Os meses (AAAAMM) que o índice do portal oferece, do mais recente para o mais antigo."""
+    """Os meses (AAAAMM) que o índice do portal oferece, do mais recente para o mais antigo.
+    Sem nenhum, o portal mudou ou está fora do ar: LayoutInesperado, com a mensagem no motivo."""
     meses = sorted(set(_ARQUIVO_DO_MES.findall(indice)), reverse=True)
     if not meses:
-        raise ValueError("nenhum mês no índice do portal da CVM")
+        raise LayoutInesperado("nenhum mês no índice do portal da CVM")
     return meses
 
 
@@ -314,8 +317,8 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 _registrar(carregar_mes(conexao, mes, obter_zip))
             except Exception as erro:
-                # O motivo completo fica na carga (ref.carga.motivo_erro); aqui, só o resumo.
-                log.error("mês %s: carga com erro (%s: %s)", mes, type(erro).__name__, erro)
+                # O mesmo motivo da carga (ref.carga.motivo_erro), sem valores das linhas.
+                log.error("mês %s: carga com erro (%s)", mes, motivo(erro))
                 falhou = True
     return 1 if falhou else 0
 

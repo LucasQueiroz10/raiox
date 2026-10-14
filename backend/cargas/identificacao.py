@@ -36,6 +36,7 @@ from pathlib import Path
 
 from app.core.composicao import TipoItem
 from app.core.identificadores import normalizar_cnpj
+from cargas.rotina import ErroDeValidacao
 from ingest.arquivos_cvm import TICKER_B3
 from ingest.cvm_cda import MesCDA
 from ingest.cvm_fca import CadastroFCA
@@ -197,26 +198,33 @@ def _nomes_dos_fundos(meses: list[MesCDA]) -> dict[str, str]:
 # --- Curadoria manual (cargas/curadoria/README.md) ---
 
 
+class CuradoriaInvalida(ErroDeValidacao, ValueError):
+    """Linha errada num arquivo da curadoria. A mensagem diz o arquivo, a linha e o que está errado,
+    nunca o conteúdo, e vai para o motivo da carga (cargas/rotina.motivo)."""
+
+
 def ler_curadoria(pasta: Path) -> Curadoria:
-    """Lê e confere os arquivos de curadoria. Uma linha errada levanta ValueError com o arquivo e
-    a linha: a carga para, em vez de gravar uma ligação errada."""
+    """Lê e confere os arquivos de curadoria. Uma linha errada levanta CuradoriaInvalida com o
+    arquivo e a linha: a carga para, em vez de gravar uma ligação errada."""
     emissores: dict[str, tuple[str, str]] = {}
     for n, linha in _linhas(pasta / "emissores_b3.csv", ("raiz", "cnpj", "nome", "motivo")):
         onde = f"emissores_b3.csv, linha {n}"
         raiz = linha["raiz"].strip()
         if not _RAIZ.fullmatch(raiz):
-            raise ValueError(f"{onde}: raiz fora do formato (4 caracteres, começando por letra)")
+            raise CuradoriaInvalida(
+                f"{onde}: raiz fora do formato (4 caracteres, começando por letra)"
+            )
         if raiz in emissores:
-            raise ValueError(f"{onde}: raiz repetida")
+            raise CuradoriaInvalida(f"{onde}: raiz repetida")
         emissores[raiz] = (_cnpj(linha["cnpj"], onde), linha["nome"].strip())
     fundos: dict[str, str] = {}
     for n, linha in _linhas(pasta / "fundos_listados.csv", ("ticker", "cnpj", "nome", "fonte")):
         onde = f"fundos_listados.csv, linha {n}"
         ticker = linha["ticker"].strip()
         if not TICKER_B3.fullmatch(ticker):
-            raise ValueError(f"{onde}: ticker fora do formato da B3")
+            raise CuradoriaInvalida(f"{onde}: ticker fora do formato da B3")
         if ticker in fundos:
-            raise ValueError(f"{onde}: ticker repetido")
+            raise CuradoriaInvalida(f"{onde}: ticker repetido")
         fundos[ticker] = _cnpj(linha["cnpj"], onde)
     return Curadoria(emissores=emissores, fundos_listados=fundos)
 
@@ -225,7 +233,7 @@ def _linhas(caminho: Path, colunas: tuple[str, ...]) -> Iterable[tuple[int, dict
     with caminho.open(encoding="utf-8", newline="") as arquivo:
         leitor = csv.DictReader(arquivo, delimiter=";")
         if tuple(leitor.fieldnames or ()) != colunas:
-            raise ValueError(f"{caminho.name}: o cabeçalho precisa ser {';'.join(colunas)}")
+            raise CuradoriaInvalida(f"{caminho.name}: o cabeçalho precisa ser {';'.join(colunas)}")
         # A linha 1 é o cabeçalho: a primeira linha de dados é a 2.
         yield from enumerate(leitor, start=2)
 
@@ -234,4 +242,4 @@ def _cnpj(texto: str, onde: str) -> str:
     try:
         return normalizar_cnpj(texto)
     except ValueError:
-        raise ValueError(f"{onde}: CNPJ inválido") from None
+        raise CuradoriaInvalida(f"{onde}: CNPJ inválido") from None
