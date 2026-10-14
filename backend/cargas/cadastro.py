@@ -17,6 +17,11 @@ Publica duas cargas, cada uma uma foto completa (ADR 0006, seção 3), pela roti
 2. **classificação:** `ref.classificacao`, com o setor de atividade de cada companhia (origem
    "oficial", aprovado: o código já trata a origem oficial como revisada).
 
+As duas são publicadas em transações separadas. Se a classificação falhar depois de a identificação
+publicar, a API passa a usar a identificação nova com a classificação anterior: as empresas novas
+ficam sem setor (nunca com setor errado) até a carga seguinte. Aceito assim na revisão do PR #70; a
+carga com erro dispara o alerta (ADR 0007, seção 8).
+
 Antes de publicar, a carga confere se o número de empresas e de ativos não caiu mais de 20% em
 relação à foto vigente (fonte incompleta) e faz a varredura de CPF nos nomes. Uma falha, também no
 download das fontes, antes de haver o que gravar, deixa a carga "com_erro" e o comando termina com

@@ -118,6 +118,10 @@ Regras:
   test_carga_cvm.py e test_carga_cadastro.py (com banco, job "banco").
 - Medição da foto da API (DT-10), com o banco carregado e RX_BANCO_URL do rx_api:
     python -m medicoes.foto_dos_dados
+- Pico de memória de uma carga (ADR 0007, seção 5). Publica de verdade: só aceita RX_BANCO_URL do
+  banco local (127.0.0.1 ou localhost), com o rx_ingestao:
+    python -m medicoes.pico_da_carga cadastro [--pasta DIR]
+    python -m medicoes.pico_da_carga cvm --meses 3
 
 ## API: limites e configuração
 - Limites (app/api/raiox.py, esquemas.py e main.py): 500 posições, das quais até 100 fundos;

@@ -23,8 +23,15 @@ agosto de 2026).
 
 ## `fundos_listados.csv`
 
-O ticker de um ETF ou FII ligado ao CNPJ do fundo, para os fundos que a carga não liga sozinha (ela
-só acha os que aparecem emprestados no CDA). Começa vazio: entra o que os testadores tiverem.
+O ticker de um ETF ou FII ligado ao CNPJ do fundo, para os ETFs e FIIs que a carga não liga sozinha
+(ela só acha os que aparecem emprestados no CDA). Começa vazio.
+
+As linhas são preenchidas pelo lado da fonte, nunca a partir da carteira de alguém: o fundo vem das
+fontes liberadas na matriz de dados (os ETFs no CDA, os FIIs no informe mensal de FII) e o ticker é
+conferido no regulamento do fundo, no site da CVM. Este arquivo vai para o Git, com a data de cada
+commit: preenchê-lo com o que os testadores têm faria do histórico um registro parcial das carteiras
+deles, e a carteira não sai do processamento (`CLAUDE.md`, fase atual). A lista de ETFs da B3 não
+serve: está entre as fontes descartadas da matriz (exige licença).
 
 - `ticker`: o código na B3 (ex.: `ZZZZ11`);
 - `cnpj`: o CNPJ da classe do fundo, sem máscara;

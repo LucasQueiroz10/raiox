@@ -140,7 +140,7 @@ As composições têm defasagem: a da CVM é mensal e a dos ETFs americanos é t
 
 ## Privacidade
 
-O projeto segue a LGPD: coleta o mínimo necessário, não guarda carteiras e mantém os registros de acesso por 6 meses, sem dados de carteira. Nenhum dado pessoal real é usado em código, testes ou logs.
+O projeto segue a LGPD: coleta o mínimo necessário e mantém os registros de acesso por 6 meses, sem dados de carteira. No protótipo atual, a carteira é processada em memória e não é gravada; as contas com carteiras salvas, criptografadas, ficam para uma próxima versão. Nenhum dado pessoal real é usado em código, testes ou logs.
 
 ## Licença
 
