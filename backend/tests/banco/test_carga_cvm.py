@@ -3,14 +3,17 @@
 Cada teste usa um banco novo: o resultado depende do que já foi publicado para o mesmo mês.
 """
 
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal as D
 
 import pytest
 
+from app.core.composicao import ItemComposicao, TipoItem
+from cargas import cvm
 from cargas.cvm import TIPO, carregar_mes
 from cargas.rotina import ErroDeValidacao
-from ingest.cvm_cda import FONTE, LayoutInesperado
+from ingest.cvm_cda import FONTE, LayoutInesperado, MesCDA, ler_mes
 from tests.ficticios import cnpj, isin
 from tests.ingest.cda_sintetico import MesSintetico
 
@@ -129,6 +132,35 @@ def test_cpf_nas_linhas_preparadas_impede_a_publicacao(banco_novo):
         ((status, motivo),) = cargas(ingestao)
         assert (status, CPF_DE_TESTE in motivo) == ("com_erro", False)
         assert ingestao.execute("SELECT count(*) FROM ref.composicao").fetchone() == (0,)
+
+
+def com_derivativo(lido: MesCDA) -> MesCDA:
+    """O mês lido com um derivativo sobre a ACAO no fundo A. O leitor ainda não liga o derivativo
+    ao ativo-objeto (DT-14): o teste o põe à mão, como a carga o receberá depois."""
+    fundo = f"CNPJ:{FUNDO_A}"
+    c = lido.composicoes[fundo]
+    derivativo = ItemComposicao(None, D("0.01"), TipoItem.DERIVATIVO, ativo_objeto=ACAO)
+    return replace(
+        lido,
+        composicoes={**lido.composicoes, fundo: replace(c, itens=(*c.itens, derivativo))},
+        valores={**lido.valores, fundo: (*lido.valores[fundo], D("10.00"))},
+    )
+
+
+def test_ativo_objeto_e_gravado_e_o_mes_igual_nao_e_regravado(banco_novo, monkeypatch):
+    # A assinatura do incremental compara o ativo_objeto: se ele não fosse gravado, todo fundo com
+    # derivativo pareceria mudado a cada carga.
+    monkeypatch.setattr(cvm, "ler_mes", lambda z: com_derivativo(ler_mes(z)))
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        carregar(ingestao, mes_com((FUNDO_A, "250.00")))
+
+        segunda = carregar(ingestao, mes_com((FUNDO_A, "250.00")))
+
+        assert (segunda.carga_id, segunda.gravados, segunda.sem_mudanca) == (None, 0, 1)
+        gravado = ingestao.execute(
+            "SELECT ativo_objeto FROM ref.composicao_item WHERE tipo = 'derivativo'"
+        ).fetchall()
+        assert gravado == [(ACAO,)]
 
 
 def test_relatorio_lista_os_fundos_gravados_fora_de_1_por_cento(banco_novo):

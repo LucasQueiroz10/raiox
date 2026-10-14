@@ -68,8 +68,11 @@ TOLERANCIA_DA_SOMA = Decimal("0.01")
 
 _ARQUIVO_DO_MES = re.compile(r"cda_fi_(\d{6})\.zip")
 _COLUNAS_COMPOSICAO = ("fundo_id", "nome_fundo", "data_referencia", "patrimonio")
+# Toda coluna que a assinatura compara (_assinatura_lida) precisa ser gravada: uma que faltasse
+# faria o fundo parecer mudado a cada carga, e o incremental pararia sem dar erro.
 _COLUNAS_ITEM = (
     "fundo_id", "ordem", "ativo_id", "empresa_id", "tipo", "valor", "peso", "emissor",
+    "ativo_objeto",
 )  # fmt: skip
 
 log = logging.getLogger("cargas.cvm")
@@ -168,7 +171,7 @@ def _gravacao(lido: MesCDA, fundos: list[str]) -> Gravar:
         (f, lido.nomes[f], lido.composicoes[f].data_referencia, lido.patrimonio[f]) for f in fundos
     ]
     itens = [
-        (f, ordem, i.ativo_id, i.empresa_id, i.tipo.value, valor, i.peso, i.emissor)
+        (f, ordem, i.ativo_id, i.empresa_id, i.tipo.value, valor, i.peso, i.emissor, i.ativo_objeto)
         for f in fundos
         for ordem, (i, valor) in enumerate(
             zip(lido.composicoes[f].itens, lido.valores[f], strict=True), start=1
@@ -187,7 +190,8 @@ def _gravacao(lido: MesCDA, fundos: list[str]) -> Gravar:
         )
         conexao.execute(
             "CREATE TEMP TABLE prep_item (fundo_id text, ordem integer, ativo_id text,"
-            " empresa_id text, tipo text, valor numeric, peso numeric, emissor text)"
+            " empresa_id text, tipo text, valor numeric, peso numeric, emissor text,"
+            " ativo_objeto text)"
             " ON COMMIT DROP"
         )
         with conexao.cursor() as cursor:
@@ -210,9 +214,10 @@ def _gravacao(lido: MesCDA, fundos: list[str]) -> Gravar:
         )
         conexao.execute(
             "INSERT INTO ref.composicao_item"
-            " (composicao_id, ordem, ativo_id, empresa_id, tipo, valor, peso, emissor)"
+            " (composicao_id, ordem, ativo_id, empresa_id, tipo, valor, peso, emissor,"
+            " ativo_objeto)"
             " SELECT c.composicao_id, i.ordem, i.ativo_id, i.empresa_id, i.tipo, i.valor,"
-            " i.peso, i.emissor"
+            " i.peso, i.emissor, i.ativo_objeto"
             " FROM prep_item i JOIN ref.composicao c"
             " ON c.carga_id = %s AND c.fundo_id = i.fundo_id",
             (carga_id,),
