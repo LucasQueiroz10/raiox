@@ -8,7 +8,15 @@ from app.dados.postgres import DadosIndisponiveis, RepositorioPostgres
 from app.main import criar_app
 
 CARTEIRA = {
-    "posicoes": [{"isin": "ZZBANCO00013", "valor": "500.00", "moeda": "BRL", "tipo": "acao"}]
+    "posicoes": [
+        {
+            "tipo_identificador": "isin",
+            "identificador": "ZZBANCO00013",
+            "valor": "500.00",
+            "moeda": "BRL",
+            "tipo": "acao",
+        }
+    ]
 }
 # Porta 1: nada escuta nela, então a conexão é recusada na hora.
 BANCO_FORA_DO_AR = "postgresql+psycopg://rx_api@127.0.0.1:1/rx"

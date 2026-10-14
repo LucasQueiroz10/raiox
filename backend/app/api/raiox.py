@@ -14,6 +14,7 @@ from app.core.agregacao import NUCLEO, Fatia, RaioX, agregar
 from app.core.cambio import PtaxUsada, para_reais
 from app.core.composicao import Categoria, Posicao, TipoItem
 from app.core.lookthrough import abrir_carteira
+from app.core.traducao import traduzir
 from app.dados.postgres import DadosIndisponiveis
 from app.dados.ptax import CambioIndisponivel, FontePtax
 from app.dados.repositorio import RepositorioDados
@@ -210,10 +211,14 @@ def raiox(
 def _analisar(
     entrada: e.EntradaRaioX, repo: RepositorioDados, ptax: PtaxUsada | None
 ) -> e.RaioXResposta:
-    posicoes = [
-        Posicao(p.isin, para_reais(p.valor, p.moeda, ptax), TipoItem(p.tipo))
-        for p in entrada.posicoes
-    ]
+    # Cada posição chega ao ativo_id pela identificação da mesma foto (ADR 0005, seção 5).
+    identificacao = repo.identificacao()
+    posicoes = []
+    for p in entrada.posicoes:
+        ativo_id, tipo = traduzir(
+            p.tipo_identificador, p.identificador, TipoItem(p.tipo), identificacao
+        )
+        posicoes.append(Posicao(ativo_id, para_reais(p.valor, p.moeda, ptax), tipo))
     resultado = abrir_carteira(
         posicoes, repo.composicoes(), empresa_do_ativo=repo.empresa_do_ativo()
     )

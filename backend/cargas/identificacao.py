@@ -35,9 +35,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.core.composicao import TipoItem
-from app.core.identificadores import normalizar_cnpj
+from app.core.identificadores import TICKER_B3, normalizar_cnpj
 from cargas.rotina import ErroDeValidacao
-from ingest.arquivos_cvm import TICKER_B3
 from ingest.cvm_cda import MesCDA
 from ingest.cvm_fca import CadastroFCA
 from ingest.cvm_fii import InformesFII

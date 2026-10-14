@@ -21,11 +21,33 @@ MARCADORES = (ISIN_MARCADOR, "ZZCHIPS00019", "4242.17", "3131.29", "8080.91")
 
 CARTEIRA = {
     "posicoes": [
-        {"isin": ISIN_MARCADOR, "valor": "4242.17", "moeda": "BRL", "tipo": "acao"},
-        {"isin": "ZZCHIPS00019", "valor": "3131.29", "moeda": "USD", "tipo": "acao"},
+        {
+            "tipo_identificador": "isin",
+            "identificador": ISIN_MARCADOR,
+            "valor": "4242.17",
+            "moeda": "BRL",
+            "tipo": "acao",
+        },
+        {
+            "tipo_identificador": "isin",
+            "identificador": "ZZCHIPS00019",
+            "valor": "3131.29",
+            "moeda": "USD",
+            "tipo": "acao",
+        },
     ]
 }
-INVALIDA = {"posicoes": [{"isin": ISIN_MARCADOR, "valor": "-8080.91", "moeda": "BRL", "tipo": "x"}]}
+INVALIDA = {
+    "posicoes": [
+        {
+            "tipo_identificador": "isin",
+            "identificador": ISIN_MARCADOR,
+            "valor": "-8080.91",
+            "moeda": "BRL",
+            "tipo": "x",
+        }
+    ]
+}
 
 
 class PtaxFixa:

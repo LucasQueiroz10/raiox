@@ -14,7 +14,8 @@ from app.core.classificacao import (
     TabelaClassificacao,
 )
 from app.core.composicao import Composicao, ItemComposicao, TipoItem
-from app.core.identificadores import normalizar_isin
+from app.core.identificadores import normalizar_isin, normalizar_ticker_b3
+from app.core.traducao import AtivoIdentificado, TabelaIdentificacao
 
 ARQUIVO = Path(__file__).with_name("exemplo.json")
 
@@ -52,6 +53,33 @@ class RepositorioExemplo:
                 fundo, date.fromisoformat(c["data_referencia"]), c["fonte"], itens
             )
         return saida
+
+    @cached_property
+    def _identificacao(self) -> TabelaIdentificacao:
+        # Todos os ativos do exemplo são ISINs sintéticos: o ISIN é o próprio ativo_id.
+        def ticker(valor: str | None) -> str | None:
+            if valor and normalizar_ticker_b3(valor) != valor:
+                raise ValueError("ticker fora do formato no conjunto de exemplo")
+            return valor
+
+        acoes = [
+            AtivoIdentificado(
+                normalizar_isin(a["ativo_id"]),
+                TipoItem.ACAO,
+                ticker_b3=ticker(a.get("ticker_b3")),
+                isin=normalizar_isin(a["ativo_id"]),
+            )
+            for e in self._dados["empresas"]
+            for a in e["ativos"]
+        ]
+        tickers_dos_fundos = self._dados["tickers_b3_dos_fundos"]
+        fundos = [
+            AtivoIdentificado(
+                fundo, TipoItem.FUNDO, ticker_b3=ticker(tickers_dos_fundos.get(fundo)), isin=fundo
+            )
+            for fundo in self._composicoes
+        ]
+        return TabelaIdentificacao.montar(acoes + fundos)
 
     @cached_property
     def _empresa_do_ativo(self) -> dict[str, str]:
@@ -94,6 +122,9 @@ class RepositorioExemplo:
     def foto(self) -> RepositorioExemplo:
         """Os dados de exemplo não mudam: a foto é o próprio repositório."""
         return self
+
+    def identificacao(self) -> TabelaIdentificacao:
+        return self._identificacao
 
     def composicoes(self) -> Mapping[str, Composicao]:
         return self._composicoes

@@ -32,8 +32,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import IO
 
+from app.core.identificadores import TICKER_B3
 from ingest import arquivos_cvm
-from ingest.arquivos_cvm import TICKER_B3, LayoutInesperado, linhas_csv
+from ingest.arquivos_cvm import LayoutInesperado, linhas_csv
 
 # Colunas das duas tabelas lidas, como a CVM publica (conferidas no pacote de 2026, em 13/10/2026).
 COLUNAS: dict[str, tuple[str, ...]] = {

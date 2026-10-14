@@ -30,6 +30,7 @@ from app.core.classificacao import (
     TabelaClassificacao,
 )
 from app.core.composicao import Composicao, ItemComposicao, TipoItem
+from app.core.traducao import AtivoIdentificado, TabelaIdentificacao
 
 INTERVALO_S = 60  # de quanto em quanto tempo, no máximo, confere se saiu carga nova
 # Depois de uma falha, espera mais antes de tentar de novo: sem isso, com o banco fora do ar, um
@@ -53,11 +54,16 @@ class FotoDados:
         empresa_do_ativo: Mapping[str, str],
         tabela: TabelaClassificacao,
         nomes: Mapping[str, str],
+        identificacao: TabelaIdentificacao,
     ) -> None:
         self._composicoes = composicoes
         self._empresa_do_ativo = empresa_do_ativo
         self._tabela = tabela
         self._nomes = nomes
+        self._identificacao = identificacao
+
+    def identificacao(self) -> TabelaIdentificacao:
+        return self._identificacao
 
     def composicoes(self) -> Mapping[str, Composicao]:
         return self._composicoes
@@ -125,9 +131,23 @@ def ler_foto(conexao: Connection) -> FotoDados:
 
     proprias = dict(composicoes)
     empresa_do_ativo: dict[str, str] = {}
+    identificados: list[AtivoIdentificado] = []
     for r in conexao.execute(
-        text("SELECT ativo_id, empresa_id, nome, aproximado_por FROM ref.ativo_vigente")
+        text(
+            "SELECT ativo_id, tipo, empresa_id, nome, aproximado_por, ticker_b3, ticker_eua, isin,"
+            " fii_tipo FROM ref.ativo_vigente"
+        )
     ):
+        identificados.append(
+            AtivoIdentificado(
+                r.ativo_id,
+                TipoItem(r.tipo),
+                ticker_b3=r.ticker_b3,
+                ticker_eua=r.ticker_eua,
+                isin=r.isin,
+                fii=r.fii_tipo is not None,
+            )
+        )
         if r.empresa_id:
             empresa_do_ativo[r.ativo_id] = r.empresa_id
         if r.nome:
@@ -141,7 +161,13 @@ def ler_foto(conexao: Connection) -> FotoDados:
     for r in conexao.execute(text("SELECT empresa_id, nome FROM ref.empresa_vigente")):
         nomes[r.empresa_id] = r.nome
 
-    return FotoDados(composicoes, empresa_do_ativo, _ler_tabela(conexao, atual), nomes)
+    return FotoDados(
+        composicoes,
+        empresa_do_ativo,
+        _ler_tabela(conexao, atual),
+        nomes,
+        TabelaIdentificacao.montar(identificados),
+    )
 
 
 def _ler_tabela(
@@ -270,6 +296,9 @@ class RepositorioPostgres:
     def fechar(self) -> None:
         """Fecha as conexões abertas com o banco (ao desligar o servidor)."""
         self._motor.dispose()
+
+    def identificacao(self) -> TabelaIdentificacao:
+        return self.foto().identificacao()
 
     def composicoes(self) -> Mapping[str, Composicao]:
         return self.foto().composicoes()

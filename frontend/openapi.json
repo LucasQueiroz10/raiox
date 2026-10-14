@@ -517,9 +517,12 @@
       },
       "PosicaoEntrada": {
         "properties": {
-          "isin": {
+          "tipo_identificador": {
+            "$ref": "#/components/schemas/TipoIdentificador"
+          },
+          "identificador": {
             "type": "string",
-            "title": "Isin"
+            "title": "Identificador"
           },
           "valor": {
             "type": "string",
@@ -549,12 +552,14 @@
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "isin",
+          "tipo_identificador",
+          "identificador",
           "valor",
           "moeda",
           "tipo"
         ],
-        "title": "PosicaoEntrada"
+        "title": "PosicaoEntrada",
+        "description": "Uma posição da carteira, pelo identificador (ADR 0005, seção 5).\n\n`tipo` é o que a pessoa declarou; para um ativo que a base conhece, vale o tipo da base. A ação\namericana entra só pelo ticker: o ISIN de país fora da lista permitida recebe 422 com o motivo\n\"isin_fora_da_lista\"."
       },
       "Ptax": {
         "properties": {
@@ -743,6 +748,15 @@
           "selo"
         ],
         "title": "Tema"
+      },
+      "TipoIdentificador": {
+        "type": "string",
+        "enum": [
+          "isin",
+          "ticker_b3",
+          "ticker_eua",
+          "cnpj"
+        ]
       },
       "ValidationError": {
         "properties": {

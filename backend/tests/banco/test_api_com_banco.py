@@ -14,8 +14,20 @@ from tests.banco.apoio import carregar_exemplo
 # Carteira de referência de tests/api/test_raiox.py: fundo de fundos e uma ação direta.
 CARTEIRA = {
     "posicoes": [
-        {"isin": "ZZFOF0000016", "valor": "1000.00", "moeda": "BRL", "tipo": "fundo"},
-        {"isin": "ZZBANCO00013", "valor": "500.00", "moeda": "BRL", "tipo": "acao"},
+        {
+            "tipo_identificador": "isin",
+            "identificador": "ZZFOF0000016",
+            "valor": "1000.00",
+            "moeda": "BRL",
+            "tipo": "fundo",
+        },
+        {
+            "tipo_identificador": "isin",
+            "identificador": "ZZBANCO00013",
+            "valor": "500.00",
+            "moeda": "BRL",
+            "tipo": "acao",
+        },
     ]
 }
 
@@ -44,6 +56,9 @@ class ExemploSoAprovado:
 
     def aquecer(self):
         return True
+
+    def identificacao(self):
+        return self._exemplo.identificacao()
 
     def composicoes(self):
         return self._exemplo.composicoes()

@@ -26,7 +26,8 @@ def test_422_informa_campo_e_motivo_sem_repetir_os_valores(cliente):
     entrada = {
         "posicoes": [
             {
-                "isin": "USZQ4X7K2W18",  # dígito verificador errado
+                "tipo_identificador": "isin",
+                "identificador": "USZQ4X7K2W18",  # dígito verificador errado
                 "valor": "-987654.32",
                 "moeda": "XQZ",
                 "tipo": "acao",
@@ -42,7 +43,7 @@ def test_422_informa_campo_e_motivo_sem_repetir_os_valores(cliente):
     assert detalhe["codigo"] == "entrada_invalida"
     erros = {tuple(e["campo"]): e["motivo"] for e in detalhe["erros"]}
     assert erros == {
-        ("posicoes", 0, "isin"): "value_error",
+        ("posicoes", 0, "identificador"): "value_error",
         ("posicoes", 0, "valor"): "greater_than",
         ("posicoes", 0, "moeda"): "literal_error",
         ("posicoes", 0, "apelido"): "extra_forbidden",
@@ -53,7 +54,15 @@ def test_422_informa_campo_e_motivo_sem_repetir_os_valores(cliente):
 
 
 def test_limite_de_fundos_aponta_o_campo_sem_devolver_a_carteira(cliente):
-    fundos = [{"isin": FOF, "valor": "1.00", "moeda": "BRL", "tipo": "fundo"}] * 101
+    fundos = [
+        {
+            "tipo_identificador": "isin",
+            "identificador": FOF,
+            "valor": "1.00",
+            "moeda": "BRL",
+            "tipo": "fundo",
+        }
+    ] * 101
 
     r = cliente.post("/api/raiox", json={"posicoes": fundos})
 
@@ -85,7 +94,17 @@ class RepositorioQuebrado(RepositorioExemplo):
 
 def test_erro_inesperado_da_500_generico_e_o_log_so_tem_o_tipo(cliente, caplog):
     app.dependency_overrides[obter_repositorio] = RepositorioQuebrado
-    carteira = {"posicoes": [{"isin": FOF, "valor": "1.00", "moeda": "BRL", "tipo": "fundo"}]}
+    carteira = {
+        "posicoes": [
+            {
+                "tipo_identificador": "isin",
+                "identificador": FOF,
+                "valor": "1.00",
+                "moeda": "BRL",
+                "tipo": "fundo",
+            }
+        ]
+    }
 
     with caplog.at_level(logging.DEBUG):
         r = cliente.post("/api/raiox", json=carteira)

@@ -12,19 +12,11 @@ import zipfile
 from collections.abc import Iterator, Sequence
 from decimal import Decimal
 
-from app.core.identificadores import isin_valido, normalizar_cnpj
+from app.core.identificadores import PAISES_ISIN, isin_valido, normalizar_cnpj
 
 # Só o formato "-123.45": recusa vírgula decimal, notação científica, "NaN" e "Infinity" (que o
 # Decimal aceitaria).
 _VALOR = re.compile(r"-?[0-9]+(?:\.[0-9]+)?")
-
-
-# Países de ISIN que podem ser guardados: a mesma lista do domínio ref.ativo_id (ADR 0005). ZZ não
-# é país: é o prefixo dos ISINs sintéticos dos testes.
-PAISES_ISIN = ("BR", "IE", "LU", "ZZ")
-# Ticker da B3: a raiz de 4 caracteres (o código do emissor), começando por letra, e 1 ou 2 dígitos
-# (ex.: PETR4, BPAC11, B3SA3). A raiz também é o 3º ao 6º caractere do ISIN brasileiro.
-TICKER_B3 = re.compile(r"[A-Z][A-Z0-9]{3}[0-9]{1,2}")
 
 
 class LayoutInesperado(ValueError):

@@ -185,10 +185,18 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
-        /** PosicaoEntrada */
+        /**
+         * PosicaoEntrada
+         * @description Uma posição da carteira, pelo identificador (ADR 0005, seção 5).
+         *
+         *     `tipo` é o que a pessoa declarou; para um ativo que a base conhece, vale o tipo da base. A ação
+         *     americana entra só pelo ticker: o ISIN de país fora da lista permitida recebe 422 com o motivo
+         *     "isin_fora_da_lista".
+         */
         PosicaoEntrada: {
-            /** Isin */
-            isin: string;
+            tipo_identificador: components["schemas"]["TipoIdentificador"];
+            /** Identificador */
+            identificador: string;
             /**
              * Valor
              * @description Valor maior que zero, em texto, com ponto e até 2 casas decimais
@@ -272,6 +280,8 @@ export interface components {
             /** Selo */
             selo: string;
         };
+        /** @enum {string} */
+        TipoIdentificador: "isin" | "ticker_b3" | "ticker_eua" | "cnpj";
         /** ValidationError */
         ValidationError: {
             /** Location */

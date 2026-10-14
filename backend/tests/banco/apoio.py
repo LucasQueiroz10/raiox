@@ -117,15 +117,31 @@ def carregar_exemplo(conexao: psycopg.Connection) -> None:
             (carga, e["empresa_id"], e["nome"]),
         )
         for a in e["ativos"]:
+            # Os ativos do exemplo são ISINs sintéticos: o ISIN é o próprio ativo_id.
             conexao.execute(
-                "INSERT INTO ref.ativo (carga_id, ativo_id, tipo, empresa_id, nome)"
-                " VALUES (%s, %s, 'acao', %s, %s)",
-                (carga, a["ativo_id"], e["empresa_id"], a.get("nome")),
+                "INSERT INTO ref.ativo"
+                " (carga_id, ativo_id, tipo, empresa_id, nome, ticker_b3, isin)"
+                " VALUES (%s, %s, 'acao', %s, %s, %s, %s)",
+                (
+                    carga,
+                    a["ativo_id"],
+                    e["empresa_id"],
+                    a.get("nome"),
+                    a.get("ticker_b3"),
+                    a["ativo_id"],
+                ),
             )
     for fundo in sorted(composicoes):
         conexao.execute(
-            "INSERT INTO ref.ativo (carga_id, ativo_id, tipo, nome) VALUES (%s, %s, 'fundo', %s)",
-            (carga, fundo, dados["nomes"][fundo]),
+            "INSERT INTO ref.ativo (carga_id, ativo_id, tipo, nome, ticker_b3, isin)"
+            " VALUES (%s, %s, 'fundo', %s, %s, %s)",
+            (
+                carga,
+                fundo,
+                dados["nomes"][fundo],
+                dados["tickers_b3_dos_fundos"].get(fundo),
+                fundo,
+            ),
         )
     publicar(conexao, carga)
 

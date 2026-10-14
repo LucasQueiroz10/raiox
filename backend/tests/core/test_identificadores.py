@@ -4,7 +4,15 @@ import pytest
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from app.core.identificadores import digito_verificador, isin_valido, normalizar_isin
+from app.core.identificadores import (
+    IsinForaDaLista,
+    digito_verificador,
+    isin_valido,
+    normalizar_isin,
+    normalizar_isin_permitido,
+    normalizar_ticker_b3,
+    normalizar_ticker_eua,
+)
 
 corpos_de_isin = st.builds(
     lambda pais, resto: pais + resto,
@@ -94,3 +102,59 @@ def test_normalizar_isin_nao_repete_o_valor_na_mensagem(texto):
     with pytest.raises(ValueError) as erro:
         normalizar_isin(texto)
     assert "ZQ4X7K2W" not in str(erro.value)
+
+
+# --- Entrada por identificador (ADR 0005, seção 5) ---
+
+US_FICTICIO = "USZQ4X7K2W17"  # ISIN válido e fictício, de país fora da lista permitida
+
+
+def test_isin_permitido_aceita_os_paises_da_lista():
+    from tests.ficticios import isin
+
+    assert normalizar_isin_permitido(f" {isin('PERMITIDO').lower()} ") == isin("PERMITIDO")
+
+
+def test_isin_de_pais_fora_da_lista_pede_o_ticker_sem_repetir_o_valor():
+    with pytest.raises(IsinForaDaLista, match="envie o ticker") as erro:
+        normalizar_isin_permitido(US_FICTICIO)
+
+    assert US_FICTICIO not in str(erro.value)
+
+
+@pytest.mark.parametrize(
+    ("texto", "esperado"),
+    [
+        ("ZZAA3", "ZZAA3"),
+        (" zzaa4 ", "ZZAA4"),
+        ("ZZTF11", "ZZTF11"),
+        ("Z3ZA3", "Z3ZA3"),  # raiz com número no meio, como B3SA3
+        ("ZZAA4F", "ZZAA4"),  # mercado fracionário: a mesma ação
+        ("zztf11f", "ZZTF11"),
+    ],
+)
+def test_ticker_b3_normalizado_e_sem_o_f_do_fracionario(texto, esperado):
+    assert normalizar_ticker_b3(texto) == esperado
+
+
+@pytest.mark.parametrize(
+    "texto", ["ZZAA", "ZZAA123", "1ZAA3", "ZZAAF", "ZZAA3FF", "ZZ-A3", "ZZAA3G", ""]
+)
+def test_ticker_b3_fora_do_formato_e_recusado_sem_repetir_o_valor(texto):
+    with pytest.raises(ValueError, match="ticker da B3") as erro:
+        normalizar_ticker_b3(texto)
+
+    assert not texto or texto not in str(erro.value)
+
+
+@pytest.mark.parametrize(
+    ("texto", "esperado"), [("ZZQ", "ZZQ"), (" zzq.b ", "ZZQ.B"), ("Z", "Z"), ("ZZQQQ", "ZZQQQ")]
+)
+def test_ticker_americano_normalizado(texto, esperado):
+    assert normalizar_ticker_eua(texto) == esperado
+
+
+@pytest.mark.parametrize("texto", ["ZZQQQQ", "ZZQ.BB", "ZZ1", "ZZQ-B", ""])
+def test_ticker_americano_fora_do_formato_e_recusado(texto):
+    with pytest.raises(ValueError, match="ticker americano"):
+        normalizar_ticker_eua(texto)

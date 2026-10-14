@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 
 from app.api.raiox import obter_fonte_ptax, obter_repositorio
 from app.core.cambio import PtaxUsada
+from app.core.identificadores import digito_verificador
 from app.dados.exemplo import RepositorioExemplo
 from app.dados.ptax import CambioIndisponivel
 from app.main import app
@@ -53,8 +54,14 @@ def carteira(*posicoes):
     return {"posicoes": list(posicoes)}
 
 
-def pos(isin, valor, tipo="acao", moeda="BRL"):
-    return {"isin": isin, "valor": valor, "moeda": moeda, "tipo": tipo}
+def pos(identificador, valor, tipo="acao", moeda="BRL", tipo_identificador="isin"):
+    return {
+        "tipo_identificador": tipo_identificador,
+        "identificador": identificador,
+        "valor": valor,
+        "moeda": moeda,
+        "tipo": tipo,
+    }
 
 
 REFERENCIA = carteira(pos(FOF, "1000.00", "fundo"), pos(BANCO, "500.00"))
@@ -178,7 +185,10 @@ def test_cambio_indisponivel_so_afeta_carteira_em_dolar(cliente, ptax):
 
 
 def test_isin_desconhecido_entra_como_sem_classificacao(cliente):
-    desconhecido = "USZQ4X7K2W17"  # ISIN válido e fictício, fora do conjunto de exemplo
+    # ISIN válido e fictício, fora do conjunto de exemplo. Era um ISIN americano (USZQ...), que
+    # agora é recusado: a ação americana entra pelo ticker (ADR 0005, seção 5).
+    corpo_isin = "ZZZQ4X7K2W1"
+    desconhecido = corpo_isin + digito_verificador(corpo_isin)
 
     corpo = cliente.post("/api/raiox", json=carteira(pos(desconhecido, "100.00"))).json()
 
@@ -238,3 +248,98 @@ def test_lista_de_empresas_limitada_as_200_maiores_e_o_resto_somado():
     demais = corpo["demais_empresas"]
     # as 50 menores: 800 + 799 + ... + 751
     assert (demais["quantidade"], demais["valor"]) == (50, f"{sum(range(751, 801))}.00")
+
+
+# --- Entrada por identificador (ADR 0005, seção 5) ---
+
+
+def ticker(identificador, valor, tipo="acao", moeda="BRL"):
+    return pos(identificador, valor, tipo, moeda, tipo_identificador="ticker_b3")
+
+
+def test_ticker_da_b3_da_o_mesmo_raio_x_que_o_isin(cliente):
+    por_isin = carteira(pos(ETF_BR, "1000.00", "fundo"), pos(BANCO, "500.00"))
+    por_ticker = carteira(ticker("ZZEB11", "1000.00", "fundo"), ticker(" zzbc3 ", "500.00"))
+
+    assert (
+        cliente.post("/api/raiox", json=por_ticker).json()
+        == cliente.post("/api/raiox", json=por_isin).json()
+    )
+
+
+def test_classes_pelo_ticker_somam_na_empresa_e_o_fracionario_e_a_mesma_acao(cliente):
+    petro = carteira(ticker("ZZPT4", "100.00"), ticker("ZZPT4F", "20.00"), ticker("ZZPT3", "50.00"))
+
+    (empresa,) = cliente.post("/api/raiox", json=petro).json()["empresas"]
+
+    assert (empresa["empresa_id"], empresa["direto"]) == ("ZZ:PETRO", "170.00")
+    assert [(c["ativo_id"], c["valor"]) for c in empresa["classes"]] == [
+        (PETRO_PN, "120.00"),
+        (PETRO_ON, "50.00"),
+    ]
+
+
+def test_ticker_desconhecido_entra_pelo_codigo_interno_sem_classificacao(cliente):
+    corpo = cliente.post("/api/raiox", json=carteira(ticker("ZZZZ3", "100.00"))).json()
+
+    assert corpo["empresas"][0]["empresa_id"] == "B3:ZZZZ3"
+    assert corpo["cobertura"]["sem_classificacao"] == "100.00"
+
+
+def test_tipo_da_identificacao_prevalece_sobre_o_declarado(cliente):
+    # Decisão do Lucas (14/10/2026): o Banco Exemplo marcado como fundo continua ação, em vez de
+    # virar "não aberto".
+    corpo = cliente.post("/api/raiox", json=carteira(ticker("ZZBC3", "500.00", "fundo"))).json()
+
+    assert (corpo["empresas"][0]["empresa_id"], corpo["empresas"][0]["direto"]) == (
+        "ZZ:BANCO",
+        "500.00",
+    )
+    assert corpo["avisos"] == []
+
+
+def test_cnpj_com_mascara_e_minusculas_entra_como_fundo(cliente):
+    from tests.ficticios import cnpj
+    from tests.ingest.cda_sintetico import mascara
+
+    fundo = cnpj("API-FUNDO")  # fora do conjunto de exemplo: sem composição
+    entrada = carteira(pos(mascara(fundo).lower(), "100.00", "fundo", tipo_identificador="cnpj"))
+
+    corpo = cliente.post("/api/raiox", json=entrada).json()
+
+    assert corpo["avisos"] == [{"codigo": "fundo_sem_composicao", "fundo_id": f"CNPJ:{fundo}"}]
+
+
+def test_ticker_americano_entra_pelo_us(cliente):
+    entrada = carteira(pos("zzq.b", "10.00", moeda="USD", tipo_identificador="ticker_eua"))
+
+    corpo = cliente.post("/api/raiox", json=entrada).json()
+
+    assert corpo["empresas"][0]["empresa_id"] == "US:ZZQ.B"
+
+
+def test_isin_americano_da_422_pedindo_o_ticker_sem_repetir_o_valor(cliente):
+    r = cliente.post("/api/raiox", json=carteira(pos("USZQ4X7K2W17", "100.00")))
+
+    assert r.status_code == 422
+    (erro,) = r.json()["detail"]["erros"]
+    assert (erro["campo"], erro["motivo"]) == (
+        ["posicoes", 0, "identificador"],
+        "isin_fora_da_lista",
+    )
+    assert "ticker" in erro["mensagem"]
+    assert "USZQ" not in r.text
+
+
+@pytest.mark.parametrize(
+    "entrada",
+    [
+        carteira(ticker("ZZAA", "1.00")),  # ticker da B3 fora do formato
+        carteira(pos("ZZQQQQ", "1.00", tipo_identificador="ticker_eua")),  # 6 letras
+        carteira(pos("ZZAA00000000", "1.00", "fundo", tipo_identificador="cnpj")),  # dígito errado
+        carteira(pos(BANCO, "1.00", tipo_identificador="cusip")),  # tipo fora do escopo
+        {"posicoes": [{"isin": BANCO, "valor": "1.00", "moeda": "BRL", "tipo": "acao"}]},  # antigo
+    ],
+)
+def test_identificador_invalido_da_422(cliente, entrada):
+    assert cliente.post("/api/raiox", json=entrada).status_code == 422

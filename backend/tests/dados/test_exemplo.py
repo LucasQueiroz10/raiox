@@ -84,3 +84,15 @@ def test_um_raio_x_com_o_exemplo_expoe_a_cadeia_de_ia():
 
     assert r.por_tema["Cadeia de IA"].valor > 0
     assert None in r.por_setor  # há uma empresa sem classificação, para exercitar a cobertura
+
+
+def test_identificacao_liga_os_tickers_sinteticos_aos_ativos():
+    from app.core.traducao import traduzir
+
+    t = RepositorioExemplo().identificacao()
+
+    assert traduzir("ticker_b3", "ZZPT4", TipoItem.ACAO, t) == ("ZZPETRO00010", TipoItem.ACAO)
+    assert traduzir("ticker_b3", "ZZPT3", TipoItem.ACAO, t) == ("ZZPETRO00028", TipoItem.ACAO)
+    # ETF marcado como ação: vale o tipo da identificação.
+    assert traduzir("ticker_b3", "ZZEB11", TipoItem.ACAO, t) == ("ZZETFBR00018", TipoItem.FUNDO)
+    assert all(ticker.startswith("ZZ") for ticker in t.ativo_do_ticker_b3)

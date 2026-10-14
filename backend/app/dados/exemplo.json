@@ -1,5 +1,5 @@
 {
-  "_doc": "Conjunto de exemplo SINTÉTICO: empresas, fundos, nomes e números inventados. Ativos usam ISINs com prefixo ZZ (que não é país) e empresas usam empresa_id com prefixo ZZ: (ADR 0005). Usado pela API até o banco existir.",
+  "_doc": "Conjunto de exemplo SINTÉTICO: empresas, fundos, nomes e números inventados. Ativos usam ISINs com prefixo ZZ (que não é país), tickers da B3 começando por ZZ e empresas usam empresa_id com prefixo ZZ: (ADR 0005). Usado pela API até o banco existir.",
   "versao_classificacao": "exemplo-v1",
   "empresas": [
     {
@@ -77,7 +77,8 @@
       "nome": "Banco Exemplo S.A.",
       "ativos": [
         {
-          "ativo_id": "ZZBANCO00013"
+          "ativo_id": "ZZBANCO00013",
+          "ticker_b3": "ZZBC3"
         }
       ],
       "classificacao": {
@@ -91,7 +92,8 @@
       "nome": "Energia Exemplo S.A.",
       "ativos": [
         {
-          "ativo_id": "ZZENERG00013"
+          "ativo_id": "ZZENERG00013",
+          "ticker_b3": "ZZEN3"
         }
       ],
       "classificacao": {
@@ -112,11 +114,13 @@
       "ativos": [
         {
           "ativo_id": "ZZPETRO00010",
-          "nome": "Petróleo Exemplo PN"
+          "nome": "Petróleo Exemplo PN",
+          "ticker_b3": "ZZPT4"
         },
         {
           "ativo_id": "ZZPETRO00028",
-          "nome": "Petróleo Exemplo ON"
+          "nome": "Petróleo Exemplo ON",
+          "ticker_b3": "ZZPT3"
         }
       ],
       "classificacao": {
@@ -141,6 +145,10 @@
     "ZZETFIA00019": "ETF Exemplo Cadeia de IA",
     "ZZETFBR00018": "ETF Exemplo Brasil",
     "ZZFOF0000016": "Fundo de Fundos Exemplo (FOF)"
+  },
+  "tickers_b3_dos_fundos": {
+    "ZZETFIA00019": "ZZIA11",
+    "ZZETFBR00018": "ZZEB11"
   },
   "composicoes": [
     {
