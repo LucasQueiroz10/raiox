@@ -7,6 +7,7 @@ from dataclasses import replace
 from datetime import date
 from decimal import Decimal as D
 
+import psycopg
 import pytest
 
 from app.core.composicao import ItemComposicao, TipoItem
@@ -198,3 +199,52 @@ def test_relatorio_lista_os_fundos_gravados_fora_de_1_por_cento(banco_novo):
         relatorio = carregar(ingestao, mes_com((FUNDO_A, "1000.00"), (FUNDO_B, "500.00")))
 
         assert relatorio.fora_de_1_por_cento == [f"CNPJ:{FUNDO_B}"]
+
+
+# --- Falhas antes de haver o que gravar (índice do portal), sem rede ---
+
+
+def sem_rede(*_args, **_kwargs):
+    raise ConnectionError("portal fora do ar ZZMARCADOR")
+
+
+def test_indice_do_portal_fora_do_ar_deixa_a_carga_com_erro(banco_novo, monkeypatch, caplog):
+    monkeypatch.setattr(cvm, "baixar", sem_rede)
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+
+    assert cvm.main([]) == 1
+
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        assert cargas(ingestao) == [("com_erro", "ConnectionError")]
+    assert "ZZMARCADOR" not in caplog.text
+
+
+def test_indice_do_portal_sem_nenhum_mes_deixa_a_carga_com_erro(banco_novo, monkeypatch):
+    monkeypatch.setattr(cvm, "baixar", lambda *_a, **_k: b"<html>em manutencao</html>")
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+
+    assert cvm.main([]) == 1
+
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        assert cargas(ingestao) == [
+            ("com_erro", "LayoutInesperado: nenhum mês no índice do portal da CVM")
+        ]
+
+
+def test_sem_conseguir_registrar_a_falha_termina_com_1_e_mensagem_curta(
+    banco_novo, monkeypatch, caplog
+):
+    # O banco cai entre o início da carga e o registro da falha: quem avisa é o alerta de fonte
+    # sem carga nova (ADR 0007, seção 8).
+    def banco_caiu(*_args, **_kwargs):
+        raise psycopg.OperationalError("conexão perdida ZZMARCADOR")
+
+    monkeypatch.setattr(cvm, "baixar", sem_rede)
+    monkeypatch.setattr(cvm, "registrar_falha", banco_caiu)
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+
+    assert cvm.main([]) == 1
+
+    assert "(OperationalError)" in caplog.text
+    assert "ZZMARCADOR" not in caplog.text
+    assert all(r.exc_info is None for r in caplog.records)  # sem traceback

@@ -18,8 +18,10 @@ Publica duas cargas, cada uma uma foto completa (ADR 0006, seção 3), pela roti
    "oficial", aprovado: o código já trata a origem oficial como revisada).
 
 Antes de publicar, a carga confere se o número de empresas e de ativos não caiu mais de 20% em
-relação à foto vigente (fonte incompleta) e faz a varredura de CPF nos nomes. Uma falha deixa a
-carga "com_erro" e o comando termina com erro, para o alerta (ADR 0007, seção 8).
+relação à foto vigente (fonte incompleta) e faz a varredura de CPF nos nomes. Uma falha, também no
+download das fontes, antes de haver o que gravar, deixa a carga "com_erro" e o comando termina com
+erro, para o alerta (ADR 0007, seção 8). Se nem o registro der certo (banco fora do ar), o comando
+termina com erro e mensagem curta, sem traceback, e quem avisa é o alerta de fonte sem carga nova.
 
 DT-15: a classificação publicada tem só o setor oficial. Quando houver linhas manuais ou do IrRAE,
 esta carga precisa levá-las adiante, porque cada versão da classificação é uma foto completa.
@@ -241,7 +243,8 @@ def ler_pasta(pasta: Path) -> Fontes:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Devolve 0 se as duas cargas publicaram, 1 se algo falhou e 2 se faltou a configuração."""
+    """Devolve 0 se as duas cargas publicaram, 1 se algo falhou e 2 se faltou a configuração.
+    Nenhuma falha sai com traceback: o log traz só o motivo (cargas/rotina.motivo)."""
     parser = argparse.ArgumentParser(
         prog="python -m cargas.cadastro", description="Carga do cadastro (identificação e setor)."
     )
@@ -253,14 +256,21 @@ def main(argv: list[str] | None = None) -> int:
     if not url:
         log.error("defina RX_BANCO_URL com o usuário rx_ingestao")
         return 2
-    with psycopg.connect(url_libpq(url), autocommit=True) as conexao:
-        try:
-            fontes = ler_pasta(args.pasta) if args.pasta else baixar_fontes()
+    try:
+        with psycopg.connect(url_libpq(url), autocommit=True) as conexao:
+            try:
+                fontes = ler_pasta(args.pasta) if args.pasta else baixar_fontes()
+            except Exception as erro:
+                # Falha antes de haver o que gravar: fica registrada, para o histórico e o alerta
+                # de carga com erro (ADR 0007, seção 8).
+                registrar_falha(conexao, "identificacao", FONTE_IDENTIFICACAO, None, erro)
+                raise
             relatorio = carregar_cadastro(conexao, fontes)
-        except Exception as erro:
-            # O mesmo motivo da carga (ref.carga.motivo_erro), sem valores das linhas.
-            log.error("cadastro com erro (%s)", motivo(erro))
-            return 1
+    except Exception as erro:
+        # O mesmo motivo da carga (ref.carga.motivo_erro), sem valores das linhas. Se nem a falha
+        # foi registrada (banco fora do ar), quem avisa é o alerta de fonte sem carga nova.
+        log.error("cadastro com erro (%s)", motivo(erro))
+        return 1
     log.info(
         "cadastro publicado: %d empresas, ativos %s, %d setores; descartes: %s",
         relatorio.empresas,
