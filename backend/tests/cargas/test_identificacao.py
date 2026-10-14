@@ -164,6 +164,22 @@ def test_fii_sem_ticker_conhecido_entra_pelo_isin():
     assert (fii.ticker_b3, fii.isin, fii.fii_tipo) == (None, isin_do_fii, "papel")
 
 
+def test_isin_informado_por_mais_de_um_fii_nao_fica_com_nenhum():
+    # Caso real: classes diferentes informando o mesmo ISIN. Não dá para saber de qual é.
+    outro_fii = cnpj("ID-OUTRO-FII")
+    isin_do_fii = isin_da_raiz("ZZFI", "CTF00")
+    informes = fiis(
+        dict(cnpj=FII, isin=isin_do_fii, CRI_CRA="1"),
+        dict(cnpj=outro_fii, isin=isin_do_fii, CRI_CRA="1"),
+    )
+
+    ident = montar_com(fca(), informes=informes)
+
+    assert ativos(ident)[f"CNPJ:{FII}"].isin is None
+    assert ativos(ident)[f"CNPJ:{outro_fii}"].isin is None
+    assert ident.descartes["isin_de_fii_ambiguo"] == 1
+
+
 def test_curadoria_de_fundo_listado_vale_mais_que_o_cda():
     curadoria = Curadoria(emissores={}, fundos_listados={"ZZTF11": ETF})
 

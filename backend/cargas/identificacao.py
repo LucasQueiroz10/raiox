@@ -143,16 +143,16 @@ def montar(
         ticker_do_fundo.setdefault(cnpj, ticker)
         tickers_usados.add(ticker)
 
-    isins_usados = {a.isin for a in ativos.values() if a.isin}
+    # ISIN informado por mais de um FII (caso real: classes diferentes com o mesmo ISIN) ou já usado
+    # por uma ação: não dá para saber de quem é, e nenhum fica com ele.
+    vezes = Counter(f.isin for f in fiis.fundos.values() if f.isin)
+    isins_das_acoes = {a.isin for a in ativos.values() if a.isin}
+    ambiguos = {i for i, n in vezes.items() if n > 1 or i in isins_das_acoes}
+    descartes["isin_de_fii_ambiguo"] += len(ambiguos)
     nomes = _nomes_dos_fundos(meses)
     for cnpj in sorted(set(ticker_do_fundo) | set(fiis.fundos)):
         fii = fiis.fundos.get(cnpj)
-        isin = fii.isin if fii else None
-        if isin in isins_usados:
-            descartes["isin_de_fii_repetido"] += 1
-            isin = None
-        if isin:
-            isins_usados.add(isin)
+        isin = fii.isin if fii and fii.isin not in ambiguos else None
         ativos[f"CNPJ:{cnpj}"] = Ativo(
             ativo_id=f"CNPJ:{cnpj}",
             tipo="fundo",
