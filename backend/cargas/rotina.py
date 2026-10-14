@@ -12,8 +12,8 @@ O caminho de uma carga:
    (tabelas temporárias da sessão), valida e insere nas tabelas definitivas; a carga passa a
    "publicada" na mesma transação. A API só enxerga a carga publicada (visões *_vigente).
 5. **Erro:** qualquer exceção desfaz a transação inteira (nada fica gravado) e a carga fica
-   "com_erro", com o motivo. A exceção segue para cima: o job termina com erro e o alerta dispara
-   (ADR 0007, seção 8).
+   "com_erro", com o motivo (`motivo`, que nunca leva valores das linhas). A exceção segue para
+   cima: o job termina com erro e o alerta dispara (ADR 0007, seção 8).
 
 As regras do próprio banco reforçam o caminho: linha só entra em carga "carregando" do tipo certo,
 e carga publicada ou com erro não muda mais (migração 0002).
@@ -27,6 +27,9 @@ from contextlib import contextmanager
 from datetime import date, timedelta
 
 import psycopg
+
+from cargas.baixar import ErroDeDownload
+from ingest.arquivos_cvm import LayoutInesperado
 
 # Uma carga da CVM leva minutos; três horas em "carregando" só acontece se o processo caiu.
 TEMPO_LIMITE = timedelta(hours=3)
@@ -44,6 +47,11 @@ class ErroDeValidacao(Exception):
 
 class CargaEmAndamento(Exception):
     """Outra carga do mesmo tipo está rodando."""
+
+
+# Exceções do projeto: a mensagem é escrita no código e diz o que falhou, nunca o dado (a curadoria
+# usa uma subclasse do ErroDeValidacao). Só elas levam a mensagem para o motivo.
+_MENSAGEM_DO_PROJETO = (ErroDeValidacao, CargaEmAndamento, LayoutInesperado, ErroDeDownload)
 
 
 @contextmanager
@@ -87,14 +95,46 @@ def _abrir(conexao: psycopg.Connection, tipo: str, fonte: str, data_referencia: 
     return carga_id
 
 
-def _motivo(erro: BaseException) -> str:
-    return f"{type(erro).__name__}: {erro}"[:TAMANHO_DO_MOTIVO]
+def motivo(erro: BaseException) -> str:
+    """O motivo de uma falha, para ref.carga.motivo_erro e para o log, sem nenhum valor das linhas
+    (revisão do PR #70):
+
+    - exceção do projeto (_MENSAGEM_DO_PROJETO): a mensagem, que o código escreve e controla;
+    - erro do banco: o sqlstate e os nomes da restrição, do tipo, da tabela e da coluna. Nunca o
+      texto do psycopg, que traz o DETAIL com a linha ("Failing row contains ..."), nem a mensagem
+      principal, que nos erros de dado traz o valor ('invalid input syntax for type date: "..."');
+    - qualquer outra: só o nome da classe (um ValueError do Decimal, por exemplo, pode trazer o
+      valor).
+
+    Por isso as cargas nunca usam log.exception nem exc_info: o traceback levaria a mensagem
+    original.
+    """
+    nome = type(erro).__name__
+    if isinstance(erro, _MENSAGEM_DO_PROJETO):
+        texto = f"{nome}: {erro}"
+    elif isinstance(erro, psycopg.Error):
+        d = erro.diag
+        partes = [
+            f"{rotulo} {valor}"
+            for rotulo, valor in (
+                ("sqlstate", erro.sqlstate),
+                ("restrição", d.constraint_name),
+                ("tipo", d.datatype_name),
+                ("tabela", d.table_name),
+                ("coluna", d.column_name),
+            )
+            if valor
+        ]
+        texto = f"{nome}: {', '.join(partes)}" if partes else nome
+    else:
+        texto = nome
+    return texto[:TAMANHO_DO_MOTIVO]
 
 
 def _marcar_erro(conexao: psycopg.Connection, carga_id: int, erro: BaseException) -> None:
     conexao.execute(
         "UPDATE ref.carga SET status = 'com_erro', motivo_erro = %s WHERE carga_id = %s",
-        (_motivo(erro), carga_id),
+        (motivo(erro), carga_id),
     )
 
 

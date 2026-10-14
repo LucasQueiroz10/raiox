@@ -144,8 +144,14 @@ desenvolvimento e a produção se comportarem igual: `/api/raiox`, `/api/saude` 
 
 - Cada carga é um Cloud Run Job disparado pelo Cloud Scheduler, com o usuário `rx_ingestao`, uma
   nova tentativa automática e tempo limite.
+- **Memória dos jobs: 1 GiB.** Medido em 14/10/2026 no banco local, baixando do portal da CVM, com
+  `python -m medicoes.pico_da_carga` (pico do processo, no Windows): a carga do cadastro (FCA de 3
+  anos, informe de FII de 2 anos e 3 meses do CDA, todos juntos na memória) chegou a 388 MB em 32 s;
+  a da CDA, com 3 meses, a 249 MB em 36 s. Medir de novo no primeiro deploy, no Linux do Cloud Run.
+  Se o cadastro passar de 1 GiB, ele passa a ler um mês do CDA por vez, soltando o anterior.
 - Uma falha deixa a carga em `com_erro` (ADR 0006, seção 3) e dispara alerta (seção 8). A API segue
-  com os dados publicados antes.
+  com os dados publicados antes. Se nem o registro da falha der certo (banco fora do ar), o job
+  termina com erro, sem traceback, e quem avisa é o alerta de fonte sem carga nova.
 - As cargas acessam a internet pela saída padrão do Cloud Run. Nenhuma fonte exige IP fixo.
 - Se a carga da CDA atrasar, o aquecimento não acha carga nova e não faz nada; o primeiro pedido
   depois da publicação relê (seção 3).

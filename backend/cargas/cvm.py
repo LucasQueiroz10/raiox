@@ -22,7 +22,10 @@ Para cada mês:
 
 Sem nenhuma mudança, nenhuma carga é aberta. Uma falha (download, formato do arquivo, validação)
 deixa a carga do mês "com_erro"; os outros meses seguem, e o comando termina com erro para o alerta
-disparar (ADR 0007, seção 8).
+disparar (ADR 0007, seção 8). A falha antes de saber os meses (índice do portal fora do ar ou
+mudado) também deixa uma carga "com_erro", sem data de referência. Se nem o registro der certo
+(banco fora do ar), o comando termina com erro e mensagem curta, sem traceback, e quem avisa é o
+alerta de fonte sem carga nova (ADR 0007, seção 8).
 
 Ficam de fora até o PR 2.1 do ADR 0008, que cria o lugar delas no banco: a parte confidencial (até
 lá, aparece como "não identificado") e os fundos sem composição utilizável.
@@ -51,11 +54,13 @@ from cargas.rotina import (
     ErroDeValidacao,
     Gravar,
     expirar_paradas,
+    motivo,
     publicar_carga,
     registrar_falha,
     trava,
 )
 from cargas.validacao import conferir_sem_cpf
+from ingest.arquivos_cvm import LayoutInesperado
 from ingest.cvm_cda import FONTE, MesCDA, ler_mes
 
 PORTAL = "https://dados.cvm.gov.br/dados/FI/DOC/CDA/DADOS/"
@@ -68,8 +73,11 @@ TOLERANCIA_DA_SOMA = Decimal("0.01")
 
 _ARQUIVO_DO_MES = re.compile(r"cda_fi_(\d{6})\.zip")
 _COLUNAS_COMPOSICAO = ("fundo_id", "nome_fundo", "data_referencia", "patrimonio")
+# Toda coluna que a assinatura compara (_assinatura_lida) precisa ser gravada: uma que faltasse
+# faria o fundo parecer mudado a cada carga, e o incremental pararia sem dar erro.
 _COLUNAS_ITEM = (
     "fundo_id", "ordem", "ativo_id", "empresa_id", "tipo", "valor", "peso", "emissor",
+    "ativo_objeto",
 )  # fmt: skip
 
 log = logging.getLogger("cargas.cvm")
@@ -92,10 +100,11 @@ class Relatorio:
 
 
 def meses_do_portal(indice: str) -> list[str]:
-    """Os meses (AAAAMM) que o índice do portal oferece, do mais recente para o mais antigo."""
+    """Os meses (AAAAMM) que o índice do portal oferece, do mais recente para o mais antigo.
+    Sem nenhum, o portal mudou ou está fora do ar: LayoutInesperado, com a mensagem no motivo."""
     meses = sorted(set(_ARQUIVO_DO_MES.findall(indice)), reverse=True)
     if not meses:
-        raise ValueError("nenhum mês no índice do portal da CVM")
+        raise LayoutInesperado("nenhum mês no índice do portal da CVM")
     return meses
 
 
@@ -168,7 +177,7 @@ def _gravacao(lido: MesCDA, fundos: list[str]) -> Gravar:
         (f, lido.nomes[f], lido.composicoes[f].data_referencia, lido.patrimonio[f]) for f in fundos
     ]
     itens = [
-        (f, ordem, i.ativo_id, i.empresa_id, i.tipo.value, valor, i.peso, i.emissor)
+        (f, ordem, i.ativo_id, i.empresa_id, i.tipo.value, valor, i.peso, i.emissor, i.ativo_objeto)
         for f in fundos
         for ordem, (i, valor) in enumerate(
             zip(lido.composicoes[f].itens, lido.valores[f], strict=True), start=1
@@ -177,8 +186,8 @@ def _gravacao(lido: MesCDA, fundos: list[str]) -> Gravar:
 
     def gravar(conexao: psycopg.Connection, carga_id: int) -> int:
         # Segunda barreira contra CPF (a primeira é o leitor), antes de qualquer gravação.
-        conferir_sem_cpf(composicoes, _COLUNAS_COMPOSICAO)
-        conferir_sem_cpf(itens, _COLUNAS_ITEM)
+        conferir_sem_cpf(composicoes, _COLUNAS_COMPOSICAO, chave="fundo_id")
+        conferir_sem_cpf(itens, _COLUNAS_ITEM, chave="fundo_id")
         # Preparação em tabelas temporárias da sessão (ADR 0006, seção 5): somem no fim da
         # transação, ninguém mais as vê, e o COPY é bem mais rápido que um INSERT por linha.
         conexao.execute(
@@ -187,7 +196,8 @@ def _gravacao(lido: MesCDA, fundos: list[str]) -> Gravar:
         )
         conexao.execute(
             "CREATE TEMP TABLE prep_item (fundo_id text, ordem integer, ativo_id text,"
-            " empresa_id text, tipo text, valor numeric, peso numeric, emissor text)"
+            " empresa_id text, tipo text, valor numeric, peso numeric, emissor text,"
+            " ativo_objeto text)"
             " ON COMMIT DROP"
         )
         with conexao.cursor() as cursor:
@@ -210,9 +220,10 @@ def _gravacao(lido: MesCDA, fundos: list[str]) -> Gravar:
         )
         conexao.execute(
             "INSERT INTO ref.composicao_item"
-            " (composicao_id, ordem, ativo_id, empresa_id, tipo, valor, peso, emissor)"
+            " (composicao_id, ordem, ativo_id, empresa_id, tipo, valor, peso, emissor,"
+            " ativo_objeto)"
             " SELECT c.composicao_id, i.ordem, i.ativo_id, i.empresa_id, i.tipo, i.valor,"
-            " i.peso, i.emissor"
+            " i.peso, i.emissor, i.ativo_objeto"
             " FROM prep_item i JOIN ref.composicao c"
             " ON c.carga_id = %s AND c.fundo_id = i.fundo_id",
             (carga_id,),
@@ -277,9 +288,44 @@ def _registrar(relatorio: Relatorio) -> None:
         )
 
 
+def _tarefas(args: argparse.Namespace) -> list[tuple[str, Callable[[], IO[bytes]]]]:
+    """Os meses a carregar e como obter o zip de cada um (do --zip ou do índice do portal)."""
+    if args.zip:
+        conteudo = args.zip.read_bytes()
+        return [(mes_do_arquivo(args.zip.name), lambda: io.BytesIO(conteudo))]
+    indice = baixar(PORTAL, PORTAL).decode("utf-8", errors="replace")
+    meses = escolher_meses(meses_do_portal(indice), args.meses, args.pular)
+    return [(mes, partial(_baixar_mes, mes)) for mes in meses]
+
+
+def _carregar(url: str, args: argparse.Namespace) -> bool:
+    """Carrega os meses e devolve se algum falhou."""
+    falhou = False
+    with psycopg.connect(url_libpq(url), autocommit=True) as conexao, trava(conexao, TIPO):
+        expiradas = expirar_paradas(conexao, TIPO)
+        if expiradas:
+            log.warning("%d cargas paradas em carregando marcadas com erro", expiradas)
+        try:
+            tarefas = _tarefas(args)
+        except Exception as erro:
+            # Falha antes de haver o que gravar: fica registrada, para o histórico e o alerta de
+            # carga com erro (ADR 0007, seção 8).
+            registrar_falha(conexao, TIPO, FONTE, None, erro)
+            log.error("índice do portal com erro (%s)", motivo(erro))
+            return True
+        for mes, obter_zip in tarefas:
+            try:
+                _registrar(carregar_mes(conexao, mes, obter_zip))
+            except Exception as erro:
+                # O mesmo motivo da carga (ref.carga.motivo_erro), sem valores das linhas.
+                log.error("mês %s: carga com erro (%s)", mes, motivo(erro))
+                falhou = True
+    return falhou
+
+
 def main(argv: list[str] | None = None) -> int:
     """Devolve 0 se todos os meses carregaram (ou não mudaram), 1 se algum falhou e 2 se faltou a
-    configuração."""
+    configuração. Nenhuma falha sai com traceback: o log traz só o motivo (cargas/rotina.motivo)."""
     parser = argparse.ArgumentParser(
         prog="python -m cargas.cvm", description="Carga das composições da CVM (CDA)."
     )
@@ -287,32 +333,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pular", type=int, default=0, help="quantos meses recentes pular")
     parser.add_argument("--zip", type=Path, help="zip local, com o nome do portal")
     args = parser.parse_args(argv)
+    if args.zip and _ARQUIVO_DO_MES.fullmatch(args.zip.name) is None:
+        parser.error("o zip precisa ter o nome do portal: cda_fi_AAAAMM.zip")  # termina com 2
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
     url = os.environ.get("RX_BANCO_URL")
     if not url:
         log.error("defina RX_BANCO_URL com o usuário rx_ingestao")
         return 2
-    falhou = False
-    with psycopg.connect(url_libpq(url), autocommit=True) as conexao, trava(conexao, TIPO):
-        expiradas = expirar_paradas(conexao, TIPO)
-        if expiradas:
-            log.warning("%d cargas paradas em carregando marcadas com erro", expiradas)
-        if args.zip:
-            conteudo = args.zip.read_bytes()
-            tarefas = [(mes_do_arquivo(args.zip.name), lambda: io.BytesIO(conteudo))]
-        else:
-            indice = baixar(PORTAL, PORTAL).decode("utf-8", errors="replace")
-            meses = escolher_meses(meses_do_portal(indice), args.meses, args.pular)
-            tarefas = [(mes, partial(_baixar_mes, mes)) for mes in meses]
-        for mes, obter_zip in tarefas:
-            try:
-                _registrar(carregar_mes(conexao, mes, obter_zip))
-            except Exception as erro:
-                # O motivo completo fica na carga (ref.carga.motivo_erro); aqui, só o resumo.
-                log.error("mês %s: carga com erro (%s: %s)", mes, type(erro).__name__, erro)
-                falhou = True
-    return 1 if falhou else 0
+    try:
+        return 1 if _carregar(url, args) else 0
+    except Exception as erro:
+        # Banco fora do ar (também ao registrar a falha) ou outra carga da CVM rodando. Sem o
+        # registro, quem avisa é o alerta de fonte sem carga nova (ADR 0007, seção 8).
+        log.error("carga da CVM não rodou (%s)", motivo(erro))
+        return 1
 
 
 if __name__ == "__main__":

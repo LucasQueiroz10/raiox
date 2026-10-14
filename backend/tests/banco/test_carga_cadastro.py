@@ -1,13 +1,16 @@
 """Carga do cadastro (ADR 0008, etapa 4): identificação e setor oficial, com fontes sintéticas nos
 formatos da CVM, rodando como rx_ingestao. Cada teste usa um banco novo."""
 
+from dataclasses import replace
 from pathlib import Path
 
+import psycopg
 import pytest
 from fastapi.testclient import TestClient
 
 from app.config import Config
 from app.main import criar_app
+from cargas import cadastro
 from cargas.cadastro import Fontes, carregar_cadastro
 from cargas.rotina import ErroDeValidacao
 from ingest.arquivos_cvm import LayoutInesperado
@@ -20,6 +23,7 @@ from tests.ingest.fii_sintetico import AnoFII
 EMPRESA, ETF, FII, FUNDO = (cnpj(f"CADASTRO-{n}") for n in ("EMPRESA", "ETF", "FII", "FUNDO"))
 ON, PN = isin_da_raiz("ZZAA", "ACNOR"), isin_da_raiz("ZZAA", "ACNPR")
 ISIN_DO_FII = isin_da_raiz("ZZFI", "CTF00")
+CPF_DE_TESTE = "00000000191"  # o mesmo número de teste de tests/cargas/test_validacao.py
 
 
 @pytest.fixture
@@ -134,3 +138,61 @@ def test_curadoria_com_linha_errada_fica_com_erro(banco_novo, curadoria_vazia):
             carregar_cadastro(ingestao, fontes(curadoria_vazia))
 
         assert cargas(ingestao) == [("identificacao", "com_erro")]
+
+
+def test_cpf_no_nome_da_companhia_aponta_a_empresa_sem_repetir_o_numero(
+    banco_novo, curadoria_vazia
+):
+    fca = AnoSintetico().companhia(EMPRESA, "ZZAA3", "ZZAA4", nome=f"CIA {CPF_DE_TESTE} S.A.")
+    com_cpf = replace(fontes(curadoria_vazia), fca=[fca.zip()])
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        with pytest.raises(ErroDeValidacao):
+            carregar_cadastro(ingestao, com_cpf)
+
+        (motivo,) = ingestao.execute(
+            "SELECT motivo_erro FROM ref.carga WHERE tipo = 'identificacao'"
+        ).fetchone()
+        assert motivo == (
+            "ErroDeValidacao: número com formato de CPF na coluna nome"
+            f" (empresa_id BR:CNPJ:{EMPRESA})"
+        )
+
+
+# --- Falhas antes de haver o que gravar (download das fontes), sem rede ---
+
+
+def sem_rede(*_args, **_kwargs):
+    raise ConnectionError("portal fora do ar ZZMARCADOR")
+
+
+def test_download_das_fontes_falhando_deixa_a_carga_com_erro(banco_novo, monkeypatch, caplog):
+    monkeypatch.setattr(cadastro, "baixar", sem_rede)
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+
+    assert cadastro.main([]) == 1
+
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        registradas = ingestao.execute(
+            "SELECT tipo, status, motivo_erro FROM ref.carga ORDER BY carga_id"
+        ).fetchall()
+    assert registradas == [("identificacao", "com_erro", "ConnectionError")]
+    assert "ZZMARCADOR" not in caplog.text
+
+
+def test_sem_conseguir_registrar_a_falha_termina_com_1_e_mensagem_curta(
+    banco_novo, monkeypatch, caplog
+):
+    # O banco cai entre o início da carga e o registro da falha: quem avisa é o alerta de fonte
+    # sem carga nova (ADR 0007, seção 8).
+    def banco_caiu(*_args, **_kwargs):
+        raise psycopg.OperationalError("conexão perdida ZZMARCADOR")
+
+    monkeypatch.setattr(cadastro, "baixar", sem_rede)
+    monkeypatch.setattr(cadastro, "registrar_falha", banco_caiu)
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+
+    assert cadastro.main([]) == 1
+
+    assert "cadastro com erro (OperationalError)" in caplog.text
+    assert "ZZMARCADOR" not in caplog.text
+    assert all(r.exc_info is None for r in caplog.records)  # sem traceback

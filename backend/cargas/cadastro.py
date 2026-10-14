@@ -17,9 +17,16 @@ Publica duas cargas, cada uma uma foto completa (ADR 0006, seção 3), pela roti
 2. **classificação:** `ref.classificacao`, com o setor de atividade de cada companhia (origem
    "oficial", aprovado: o código já trata a origem oficial como revisada).
 
+As duas são publicadas em transações separadas. Se a classificação falhar depois de a identificação
+publicar, a API passa a usar a identificação nova com a classificação anterior: as empresas novas
+ficam sem setor (nunca com setor errado) até a carga seguinte. Aceito assim na revisão do PR #70; a
+carga com erro dispara o alerta (ADR 0007, seção 8).
+
 Antes de publicar, a carga confere se o número de empresas e de ativos não caiu mais de 20% em
-relação à foto vigente (fonte incompleta) e faz a varredura de CPF nos nomes. Uma falha deixa a
-carga "com_erro" e o comando termina com erro, para o alerta (ADR 0007, seção 8).
+relação à foto vigente (fonte incompleta) e faz a varredura de CPF nos nomes. Uma falha, também no
+download das fontes, antes de haver o que gravar, deixa a carga "com_erro" e o comando termina com
+erro, para o alerta (ADR 0007, seção 8). Se nem o registro der certo (banco fora do ar), o comando
+termina com erro e mensagem curta, sem traceback, e quem avisa é o alerta de fonte sem carga nova.
 
 DT-15: a classificação publicada tem só o setor oficial. Quando houver linhas manuais ou do IrRAE,
 esta carga precisa levá-las adiante, porque cada versão da classificação é uma foto completa.
@@ -48,11 +55,13 @@ from cargas.rotina import (
     ErroDeValidacao,
     Gravar,
     expirar_paradas,
+    motivo,
     publicar_carga,
     registrar_falha,
     trava,
 )
 from cargas.validacao import conferir_sem_cpf
+from ingest.arquivos_cvm import LayoutInesperado
 from ingest.cvm_cda import ler_mes
 from ingest.cvm_fca import ler_fca
 from ingest.cvm_fii import ler_informes_fii
@@ -159,8 +168,8 @@ def _gravar_identificacao(identificacao: Identificacao) -> Gravar:
     def gravar(conexao: psycopg.Connection, carga_id: int) -> int:
         _conferir_queda(conexao, "empresa_vigente", "empresas", len(empresas))
         _conferir_queda(conexao, "ativo_vigente", "ativos", len(ativos))
-        conferir_sem_cpf(empresas, colunas_empresa)
-        conferir_sem_cpf(ativos, colunas_ativo)
+        conferir_sem_cpf(empresas, colunas_empresa, chave="empresa_id")
+        conferir_sem_cpf(ativos, colunas_ativo, chave="ativo_id")
         # Direto nas tabelas definitivas: as validações já rodaram acima, e os domínios e gatilhos
         # do banco conferem cada linha (identificadores do ADR 0005, carga aberta do tipo certo).
         # As empresas vão antes: cada ação aponta para uma empresa da mesma carga.
@@ -199,10 +208,11 @@ def _copiar(
 
 
 def _mais_recentes(indice: str, padrao: str, quantidade: int) -> list[str]:
-    """Os `quantidade` arquivos mais recentes do índice do portal (o ano ou mês está no nome)."""
+    """Os `quantidade` arquivos mais recentes do índice do portal (o ano ou mês está no nome).
+    Sem nenhum, o portal mudou ou está fora do ar: LayoutInesperado, com a mensagem no motivo."""
     nomes = sorted(set(re.findall(padrao, indice)), reverse=True)
     if not nomes:
-        raise ValueError(f"nenhum arquivo {padrao} no índice do portal")
+        raise LayoutInesperado(f"nenhum arquivo {padrao} no índice do portal")
     return nomes[:quantidade]
 
 
@@ -238,7 +248,8 @@ def ler_pasta(pasta: Path) -> Fontes:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Devolve 0 se as duas cargas publicaram, 1 se algo falhou e 2 se faltou a configuração."""
+    """Devolve 0 se as duas cargas publicaram, 1 se algo falhou e 2 se faltou a configuração.
+    Nenhuma falha sai com traceback: o log traz só o motivo (cargas/rotina.motivo)."""
     parser = argparse.ArgumentParser(
         prog="python -m cargas.cadastro", description="Carga do cadastro (identificação e setor)."
     )
@@ -250,14 +261,21 @@ def main(argv: list[str] | None = None) -> int:
     if not url:
         log.error("defina RX_BANCO_URL com o usuário rx_ingestao")
         return 2
-    with psycopg.connect(url_libpq(url), autocommit=True) as conexao:
-        try:
-            fontes = ler_pasta(args.pasta) if args.pasta else baixar_fontes()
+    try:
+        with psycopg.connect(url_libpq(url), autocommit=True) as conexao:
+            try:
+                fontes = ler_pasta(args.pasta) if args.pasta else baixar_fontes()
+            except Exception as erro:
+                # Falha antes de haver o que gravar: fica registrada, para o histórico e o alerta
+                # de carga com erro (ADR 0007, seção 8).
+                registrar_falha(conexao, "identificacao", FONTE_IDENTIFICACAO, None, erro)
+                raise
             relatorio = carregar_cadastro(conexao, fontes)
-        except Exception as erro:
-            # O motivo completo fica na carga (ref.carga.motivo_erro); aqui, só o resumo.
-            log.error("cadastro com erro (%s: %s)", type(erro).__name__, erro)
-            return 1
+    except Exception as erro:
+        # O mesmo motivo da carga (ref.carga.motivo_erro), sem valores das linhas. Se nem a falha
+        # foi registrada (banco fora do ar), quem avisa é o alerta de fonte sem carga nova.
+        log.error("cadastro com erro (%s)", motivo(erro))
+        return 1
     log.info(
         "cadastro publicado: %d empresas, ativos %s, %d setores; descartes: %s",
         relatorio.empresas,

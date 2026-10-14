@@ -44,3 +44,28 @@ def test_acha_cpf_solto_ou_com_mascara(texto):
 )
 def test_nao_confunde_cpf_com_outros_numeros(texto):
     conferir_sem_cpf([(texto,)], ("coluna",))
+
+
+def test_mensagem_aponta_o_id_publico_da_linha():
+    linhas = [("CNPJ:ZZ1", "FUNDO SEM NUMERO"), ("CNPJ:ZZ2", f"FUNDO {CPF_DE_TESTE}")]
+
+    with pytest.raises(ErroDeValidacao) as erro:
+        conferir_sem_cpf(linhas, ("fundo_id", "nome_fundo"), chave="fundo_id")
+
+    assert str(erro.value) == "número com formato de CPF na coluna nome_fundo (fundo_id CNPJ:ZZ2)"
+
+
+def test_cpf_na_propria_coluna_do_id_nao_e_repetido():
+    with pytest.raises(ErroDeValidacao) as erro:
+        conferir_sem_cpf([(CPF_DE_TESTE, "NOME")], ("ativo_id", "nome"), chave="ativo_id")
+
+    assert str(erro.value) == "número com formato de CPF na coluna ativo_id"
+
+
+def test_id_que_tambem_tem_cpf_fica_fora_da_mensagem():
+    linha = (f"NOME {CPF_DE_TESTE}", f"ID {CPF_DE_TESTE}")
+
+    with pytest.raises(ErroDeValidacao) as erro:
+        conferir_sem_cpf([linha], ("nome", "ativo_id"), chave="ativo_id")
+
+    assert str(erro.value) == "número com formato de CPF na coluna nome"

@@ -3,14 +3,18 @@
 Cada teste usa um banco novo: o resultado depende do que já foi publicado para o mesmo mês.
 """
 
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal as D
 
+import psycopg
 import pytest
 
+from app.core.composicao import ItemComposicao, TipoItem
+from cargas import cvm
 from cargas.cvm import TIPO, carregar_mes
 from cargas.rotina import ErroDeValidacao
-from ingest.cvm_cda import FONTE, LayoutInesperado
+from ingest.cvm_cda import FONTE, LayoutInesperado, MesCDA, ler_mes
 from tests.ficticios import cnpj, isin
 from tests.ingest.cda_sintetico import MesSintetico
 
@@ -131,9 +135,116 @@ def test_cpf_nas_linhas_preparadas_impede_a_publicacao(banco_novo):
         assert ingestao.execute("SELECT count(*) FROM ref.composicao").fetchone() == (0,)
 
 
+def test_motivo_do_cpf_aponta_o_fundo_sem_repetir_o_numero(banco_novo):
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        with pytest.raises(ErroDeValidacao):
+            carregar(ingestao, mes_com((FUNDO_A, "250.00"), nome=f"FUNDO {CPF_DE_TESTE}"))
+
+        ((_, motivo),) = cargas(ingestao)
+        assert motivo == (
+            "ErroDeValidacao: número com formato de CPF na coluna nome_fundo"
+            f" (fundo_id CNPJ:{FUNDO_A})"
+        )
+
+
+def com_derivativo(lido: MesCDA) -> MesCDA:
+    """O mês lido com um derivativo sobre a ACAO no fundo A. O leitor ainda não liga o derivativo
+    ao ativo-objeto (DT-14): o teste o põe à mão, como a carga o receberá depois."""
+    fundo = f"CNPJ:{FUNDO_A}"
+    c = lido.composicoes[fundo]
+    derivativo = ItemComposicao(None, D("0.01"), TipoItem.DERIVATIVO, ativo_objeto=ACAO)
+    return replace(
+        lido,
+        composicoes={**lido.composicoes, fundo: replace(c, itens=(*c.itens, derivativo))},
+        valores={**lido.valores, fundo: (*lido.valores[fundo], D("10.00"))},
+    )
+
+
+def test_ativo_objeto_e_gravado_e_o_mes_igual_nao_e_regravado(banco_novo, monkeypatch):
+    # A assinatura do incremental compara o ativo_objeto: se ele não fosse gravado, todo fundo com
+    # derivativo pareceria mudado a cada carga.
+    monkeypatch.setattr(cvm, "ler_mes", lambda z: com_derivativo(ler_mes(z)))
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        carregar(ingestao, mes_com((FUNDO_A, "250.00")))
+
+        segunda = carregar(ingestao, mes_com((FUNDO_A, "250.00")))
+
+        assert (segunda.carga_id, segunda.gravados, segunda.sem_mudanca) == (None, 0, 1)
+        gravado = ingestao.execute(
+            "SELECT ativo_objeto FROM ref.composicao_item WHERE tipo = 'derivativo'"
+        ).fetchall()
+        assert gravado == [(ACAO,)]
+
+
+def test_log_do_mes_com_erro_nao_repete_a_mensagem_da_excecao(
+    banco_novo, monkeypatch, tmp_path, caplog
+):
+    def falhar(conexao, mes, obter_zip):
+        raise ValueError("valor inválido: ZZMARCADOR")
+
+    monkeypatch.setattr(cvm, "carregar_mes", falhar)
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+    arquivo = tmp_path / "cda_fi_202608.zip"
+    arquivo.write_bytes(b"")
+
+    assert cvm.main(["--zip", str(arquivo)]) == 1
+
+    assert "mês 202608: carga com erro (ValueError)" in caplog.text
+    assert "ZZMARCADOR" not in caplog.text
+
+
 def test_relatorio_lista_os_fundos_gravados_fora_de_1_por_cento(banco_novo):
     # O fundo B informa aplicações que somam metade do patrimônio.
     with banco_novo.conectar("rx_ingestao") as ingestao:
         relatorio = carregar(ingestao, mes_com((FUNDO_A, "1000.00"), (FUNDO_B, "500.00")))
 
         assert relatorio.fora_de_1_por_cento == [f"CNPJ:{FUNDO_B}"]
+
+
+# --- Falhas antes de haver o que gravar (índice do portal), sem rede ---
+
+
+def sem_rede(*_args, **_kwargs):
+    raise ConnectionError("portal fora do ar ZZMARCADOR")
+
+
+def test_indice_do_portal_fora_do_ar_deixa_a_carga_com_erro(banco_novo, monkeypatch, caplog):
+    monkeypatch.setattr(cvm, "baixar", sem_rede)
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+
+    assert cvm.main([]) == 1
+
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        assert cargas(ingestao) == [("com_erro", "ConnectionError")]
+    assert "ZZMARCADOR" not in caplog.text
+
+
+def test_indice_do_portal_sem_nenhum_mes_deixa_a_carga_com_erro(banco_novo, monkeypatch):
+    monkeypatch.setattr(cvm, "baixar", lambda *_a, **_k: b"<html>em manutencao</html>")
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+
+    assert cvm.main([]) == 1
+
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        assert cargas(ingestao) == [
+            ("com_erro", "LayoutInesperado: nenhum mês no índice do portal da CVM")
+        ]
+
+
+def test_sem_conseguir_registrar_a_falha_termina_com_1_e_mensagem_curta(
+    banco_novo, monkeypatch, caplog
+):
+    # O banco cai entre o início da carga e o registro da falha: quem avisa é o alerta de fonte
+    # sem carga nova (ADR 0007, seção 8).
+    def banco_caiu(*_args, **_kwargs):
+        raise psycopg.OperationalError("conexão perdida ZZMARCADOR")
+
+    monkeypatch.setattr(cvm, "baixar", sem_rede)
+    monkeypatch.setattr(cvm, "registrar_falha", banco_caiu)
+    monkeypatch.setenv("RX_BANCO_URL", banco_novo.url("rx_ingestao"))
+
+    assert cvm.main([]) == 1
+
+    assert "(OperationalError)" in caplog.text
+    assert "ZZMARCADOR" not in caplog.text
+    assert all(r.exc_info is None for r in caplog.records)  # sem traceback
