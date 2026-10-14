@@ -3,7 +3,8 @@
 - **Status:** aceito no conceito em 2026-10-02. Os itens marcados *(a conferir no PR)* são regras de
   implementação para a revisão do PR.
 - **Data:** 2026-10-02. Revisado em 2026-10-04 com o resultado preliminar da T-01 (seções 2, 3, 4 e 6) e em
-  2026-10-08 com o CNPJ alfanumérico (seções 2, 3 e 5).
+  2026-10-08 com o CNPJ alfanumérico (seções 2, 3 e 5) e em 2026-10-13 com o código interno da B3 e a
+  raiz do ticker (seções 2 e 5).
 - **Decisores:** Lucas (Membro 2) e M1. Decisão conjunta R-02 de `docs/decisoes_m1_irrae_v1.1.md`.
 - **Substitui:** a linha "Identificador de empresa" do ADR 0003 e a regra "a chave de empresa é o ISIN" do
   `CLAUDE.md`. **Afeta:** o ADR 0002 (identificação do ativo) e a D-17 da v1.1 do IrRAE.
@@ -46,6 +47,7 @@ somam na mesma empresa, e a resposta mostra o tipo e a % de cada classe. **Isso 
 | Ação, BDR ou ETF com ISIN de país da **lista permitida** | o próprio ISIN | `BR` + 9 caracteres + dígito |
 | Ativo negociado nos EUA | `US:` + ticker | `US:GOOGL` |
 | Fundo brasileiro (em bolsa ou não) | `CNPJ:` + CNPJ de 14 caracteres | `CNPJ:` + 12 letras ou números + 2 dígitos |
+| Ação brasileira sem ISIN conhecido | `B3:` + ticker (código interno) | `B3:` + raiz de 4 caracteres + 1 ou 2 dígitos |
 
 - **Lista permitida de países do ISIN:** `BR` (ações, BDRs e ETFs da B3), `IE` e `LU` (ETFs UCITS). ISIN de
   país fora da lista **nunca é guardado**. Usar lista de permitidos, e não de proibidos, porque a fronteira
@@ -54,6 +56,12 @@ somam na mesma empresa, e a resposta mostra o tipo e a % de cada classe. **Isso 
 - **Fundos brasileiros sempre pelo CNPJ**, mesmo os negociados na B3 (FIIs, ETFs), porque a CVM identifica
   os fundos e as cotas de fundos dentro de outros fundos pelo CNPJ. O ticker e o ISIN de um fundo em bolsa
   apontam para o mesmo `CNPJ:`.
+- **Código interno da B3** (decisão de 13/10/2026, seção 5): a ação brasileira que nenhum fundo
+  tem não tem ISIN em nenhuma fonte liberada (o FCA liga o ticker à companhia, mas não traz o
+  ISIN; o serviço de ISIN da B3 não está liberado). Ela fica como `B3:` + ticker, ligada à
+  companhia, e passa ao ISIN quando o CDA trouxer o dela. A raiz do ticker (os 4 primeiros
+  caracteres, começando por letra) é o código do emissor na B3, o mesmo do 3º ao 6º caractere do
+  ISIN brasileiro: é por ela que ticker e ISIN chegam à companhia (`ingest/cvm_fca.py`).
 - **CNPJ alfanumérico:** desde julho de 2026 a Receita Federal emite CNPJs novos com letras (IN RFB
   2.229/2024). As 12 primeiras posições (raiz e ordem) têm letras maiúsculas ou números; os 2 dígitos
   verificadores continuam números, e os CNPJs só com números continuam valendo. O dígito verificador é
@@ -123,6 +131,10 @@ Cada posição passa a ter `identificador` e `tipo_identificador`, no lugar do c
 - Continua valendo a regra das mensagens de erro: nunca repetir o valor enviado.
 - Os leitores de CSV (ADR 0002) já sabem a origem do arquivo: a B3 traz ticker da B3 e a Avenue traz ticker
   americano.
+- **Ticker da B3 sem ISIN conhecido** (decisão de 13/10/2026): vira o código interno `B3:` +
+  ticker (seção 2). A tabela de identificação liga cada ticker ao `ativo_id` (ISIN, `B3:` ou o
+  `CNPJ:` do fundo listado). As ligações que as fontes não fazem sozinhas ficam na curadoria
+  versionada (`backend/cargas/curadoria/`).
 
 ### 6. Ingestão
 

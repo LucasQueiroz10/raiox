@@ -107,8 +107,15 @@ Regras:
     python -m cargas.cvm                        os 3 meses mais recentes
     python -m cargas.cvm --pular 3 --meses 9    os 9 meses seguintes (semanal)
     python -m cargas.cvm --zip cda_fi_AAAAMM.zip    um zip local
-- Testes: tests/cargas (sem banco, job "backend") e tests/banco/test_rotina_carga.py e
-  test_carga_cvm.py (com banco, job "banco").
+- Cadastro (ADR 0008, etapa 4): identificação (empresas, ações pelo ISIN ou pelo código interno
+  B3:, ETFs e FIIs) e setor oficial, a partir do FCA, do CDA e do informe de FII, mais a curadoria
+  manual em cargas/curadoria/ (README lá dentro). Foto completa a cada carga, toda segunda:
+    python -m cargas.cadastro                   baixa as fontes do portal da CVM
+    python -m cargas.cadastro --pasta DIR       lê os zips já baixados (nomes do portal)
+- Leitores da CVM (ingest/): cvm_cda.py, cvm_fca.py e cvm_fii.py, com o que é comum em
+  arquivos_cvm.py. Só stdlib, para rodarem na imagem de produção.
+- Testes: tests/cargas (sem banco, job "backend") e tests/banco/test_rotina_carga.py,
+  test_carga_cvm.py e test_carga_cadastro.py (com banco, job "banco").
 - Medição da foto da API (DT-10), com o banco carregado e RX_BANCO_URL do rx_api:
     python -m medicoes.foto_dos_dados
 
