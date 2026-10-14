@@ -26,8 +26,8 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 |---|---|---|---|---|---|
 | 1 | CVM – Composição das carteiras de fundos (CDA) | O que tem dentro de cada fundo brasileiro, inclusive os ETFs | ODbL | FP-25 | permitida |
 | 2 | CVM – Cadastro de fundos | Nome, tipo e situação dos fundos | ODbL | FP-26 | permitida |
-| 3 | CVM – Cadastro de companhias abertas | Setor oficial das empresas brasileiras | ODbL | FP-24 | permitida |
-| 4 | CVM – Formulário Cadastral (FCA) | Ligar o ticker da B3 à empresa (CNPJ) | ODbL | fora da planilha | permitida: liberada pelo M1 em 12/10/2026, só as tabelas de valores mobiliários e geral |
+| 3 | CVM – Cadastro de companhias abertas | Não usado: o setor oficial vem do FCA (fonte 4) | ODbL | FP-24 | permitida |
+| 4 | CVM – Formulário Cadastral (FCA) | Ligar o ticker e o ISIN da B3 à empresa (CNPJ) e o setor oficial | ODbL | fora da planilha | permitida: liberada pelo M1 em 12/10/2026, só as tabelas de valores mobiliários e geral |
 | 6 | SEC – Form N-PORT | O que tem dentro de cada ETF americano | Domínio público (SEC) | FP-09, FP-10 | permitida: liberada pelo M1 em 12/10/2026, sem gravar CUSIP nem ISIN fora da lista do ADR 0005 |
 | 7 | SEC – Submissions, lista de tickers e lista SIC | Ticker americano → empresa (CIK) e setor oficial (SIC) | Domínio público (SEC) | FP-02, FP-07, FP-08 | permitida |
 | 11 | Wikidata | Setor de empresas fora dos EUA e do Brasil, como preliminar | CC0 | FA-09 | permitida (só como referência cruzada) |
@@ -38,6 +38,7 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 | 16 | GLEIF – LEI | Identificar a empresa pelo LEI (o N-PORT traz o LEI de cada ação) | CC0, com restrição de marca | FP-16 | permitida |
 | 17 | OpenFIGI | Ligar o BDR à ação de fora que o lastreia (teste com 20 tickers) | MIT | FP-17 | permitida |
 | 18 | SEC – Form N-CEN | Confirmar se um fundo americano é ETF antes de abrir | Domínio público (SEC) | FP-11 | permitida |
+| 36 | CVM – Informe Mensal de FII | ISIN, tipo (tijolo, papel, fundo de fundos) e segmento dos FIIs | ODbL | fora da planilha | permitida: liberada pelo M1 em 13/10/2026 |
 
 ### Fontes do IrRAE
 
@@ -110,23 +111,25 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 
 - **Onde:** dados.cvm.gov.br, conjunto "Fundos de Investimento: Cadastro".
 - **Método exato:** baixamos o arquivo cadastral (atualizado de terça a sábado, às 8h, segundo a FP-26). Usamos CNPJ, nome, classe e situação (ativo ou cancelado) para identificar os fundos da fonte 1 e descartar os cancelados.
+- **Uso atual (13/10/2026):** ainda não usado; os nomes dos fundos vêm do CDA (fonte 1). Se for usado: só a tabela `registro_classe`. A tabela `registro_fundo` traz o nome do diretor e o CPF do gestor pessoa física e **não é aberta**; a coluna `Classificacao_Anbima` **nunca é usada** (ficha FP-37: não usar a ANBIMA). Não traz ticker nem ISIN.
 - **Crédito exigido:** sim, o mesmo da fonte 1.
 
 ### 3. CVM – Cadastro de companhias abertas
 
 - **Onde:** dados.cvm.gov.br, conjunto "Companhias Abertas: Cadastro".
-- **Método exato:** download mensal. Usamos o campo de setor de atividade como **setor oficial** das empresas brasileiras. Uma tabela nossa, revisada à mão, liga cada setor da CVM ao setor usado no raio-x.
+- **Não usado (13/10/2026):** o setor de atividade, que era o uso previsto, vem da tabela `geral` do FCA (fonte 4), que traz o mesmo campo. Este cadastro traz nome, e-mail e telefone do responsável por cada companhia e **não é baixado**.
 - **Atenção:** a FP-24 descreve este cadastro como "chave CVM ↔ CNPJ ↔ ticker B3", mas o ticker vem da fonte 4.
 - **Crédito exigido:** sim, o mesmo da fonte 1.
 
 ### 4. CVM – Formulário Cadastral (FCA)
 
 - **Onde:** dados.cvm.gov.br, conjunto "Companhias Abertas: Documentos: Formulário Cadastral (FCA)". Licença ODbL, atualização semanal.
-- **Método exato:** do pacote de cada ano, lemos **só** duas tabelas:
-  - `fca_cia_aberta_valor_mobiliario`: código de negociação na B3 (ex.: PETR4), CNPJ da companhia, tipo do valor mobiliário (ON, PN, unit, BDR), mercado e datas de listagem. É o que liga o ticker do CSV da B3 à empresa e junta as classes da mesma empresa (DT-3);
-  - `fca_cia_aberta_geral`: setor de atividade e situação da companhia.
+- **Método exato** (`ingest/cvm_fca.py`, carga semanal `python -m cargas.cadastro`): dos pacotes dos 3 anos mais recentes, lemos **só** duas tabelas:
+  - `fca_cia_aberta_valor_mobiliario`: código de negociação na B3 (ex.: PETR4), CNPJ da companhia, tipo do valor mobiliário (ON, PN, unit, BDR), mercado e datas de listagem. É o que liga o ticker do CSV da B3 à empresa e junta as classes da mesma empresa;
+  - `fca_cia_aberta_geral`: nome, setor de atividade (o **setor oficial**, com o nome usado pela CVM) e situação da companhia.
+- **Regras:** vale a versão mais recente do formulário de cada companhia, juntando os anos. Só entram códigos no formato da B3 (raiz de 4 caracteres começando por letra e 1 ou 2 dígitos), de ações e units negociadas. A raiz é o código do emissor na B3 e liga à companhia qualquer ticker ou ISIN brasileiro com essa raiz. O código vem errado em algumas companhias (ex.: "000000", "4030", "ADR"): elas entram pela curadoria manual (`backend/cargas/curadoria/`).
 - **Liberação:** pelo M1 em 12/10/2026, nas condições desta ficha.
-- **Não traz o ISIN** (conferido no dicionário de dados da CVM em 11/10/2026). A ligação com o ISIN fica para a fonte 13 ou para o ISIN informado pelo usuário.
+- **Não traz o ISIN** (conferido no dicionário de dados da CVM em 11/10/2026). O ISIN vem dos pares ticker ↔ ISIN do CDA (fonte 1); a ação que nenhum fundo tem usa o código interno `B3:` + ticker (ADR 0005, seção 2).
 - **Dado pessoal:** o mesmo pacote traz `fca_cia_aberta_dri`, `fca_cia_aberta_departamento_acionistas` e `fca_cia_aberta_endereco`, com nome, CPF, e-mail e telefone de pessoas. **Esses arquivos nunca são importados** (LGPD).
 - **Crédito exigido:** sim, o mesmo da fonte 1.
 
@@ -207,6 +210,15 @@ Os números das fontes 1 a 15 são os mesmos de antes, porque outros documentos 
 
 - **Uso:** confirmar se um fundo americano é ETF, e que índice segue, antes de abrir a carteira dele pela fonte 6.
 - **Regras de acesso e marca:** as mesmas da fonte 6.
+
+### 36. CVM – Informe Mensal de FII
+
+- **Onde:** dados.cvm.gov.br, conjunto "Fundos de Investimento Imobiliário: Documentos: Informe Mensal". Licença ODbL, como a fonte 1.
+- **Liberação:** pelo M1 em 13/10/2026.
+- **Método exato** (`ingest/cvm_fii.py`, carga semanal `python -m cargas.cadastro`): dos pacotes dos 2 anos mais recentes, lemos só a tabela `geral` (CNPJ da classe, nome, ISIN e o segmento de atuação declarado pelo fundo) e o quadro de ativos (`ativo_passivo`). A tabela `complemento` não é aberta. Vale o informe mais recente de cada fundo.
+- **Para que serve:** os FIIs não têm composição no CDA. O ISIN liga o ticker do usuário ao fundo (a raiz do ISIN é a do ticker), e o quadro de ativos dá o tipo: o grupo com mais da metade do investido (tijolo, papel ou fundo de fundos), ou genérico; no tijolo, o segmento declarado (regra de 13/10/2026). ISIN informado por mais de um fundo não é usado. Só dados da CVM: nunca a classificação da ANBIMA (FP-37).
+- **Dado de contato:** a tabela `geral` traz endereço, telefone e e-mail do administrador do fundo. Essas colunas **não são usadas nem guardadas**.
+- **Crédito exigido:** sim, o mesmo da fonte 1.
 
 ---
 

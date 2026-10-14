@@ -142,16 +142,23 @@ seção 3).
    - a soma das linhas de cada fundo contra o patrimônio (seção 8, item a).
 
    Testes com banco.
-4. **Identificação e setor:** FCA (ticker → CNPJ da empresa; só as tabelas de valores mobiliários e
-   geral, nunca os arquivos com dados pessoais; liberado pelo M1 em 12/10/2026), os pares ticker ↔ ISIN
-   do bloco de ações e o cadastro de companhias (setor oficial, com o nome usado pela CVM; a tabela de
-   tradução para os setores do raio-x vem depois). Liga cada ação à empresa e fecha a DT-3. Entram
-   também:
-   - a ligação do ticker e do ISIN de cada ETF ao CNPJ da classe (seção 1);
-   - a entrada por ticker e por CNPJ no `POST /api/raiox` (ADR 0005, seção 5), que depende da decisão
-     do Lucas sobre o código interno do ticker sem ISIN.
+4. **Identificação e setor**, em três PRs (levantamento e decisões de 13/10/2026):
+   1. **Cadastro no banco** (`python -m cargas.cadastro`, toda segunda): FCA (ticker → CNPJ e o setor
+      oficial, com o nome usado pela CVM; só as tabelas de valores mobiliários e geral, nunca os
+      arquivos com dados pessoais), os pares ticker ↔ ISIN do CDA, as cotas de ETF e FII
+      emprestadas (ticker → CNPJ) e o informe mensal de FII (fonte 36, liberada pelo M1 em
+      13/10/2026: ISIN, tipo e segmento). A raiz do ticker, que é o código do emissor na B3, liga
+      ticker e ISIN à companhia; o que as fontes não ligam fica na curadoria versionada
+      (`backend/cargas/curadoria/`). Ação sem ISIN conhecido usa o código interno `B3:` + ticker
+      (ADR 0005). O setor vem do FCA, e o cadastro de companhias (fonte 3) fica de fora, porque
+      traz dados pessoais do responsável. A tabela que traduz para os setores do raio-x vem depois.
+      Com os dados de 13/10/2026: 771 companhias com setor e 96,3% do valor das ações dentro dos
+      fundos ligado a uma companhia (o resto são BDRs, 3,7%, e 0,1% de empresas pequenas).
+   2. **Entrada por ticker e por CNPJ** no `POST /api/raiox` (ADR 0005, seção 5).
+   3. **FIIs no raio-x:** a categoria "Fundos imobiliários", com o tipo de cada FII (regra em
+      `backend/ingest/cvm_fii.py`), em vez de "não aberto".
 
-   Sem essas duas, o ETF e o fundo da carteira do usuário não são abertos.
+   Sem os PRs 4.2 e 4.3, o ETF, o fundo e o FII da carteira do usuário não são abertos.
 5. **PTAX no banco:** carga diária; fecha a DT-1.
 
 Meta: etapas 2 a 5 entre 13 e 18/10, deixando 19 a 23/10 para o P3 (HTTPS, telas, importação de CSV e
