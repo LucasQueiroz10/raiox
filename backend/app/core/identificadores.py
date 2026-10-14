@@ -2,6 +2,13 @@
 
 import re
 
+# Países de ISIN que podem ser guardados (ADR 0005, seção 2): a mesma lista do domínio ref.ativo_id.
+# ZZ não é país: é o prefixo dos ISINs sintéticos dos testes e do conjunto de exemplo.
+PAISES_ISIN = ("BR", "IE", "LU", "ZZ")
+# Ticker da B3: a raiz de 4 caracteres (o código do emissor), começando por letra, e 1 ou 2 dígitos
+# (ex.: PETR4, BPAC11, B3SA3). A raiz também é o 3º ao 6º caractere do ISIN brasileiro.
+TICKER_B3 = re.compile(r"[A-Z][A-Z0-9]{3}[0-9]{1,2}")
+
 # 2 letras de país (ou prefixo como XS), 9 caracteres alfanuméricos e 1 dígito verificador.
 _FORMATO_ISIN = re.compile(r"[A-Z]{2}[A-Z0-9]{9}[0-9]")
 
