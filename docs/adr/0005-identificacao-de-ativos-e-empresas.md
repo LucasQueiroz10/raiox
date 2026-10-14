@@ -3,8 +3,8 @@
 - **Status:** aceito no conceito em 2026-10-02. Os itens marcados *(a conferir no PR)* são regras de
   implementação para a revisão do PR.
 - **Data:** 2026-10-02. Revisado em 2026-10-04 com o resultado preliminar da T-01 (seções 2, 3, 4 e 6) e em
-  2026-10-08 com o CNPJ alfanumérico (seções 2, 3 e 5) e em 2026-10-13 com o código interno da B3 e a
-  raiz do ticker (seções 2 e 5).
+  2026-10-08 com o CNPJ alfanumérico (seções 2, 3 e 5), em 2026-10-13 com o código interno da B3 e a
+  raiz do ticker (seções 2 e 5) e em 2026-10-14 com a entrada por identificador na API (seção 5).
 - **Decisores:** Lucas (Membro 2) e M1. Decisão conjunta R-02 de `docs/decisoes_m1_irrae_v1.1.md`.
 - **Substitui:** a linha "Identificador de empresa" do ADR 0003 e a regra "a chave de empresa é o ISIN" do
   `CLAUDE.md`. **Afeta:** o ADR 0002 (identificação do ativo) e a D-17 da v1.1 do IrRAE.
@@ -120,12 +120,13 @@ Cada posição passa a ter `identificador` e `tipo_identificador`, no lugar do c
 | `tipo_identificador` | Validação |
 |---|---|
 | `isin` | formato, dígito verificador e país na lista permitida |
-| `ticker_b3` | 4 letras e 1 ou 2 dígitos (ex.: PETR4, BOVA11, BDRs como AAPL34) *(a conferir no PR)* |
-| `ticker_eua` | 1 a 5 letras, com classe opcional (ex.: BRK.B) *(a conferir no PR)* |
+| `ticker_b3` | raiz de 4 caracteres começando por letra e 1 ou 2 dígitos (ex.: PETR4, BOVA11, B3SA3, BDRs como AAPL34), o mesmo formato da carga; o "F" do mercado fracionário (PETR4F) sai antes, porque é a mesma ação |
+| `ticker_eua` | 1 a 5 letras, com a classe opcional depois do ponto (ex.: BRK.B), o mesmo formato do `US:` no banco |
 | `cnpj` | 12 letras maiúsculas ou números e 2 dígitos verificadores (CNPJ alfanumérico, seção 2); aceita a máscara (ex.: `12.ABC.345/01DE-35`) e letras minúsculas, normalizadas antes de validar |
 
 - **Ação americana entra só pelo ticker.** Sem guardar ISINs americanos, não há como ligar um ISIN americano
-  a uma empresa. Um ISIN de país fora da lista recebe 422, com um motivo que pede o ticker.
+  a uma empresa. Um ISIN de país fora da lista recebe 422, com o motivo `isin_fora_da_lista`, que pede
+  o ticker.
 - Identificador válido mas desconhecido continua entrando como uma empresa sem classificação, como
   hoje: o próprio `ativo_id` faz o papel de `empresa_id` até a tabela ligá-lo a uma empresa.
 - Continua valendo a regra das mensagens de erro: nunca repetir o valor enviado.
@@ -135,6 +136,15 @@ Cada posição passa a ter `identificador` e `tipo_identificador`, no lugar do c
   ticker (seção 2). A tabela de identificação liga cada ticker ao `ativo_id` (ISIN, `B3:` ou o
   `CNPJ:` do fundo listado). As ligações que as fontes não fazem sozinhas ficam na curadoria
   versionada (`backend/cargas/curadoria/`).
+- **FII sem ticker conhecido** (14/10/2026): a carga só conhece o ticker dos FIIs que aparecem
+  emprestados no CDA ou estão na curadoria. Sem ele, a API procura o FII pela raiz do ISIN do informe
+  mensal (o 3º ao 6º caractere do ISIN são os 4 primeiros do ticker), desde que um FII só tenha essa
+  raiz; senão, o ticker vira `B3:` + ticker.
+- **Tipo do ativo** (decisão do Lucas, 14/10/2026): o `tipo` declarado (ação ou fundo) continua
+  obrigatório, mas, para um ativo que a identificação conhece, vale o tipo dela; o declarado só vale
+  para o identificador desconhecido. Assim, um FII marcado como ação não vira uma empresa sem
+  classificação, e uma ação marcada como fundo não vira "não aberto".
+- A tradução está em `backend/app/core/traducao.py`; a validação, em `backend/app/core/identificadores.py`.
 
 ### 6. Ingestão
 

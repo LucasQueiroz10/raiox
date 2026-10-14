@@ -41,7 +41,10 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
   misturar dois momentos do banco.
   Testes da API trocam repositório e PTAX por app.dependency_overrides; nenhum teste usa rede.
 - Valores em dinheiro e pesos usam Decimal, nunca float.
-- ISIN e CNPJ (numérico e alfanumérico) validados com dígito verificador em core/identificadores.
+- A carteira entra por identificador e tipo_identificador (isin, ticker_b3, ticker_eua ou cnpj; ADR
+  0005, seção 5), validados em core/identificadores (ISIN e CNPJ com dígito verificador; ISIN só de
+  país da lista permitida) e traduzidos para o ativo_id em core/traducao, pela identificação da foto.
+  Para ativo conhecido, vale o tipo da identificação, não o declarado.
 - POST /api/raiox não grava nem registra em log o conteúdo da carteira. Respostas de erro também
   não repetem a entrada: 422 traz só campo, motivo e mensagem; exceção inesperada vira 500
   genérico e o log guarda só o tipo e o arquivo:linha (app/api/erros.py).
