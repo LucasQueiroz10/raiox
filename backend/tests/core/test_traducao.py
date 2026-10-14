@@ -111,3 +111,8 @@ def test_identificacao_com_identificador_repetido_e_recusada(repetidos):
     # O banco já garante um ativo por identificador em cada carga; a tabela confere de novo.
     with pytest.raises(ValueError, match="repetido"):
         TabelaIdentificacao.montar(repetidos)
+
+
+def test_tipo_de_identificador_sem_traducao_e_erro_e_nao_um_ativo_vazio():
+    with pytest.raises(ValueError, match="tipo de identificador"):
+        traduzir("cusip", "ZZAA3", ACAO, TABELA)  # type: ignore[arg-type]

@@ -95,6 +95,10 @@ def _ativo_id(
             return t.ativo_do_ticker_eua.get(identificador, f"US:{identificador}")
         case "cnpj":
             return f"CNPJ:{identificador}"
+        case _:
+            # O esquema da API só aceita os tipos acima; um tipo novo sem tradução não pode virar
+            # um ativo vazio em silêncio.
+            raise ValueError("tipo de identificador sem tradução")
 
 
 def traduzir(
