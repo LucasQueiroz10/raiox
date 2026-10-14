@@ -183,8 +183,8 @@ def _gravacao(lido: MesCDA, fundos: list[str]) -> Gravar:
 
     def gravar(conexao: psycopg.Connection, carga_id: int) -> int:
         # Segunda barreira contra CPF (a primeira é o leitor), antes de qualquer gravação.
-        conferir_sem_cpf(composicoes, _COLUNAS_COMPOSICAO)
-        conferir_sem_cpf(itens, _COLUNAS_ITEM)
+        conferir_sem_cpf(composicoes, _COLUNAS_COMPOSICAO, chave="fundo_id")
+        conferir_sem_cpf(itens, _COLUNAS_ITEM, chave="fundo_id")
         # Preparação em tabelas temporárias da sessão (ADR 0006, seção 5): somem no fim da
         # transação, ninguém mais as vê, e o COPY é bem mais rápido que um INSERT por linha.
         conexao.execute(

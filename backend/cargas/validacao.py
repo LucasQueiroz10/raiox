@@ -3,7 +3,8 @@
 Varredura de CPF: o CPF nunca é gravado (LGPD; ADR 0008, seção 3). Os leitores já descartam o
 emissor pessoa física, e esta varredura é a segunda barreira, pedida pelo M1: antes de publicar,
 procura nas linhas preparadas qualquer número com formato e dígitos verificadores de CPF. Se achar,
-a carga não publica.
+a carga não publica, e o motivo diz a coluna e o id público da linha (o CNPJ do fundo, o empresa_id
+ou o ativo_id), para achar a linha na fonte; nunca o número.
 """
 
 import re
@@ -34,13 +35,24 @@ def cpf_valido(numero: str) -> bool:
     return True
 
 
-def conferir_sem_cpf(linhas: Iterable[Sequence[object]], colunas: Sequence[str]) -> None:
-    """Levanta ErroDeValidacao se algum texto das linhas tiver um CPF válido. A mensagem diz só a
-    coluna, nunca o número."""
+def _tem_cpf(valor: object) -> bool:
+    return isinstance(valor, str) and any(
+        cpf_valido(re.sub(r"[^0-9]", "", achado)) for achado in _CPF.findall(valor)
+    )
+
+
+def conferir_sem_cpf(
+    linhas: Iterable[Sequence[object]], colunas: Sequence[str], *, chave: str | None = None
+) -> None:
+    """Levanta ErroDeValidacao se algum texto das linhas tiver um CPF válido. A mensagem diz a
+    coluna e, com `chave` (a coluna do id público da linha, ex.: "fundo_id"), o id; nunca o número.
+    O id fica de fora se o CPF estiver nele."""
+    posicao_da_chave = colunas.index(chave) if chave else None
     for linha in linhas:
         for coluna, valor in zip(colunas, linha, strict=True):
-            if not isinstance(valor, str):
+            if not _tem_cpf(valor):
                 continue
-            for achado in _CPF.findall(valor):
-                if cpf_valido(re.sub(r"[^0-9]", "", achado)):
-                    raise ErroDeValidacao(f"número com formato de CPF na coluna {coluna}")
+            mensagem = f"número com formato de CPF na coluna {coluna}"
+            if posicao_da_chave is not None and not _tem_cpf(linha[posicao_da_chave]):
+                mensagem += f" ({chave} {linha[posicao_da_chave]})"
+            raise ErroDeValidacao(mensagem)

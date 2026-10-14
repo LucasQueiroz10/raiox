@@ -134,6 +134,18 @@ def test_cpf_nas_linhas_preparadas_impede_a_publicacao(banco_novo):
         assert ingestao.execute("SELECT count(*) FROM ref.composicao").fetchone() == (0,)
 
 
+def test_motivo_do_cpf_aponta_o_fundo_sem_repetir_o_numero(banco_novo):
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        with pytest.raises(ErroDeValidacao):
+            carregar(ingestao, mes_com((FUNDO_A, "250.00"), nome=f"FUNDO {CPF_DE_TESTE}"))
+
+        ((_, motivo),) = cargas(ingestao)
+        assert motivo == (
+            "ErroDeValidacao: número com formato de CPF na coluna nome_fundo"
+            f" (fundo_id CNPJ:{FUNDO_A})"
+        )
+
+
 def com_derivativo(lido: MesCDA) -> MesCDA:
     """O mês lido com um derivativo sobre a ACAO no fundo A. O leitor ainda não liga o derivativo
     ao ativo-objeto (DT-14): o teste o põe à mão, como a carga o receberá depois."""

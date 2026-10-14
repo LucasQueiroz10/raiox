@@ -161,8 +161,8 @@ def _gravar_identificacao(identificacao: Identificacao) -> Gravar:
     def gravar(conexao: psycopg.Connection, carga_id: int) -> int:
         _conferir_queda(conexao, "empresa_vigente", "empresas", len(empresas))
         _conferir_queda(conexao, "ativo_vigente", "ativos", len(ativos))
-        conferir_sem_cpf(empresas, colunas_empresa)
-        conferir_sem_cpf(ativos, colunas_ativo)
+        conferir_sem_cpf(empresas, colunas_empresa, chave="empresa_id")
+        conferir_sem_cpf(ativos, colunas_ativo, chave="ativo_id")
         # Direto nas tabelas definitivas: as validações já rodaram acima, e os domínios e gatilhos
         # do banco conferem cada linha (identificadores do ADR 0005, carga aberta do tipo certo).
         # As empresas vão antes: cada ação aponta para uma empresa da mesma carga.

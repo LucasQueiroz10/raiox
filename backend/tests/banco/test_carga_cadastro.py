@@ -1,6 +1,7 @@
 """Carga do cadastro (ADR 0008, etapa 4): identificação e setor oficial, com fontes sintéticas nos
 formatos da CVM, rodando como rx_ingestao. Cada teste usa um banco novo."""
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,7 @@ from tests.ingest.fii_sintetico import AnoFII
 EMPRESA, ETF, FII, FUNDO = (cnpj(f"CADASTRO-{n}") for n in ("EMPRESA", "ETF", "FII", "FUNDO"))
 ON, PN = isin_da_raiz("ZZAA", "ACNOR"), isin_da_raiz("ZZAA", "ACNPR")
 ISIN_DO_FII = isin_da_raiz("ZZFI", "CTF00")
+CPF_DE_TESTE = "00000000191"  # o mesmo número de teste de tests/cargas/test_validacao.py
 
 
 @pytest.fixture
@@ -134,3 +136,21 @@ def test_curadoria_com_linha_errada_fica_com_erro(banco_novo, curadoria_vazia):
             carregar_cadastro(ingestao, fontes(curadoria_vazia))
 
         assert cargas(ingestao) == [("identificacao", "com_erro")]
+
+
+def test_cpf_no_nome_da_companhia_aponta_a_empresa_sem_repetir_o_numero(
+    banco_novo, curadoria_vazia
+):
+    fca = AnoSintetico().companhia(EMPRESA, "ZZAA3", "ZZAA4", nome=f"CIA {CPF_DE_TESTE} S.A.")
+    com_cpf = replace(fontes(curadoria_vazia), fca=[fca.zip()])
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        with pytest.raises(ErroDeValidacao):
+            carregar_cadastro(ingestao, com_cpf)
+
+        (motivo,) = ingestao.execute(
+            "SELECT motivo_erro FROM ref.carga WHERE tipo = 'identificacao'"
+        ).fetchone()
+        assert motivo == (
+            "ErroDeValidacao: número com formato de CPF na coluna nome"
+            f" (empresa_id BR:CNPJ:{EMPRESA})"
+        )
