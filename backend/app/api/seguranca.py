@@ -4,22 +4,67 @@ cabeçalhos de segurança.
 DT-2: os contadores ficam na memória de cada servidor. Com N instâncias, o limite efetivo por IP
 vira N vezes o configurado, e reiniciar o servidor zera a conta.
 
-O IP usado é request.client.host. Atrás de um proxy, o uvicorn só o troca pelo X-Forwarded-For
-quando a conexão vem de um IP listado em --forwarded-allow-ips (padrão: 127.0.0.1). Nunca use
-"*" ali sem um proxy que sobrescreva esse cabeçalho: qualquer cliente escolheria o próprio IP.
+O IP do limite vem de chave_do_limite (DT-17): com RX_PROXIES_CONFIAVEIS=0, o IP da conexão; com
+N, o N-ésimo endereço da direita do X-Forwarded-For. Quem lê o cabeçalho é a aplicação: o uvicorn
+roda com --no-proxy-headers (Dockerfile). Nunca use --forwarded-allow-ips="*" sem um proxy que
+sobrescreva esse cabeçalho: qualquer cliente escolheria o próprio IP.
 """
 
+import ipaddress
 import math
 import threading
 import time
 from collections import deque
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 
 from fastapi import HTTPException
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+
+def chave_do_limite(
+    cabecalhos_xff: Sequence[str], ip_conexao: str | None, proxies_confiaveis: int
+) -> str:
+    """A chave do limite por IP de um pedido (DT-17; ADR 0007, seção 3).
+
+    No Cloud Run a conexão chega da infraestrutura do Google, e o IP do cliente vem no
+    X-Forwarded-For. Cada proxy confiável acrescenta à direita o endereço de quem se conectou a
+    ele; o que fica à esquerda pode ter sido escrito pelo próprio cliente. Por isso a chave é o
+    N-ésimo endereço da direita (N = `proxies_confiaveis`), nunca o primeiro. Os vários cabeçalhos
+    X-Forwarded-For contam como um só, na ordem em que chegaram.
+
+    Com N = 0, com menos de N endereços (o pedido não veio pelo caminho esperado) ou com um valor
+    que não é IP na posição, vale o IP da conexão. O IPv6 conta pela rede /64: quem tem uma
+    rede inteira não zera o limite trocando de endereço dentro dela.
+    """
+    if proxies_confiaveis > 0:
+        enderecos = [e.strip() for cabecalho in cabecalhos_xff for e in cabecalho.split(",")]
+        if len(enderecos) >= proxies_confiaveis:
+            chave = _chave_do_ip(enderecos[-proxies_confiaveis])
+            if chave is not None:
+                return chave
+    if ip_conexao is None:
+        return "sem-ip"
+    # Fora do Cloud Run (ex.: o TestClient, que se apresenta como "testclient"), o valor da
+    # conexão pode não ser um IP: fica como veio.
+    return _chave_do_ip(ip_conexao) or ip_conexao
+
+
+def _chave_do_ip(endereco: str) -> str | None:
+    """O IPv4 como está; o IPv6, pela rede /64 (o IPv4 escrito como IPv6 vira o IPv4). None se
+    não for um IP."""
+    try:
+        ip = ipaddress.ip_address(endereco)
+    except ValueError:
+        return None
+    if isinstance(ip, ipaddress.IPv4Address):
+        return str(ip)
+    if ip.ipv4_mapped is not None:
+        return str(ip.ipv4_mapped)
+    # Pelo número, para ignorar o identificador de zona (fe80::1%eth0) que o ip_network recusa.
+    return str(ipaddress.IPv6Network((int(ip) >> 64 << 64, 64)))
 
 
 class LimitadorPorJanela:
