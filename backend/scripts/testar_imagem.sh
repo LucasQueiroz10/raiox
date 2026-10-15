@@ -4,7 +4,8 @@
 #      dependências do lote e de desenvolvimento; os comandos das três cargas abrem;
 #   2. migrações (python -m alembic upgrade head), como rx_dono;
 #   3. carga da CVM com um zip sintético (python -m cargas.cvm --zip), como rx_ingestao;
-#   4. a API em produção (o comando da imagem), como rx_api, lendo o que a carga publicou.
+#   4. a API em produção (o comando da imagem), como rx_api, lendo o que a carga publicou, e o IP
+#      do limite tirado do X-Forwarded-For pela aplicação (RX_PROXIES_CONFIAVEIS; DT-17).
 #
 # Uso, dentro de backend/, com o Docker aberto e o venv ativo (o python do computador gera o zip
 # sintético com tests/ingest/cda_sintetico.py e confere as respostas da API):
@@ -31,6 +32,7 @@ fi
 REDE="rx-imagem-$$"
 BANCO="rx-imagem-banco-$$"
 API="rx-imagem-api-$$"
+SEGREDO="segredo-sintetico-do-teste-da-imagem-$$"  # o do aquecimento, que abre a medição do IP
 
 limpar() {
     docker rm -f "$API" "$BANCO" >/dev/null 2>&1 || true
@@ -107,8 +109,9 @@ PY
 passo "API em produção, como rx_api"
 docker run -d --name "$API" --network "$REDE" -p 127.0.0.1::8080 \
     -e RX_AMBIENTE=producao -e RX_BANCO_URL="postgresql+psycopg://rx_api@$BANCO:5432/rx" \
+    -e RX_PROXIES_CONFIAVEIS=2 -e RX_SEGREDO_AQUECIMENTO="$SEGREDO" \
     "$IMAGEM" >/dev/null
-RX_API="http://$(docker port "$API" 8080/tcp | head -n 1)" python - <<'PY' || {
+RX_API="http://$(docker port "$API" 8080/tcp | head -n 1)" RX_SEGREDO="$SEGREDO" python - <<'PY' || {
 import json
 import os
 import time
@@ -121,11 +124,10 @@ from tests.ficticios import cnpj, isin
 API = os.environ["RX_API"]
 
 
-def pedir(caminho, corpo=None):
+def pedir(caminho, corpo=None, cabecalhos=None):
     dados = None if corpo is None else json.dumps(corpo).encode()
-    pedido = urllib.request.Request(
-        API + caminho, data=dados, headers={"Content-Type": "application/json"}
-    )
+    cabecalhos = {"Content-Type": "application/json", **(cabecalhos or {})}
+    pedido = urllib.request.Request(API + caminho, data=dados, headers=cabecalhos)
     try:
         with urllib.request.urlopen(pedido, timeout=10) as resposta:
             return resposta.status, resposta.headers, json.load(resposta)
@@ -161,12 +163,22 @@ fundos = [(f["fundo_id"], f["data_referencia"]) for f in raiox["fundos"]]
 assert fundos == [(f"CNPJ:{fundo}", "2026-08-31")], fundos
 empresas = [(e["empresa_id"], Decimal(e["via_fundos"])) for e in raiox["empresas"]]
 assert empresas == [(acao, Decimal(1000))], empresas
+
+# DT-17: o uvicorn (--no-proxy-headers) deixa o X-Forwarded-For para a aplicação, que usa o
+# penúltimo endereço com RX_PROXIES_CONFIAVEIS=2. IPs dos blocos reservados para documentação.
+medir = {
+    "x-forwarded-for": "198.51.100.7, 203.0.113.5, 192.0.2.30",
+    "x-rx-aquecimento": os.environ["RX_SEGREDO"],
+}
+status, _, medicao = pedir("/interno/ip-do-cliente", cabecalhos=medir)
+assert status == 200, status
+assert medicao["chave_do_limite"] == "203.0.113.5", medicao
 PY
     docker logs "$API"
     exit 1
 }
 # O Cloud Run já registra cada pedido, com o IP; o log da aplicação não (--no-access-log).
-if docker logs "$API" 2>&1 | grep -q "/api/"; then
+if docker logs "$API" 2>&1 | grep -qE "/(api|interno)/"; then
     echo "o log da API registrou pedidos (falta --no-access-log)"
     exit 1
 fi

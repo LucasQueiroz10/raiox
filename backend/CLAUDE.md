@@ -158,10 +158,10 @@ Regras:
                                             em produção
   Valor inválido derruba o servidor na partida, de propósito.
 - Produção: o comando da imagem (Dockerfile), uvicorn app.main:app --host 0.0.0.0 --port 8080
-  --no-server-header --no-proxy-headers --no-access-log. Sem o X-Forwarded-For, o IP do limite é
-  o da conexão, que no Cloud Run é da infraestrutura do Google: ler o IP do cliente vem antes do
-  primeiro deploy (ADR 0007, seção 3). Nunca use --forwarded-allow-ips="*" sem um proxy que
-  sobrescreva o X-Forwarded-For. Sem log de acesso: o Cloud Run já registra cada pedido, com o IP.
+  --no-server-header --no-proxy-headers --no-access-log. O uvicorn não mexe no IP da conexão:
+  quem lê o X-Forwarded-For é a aplicação, com RX_PROXIES_CONFIAVEIS (DT-17). Nunca use
+  --forwarded-allow-ips="*" sem um proxy que sobrescreva o X-Forwarded-For. Sem log de acesso: o
+  Cloud Run já registra cada pedido, com o IP.
 
 ## Imagem: Dockerfile (ver ADR 0007)
 Uma imagem para a API, as cargas e as migrações (Cloud Run e Cloud Run Jobs), com um comando para

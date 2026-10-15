@@ -44,7 +44,7 @@ EXPOSE 8080
 # A API. As cargas e as migrações usam a mesma imagem com outro comando, ex.:
 # python -m cargas.cvm, python -m cargas.ptax ou python -m alembic upgrade head.
 # --no-access-log: o Cloud Run já registra cada pedido; o log da aplicação não guarda IP.
-# --no-proxy-headers: ignora o X-Forwarded-For, e o limite por IP usa o IP da conexão. A leitura do
-# IP do cliente no Cloud Run vem antes do primeiro deploy (ADR 0007, seção 3). Nunca
+# --no-proxy-headers: o uvicorn não mexe no IP da conexão; quem lê o X-Forwarded-For é a
+# aplicação, com RX_PROXIES_CONFIAVEIS (app/api/seguranca.py; DT-17). Nunca
 # --forwarded-allow-ips="*" (backend/CLAUDE.md).
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--no-server-header", "--no-proxy-headers", "--no-access-log"]
