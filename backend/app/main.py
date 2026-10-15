@@ -58,6 +58,7 @@ def criar_app(config: Config) -> FastAPI:
     )
     app.state.dados, app.state.ptax = _fontes(config)
     app.state.segredo_aquecimento = config.segredo_aquecimento
+    app.state.proxies_confiaveis = config.proxies_confiaveis
     app.add_exception_handler(RequestValidationError, entrada_invalida)
 
     # O último middleware adicionado é o mais externo. De fora para dentro:

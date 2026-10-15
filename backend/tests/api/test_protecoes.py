@@ -70,6 +70,41 @@ def test_limite_de_analises_nao_bloqueia_a_saude(cliente):
     assert cliente.get("/api/saude").status_code == 200
 
 
+def _com_proxies(proxies: int) -> TestClient:
+    servidor = criar_app(Config(producao=False, origens_permitidas=(), proxies_confiaveis=proxies))
+    servidor.dependency_overrides[obter_repositorio] = RepositorioExemplo
+    return TestClient(servidor)
+
+
+def _analisar(cliente: TestClient, x_forwarded_for: str) -> int:
+    resposta = cliente.post(
+        "/api/raiox", json=CARTEIRA, headers={"x-forwarded-for": x_forwarded_for}
+    )
+    return resposta.status_code
+
+
+def test_com_um_proxy_o_limite_conta_o_ultimo_endereco_do_x_forwarded_for():
+    # DT-17: o proxy do Google acrescenta o IP do cliente à direita; a esquerda é do cliente.
+    cliente = _com_proxies(1)
+
+    primeiras = [_analisar(cliente, f"198.51.100.{i}, 203.0.113.5") for i in range(20)]
+
+    assert primeiras == [200] * 20
+    assert _analisar(cliente, "198.51.100.99, 203.0.113.5") == 429
+    assert _analisar(cliente, "203.0.113.6") == 200
+
+
+def test_com_dois_proxies_o_limite_conta_o_penultimo_endereco_do_x_forwarded_for():
+    # O último endereço é o do proxy do meio (ex.: o Firebase), que muda de pedido para pedido.
+    cliente = _com_proxies(2)
+
+    primeiras = [_analisar(cliente, f"198.51.100.{i}, 203.0.113.5, 192.0.2.{i}") for i in range(20)]
+
+    assert primeiras == [200] * 20
+    assert _analisar(cliente, "198.51.100.99, 203.0.113.5, 192.0.2.99") == 429
+    assert _analisar(cliente, "203.0.113.6, 192.0.2.1") == 200
+
+
 # ---- análises simultâneas ------------------------------------------------------------------
 
 
