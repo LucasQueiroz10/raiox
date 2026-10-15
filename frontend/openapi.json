@@ -80,14 +80,43 @@
               }
             ],
             "title": "Fundo Id"
+          },
+          "posicao": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posicao"
+          },
+          "tipo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "acao",
+                  "fundo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo"
           }
         },
         "type": "object",
         "required": [
           "codigo",
-          "fundo_id"
+          "fundo_id",
+          "posicao",
+          "tipo"
         ],
-        "title": "Aviso"
+        "title": "Aviso",
+        "description": "Um aviso da análise, ligado a um fundo (fundo_id) ou a uma posição da entrada (posicao).\n\nposicao é o índice da posição na lista enviada, a partir de 0, como o 422 aponta o campo: a\nresposta não repete o identificador nem o valor. tipo só vem no tipo_corrigido: o tipo que a\nbase usou, no lugar do marcado (ADR 0005, seção 5)."
       },
       "Classe": {
         "properties": {
