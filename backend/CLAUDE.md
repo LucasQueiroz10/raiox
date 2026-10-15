@@ -140,6 +140,12 @@ Regras:
 - Banco fora do ar antes da primeira leitura: 503 dados_indisponiveis (conexão espera até 5 s).
   Depois da primeira leitura, a API segue com a última foto.
 - Contadores em memória, por servidor (DT-2 em docs/divida_tecnica.md).
+- IP do limite (app/api/seguranca.py, chave_do_limite; DT-17): o N-ésimo endereço da direita do
+  X-Forwarded-For, com N = RX_PROXIES_CONFIAVEIS; o IP da conexão com N = 0, com endereços de
+  menos ou com valor que não é IP. IPv6 conta pela rede /64. Quem lê o cabeçalho é a aplicação.
+- GET /interno/ip-do-cliente (app/api/interno.py; DT-17): com o segredo do aquecimento no
+  x-rx-aquecimento, devolve os endereços do X-Forwarded-For e a chave do limite, sem log; sem o
+  segredo, 404. Serve para medir a posição no primeiro deploy (ADR 0007, seção 3).
 - Configuração pelas variáveis de ambiente do processo (app/config.py):
     RX_AMBIENTE=desenvolvimento|producao   produção desliga /docs, /redoc e /openapi.json e liga o HSTS
     RX_ORIGENS_PERMITIDAS=https://...       origens do front no CORS, separadas por vírgula
@@ -147,6 +153,9 @@ Regras:
                                             obrigatória em produção; nunca em log nem em mensagem
     RX_SEGREDO_AQUECIMENTO=...              segredo do aquecimento interno (32+ caracteres); sem
                                             ele, o aquecimento responde 404
+    RX_PROXIES_CONFIAVEIS=0..5              quantos proxies acrescentam endereço ao X-Forwarded-For
+                                            (DT-17); sem ela, 0 (o IP da conexão); obrigatória
+                                            em produção
   Valor inválido derruba o servidor na partida, de propósito.
 - Produção: o comando da imagem (Dockerfile), uvicorn app.main:app --host 0.0.0.0 --port 8080
   --no-server-header --no-proxy-headers --no-access-log. Sem o X-Forwarded-For, o IP do limite é
