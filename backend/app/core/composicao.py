@@ -31,6 +31,16 @@ class Categoria(StrEnum):
     NAO_ABERTO = "nao_aberto"  # ciclo, cadeia longa demais ou fundo sem composição
 
 
+class TipoFII(StrEnum):
+    """Tipo de fundo imobiliário pela carteira do informe mensal da CVM: o grupo com mais da metade
+    do investido (regra em ingest/cvm_fii.py; matriz de dados, fonte 36)."""
+
+    TIJOLO = "tijolo"
+    PAPEL = "papel"
+    FUNDO_DE_FUNDOS = "fundo_de_fundos"
+    GENERICO = "generico"  # sem grupo com mais da metade, ou sem carteira informada
+
+
 _CATEGORIA_DO_TIPO = {
     TipoItem.ACAO: Categoria.ACOES,
     TipoItem.FUNDO: Categoria.FUNDOS,
