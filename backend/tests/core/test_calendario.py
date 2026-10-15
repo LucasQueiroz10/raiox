@@ -1,10 +1,10 @@
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from app.core.calendario import dia_util, feriados, pascoa, ultimo_dia_util
+from app.core.calendario import dia_util, feriados, hoje_em_brasilia, pascoa, ultimo_dia_util
 
 anos = st.integers(min_value=1900, max_value=2200)
 dias = st.dates(min_value=date(1900, 1, 10), max_value=date(2200, 12, 31))
@@ -100,3 +100,16 @@ def test_ultimo_dia_util_e_o_mais_proximo_para_tras(dia):
     # Nenhum dia útil entre o resultado e o dia pedido.
     entre = (resultado + timedelta(days=n) for n in range(1, (dia - resultado).days + 1))
     assert not any(dia_util(d) for d in entre)
+
+
+@pytest.mark.parametrize(
+    ("agora_utc", "hoje"),
+    [
+        (datetime(2026, 10, 15, 2, 30, tzinfo=UTC), date(2026, 10, 14)),  # 23h30 em Brasília
+        (datetime(2026, 10, 15, 3, 0, tzinfo=UTC), date(2026, 10, 15)),  # meia-noite em Brasília
+        (datetime(2026, 10, 15, 16, 30, tzinfo=UTC), date(2026, 10, 15)),  # 13h30 em Brasília
+    ],
+)
+def test_hoje_e_o_dia_em_brasilia_mesmo_com_o_servidor_em_utc(agora_utc, hoje):
+    # O servidor roda em UTC: das 21h à meia-noite de Brasília, o dia dele já é o seguinte.
+    assert hoje_em_brasilia(agora_utc) == hoje

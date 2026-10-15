@@ -17,11 +17,13 @@ MAX_DIAS_UTEIS_SEM_COTACAO = 10
 
 @dataclass(frozen=True, slots=True)
 class PtaxUsada:
-    """A cotação usada e as duas datas, para a tela mostrar de qual dia é a PTAX."""
+    """A cotação usada e as datas, para a tela mostrar de qual dia é a PTAX e quando ela foi obtida
+    do Banco Central (o aviso do BCB, `cambio.aviso_bcb` em docs/textos_telas.md)."""
 
     data_pedida: date
     data_cotacao: date
     valor: Decimal
+    data_consulta: date | None = None  # dia em que a cotação foi obtida do Banco Central
 
 
 def _decimal(valor: object) -> Decimal:
@@ -53,13 +55,19 @@ def ler_ptax_olinda(resposta: dict) -> dict[date, Decimal]:
     return cotacoes
 
 
-def escolher_ptax(cotacoes: Mapping[date, Decimal], data_pedida: date) -> PtaxUsada:
+def escolher_ptax(
+    cotacoes: Mapping[date, Decimal],
+    data_pedida: date,
+    consultas: Mapping[date, date] | None = None,
+) -> PtaxUsada:
     """PTAX do último dia útil até a data pedida; se o BCB não tiver cotação nesse dia,
-    volta dia útil a dia útil, até MAX_DIAS_UTEIS_SEM_COTACAO."""
+    volta dia útil a dia útil, até MAX_DIAS_UTEIS_SEM_COTACAO. `consultas` dá, para cada data
+    de cotação, o dia em que ela foi obtida do Banco Central."""
     dia = ultimo_dia_util(data_pedida)
     for _ in range(MAX_DIAS_UTEIS_SEM_COTACAO):
         if dia in cotacoes:
-            return PtaxUsada(data_pedida, dia, cotacoes[dia])
+            consulta = consultas.get(dia) if consultas else None
+            return PtaxUsada(data_pedida, dia, cotacoes[dia], consulta)
         dia = ultimo_dia_util(dia - timedelta(days=1))
     raise LookupError(f"sem PTAX nos {MAX_DIAS_UTEIS_SEM_COTACAO} dias úteis até {data_pedida}")
 
