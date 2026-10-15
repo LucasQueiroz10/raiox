@@ -151,6 +151,7 @@ _MUDA_PELO_ATIVO = (_ACAO, _OUTRO)
 # (ex.: "BOVA11 - ETF") e o emissor é o próprio fundo. É a única fonte liberada que liga o ticker
 # de um ETF ou FII ao CNPJ (ADR 0008, etapa 4).
 _FUNDO_LISTADO = frozenset({"Fundos de Índice", "FI Imobiliário"})
+_CEDIDAS = "Ações e outros TVM cedidos em empréstimo"
 _TICKER_NA_DESCRICAO = re.compile(r"([A-Z][A-Z0-9]{3}[0-9]{2})\b")
 
 
@@ -363,6 +364,17 @@ class _Leitor:
         elif arquivo == "fie" and linha["PF_PJ_EMISSOR"].strip() == "PJ":
             # O arquivo dos ETFs não tem a coluna da classe investida: vale o CNPJ do emissor da
             # cota. Se não for o de uma classe com composição, a tela avisa "fundo sem composição".
+            cnpj = arquivos_cvm.cnpj(linha["CPF_CNPJ_EMISSOR"])
+        elif (
+            arquivo == "fi_BLC_8"
+            and linha["TP_APLIC"].strip() == _CEDIDAS
+            and linha["TP_ATIVO"].strip() in _FUNDO_LISTADO
+            and linha["PF_PJ_EMISSOR"].strip() == "PJ"
+        ):
+            # Cota de ETF ou FII cedida em empréstimo: continua exposição do fundo, e o emissor é o
+            # próprio fundo, como no arquivo dos ETFs. Só pessoa jurídica: o CPF nunca é lido. A
+            # cota recebida em empréstimo (posição vendida) fica sem identificador: abri-la seria
+            # decisão de metodologia, ainda não tomada (DT-16).
             cnpj = arquivos_cvm.cnpj(linha["CPF_CNPJ_EMISSOR"])
         else:
             cnpj = None

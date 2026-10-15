@@ -206,6 +206,51 @@ def test_cota_de_fundo_dentro_de_linha_de_acao_vira_fundo_sem_identificador(tp_a
     assert itens(mes) == (ItemComposicao(None, D("0.1"), TipoItem.FUNDO),)
 
 
+@pytest.mark.parametrize("tp_ativo", ["Fundos de Índice", "FI Imobiliário"])
+def test_cota_emprestada_de_etf_ou_fii_aponta_para_o_cnpj_do_fundo(tp_ativo):
+    # Como no arquivo dos ETFs: o emissor da cota cedida em empréstimo é o próprio fundo. Sem isso,
+    # o ETF ou FII emprestado ficava como fundo sem identificador (agosto de 2026: R$ 3,6 bi).
+    mes = mes_com_patrimonio().aplicacao(
+        "fi_BLC_8", FUNDO, CEDIDAS, "100.00", **cota_emprestada("ZZTF11", ETF, tp_ativo)
+    )
+
+    assert itens(mes) == (ItemComposicao(f"CNPJ:{ETF}", D("0.1"), TipoItem.FUNDO),)
+
+
+def test_cota_emprestada_soma_com_a_mesma_cota_do_bloco_de_cotas():
+    mes = (
+        mes_com_patrimonio()
+        .aplicacao("fi_BLC_2", FUNDO, "Cotas de Fundos", "300.00", CNPJ_FUNDO_CLASSE_COTA=ETF)
+        .aplicacao("fi_BLC_8", FUNDO, CEDIDAS, "100.00", **cota_emprestada("ZZTF11", ETF))
+    )
+
+    assert itens(mes) == (ItemComposicao(f"CNPJ:{ETF}", D("0.4"), TipoItem.FUNDO),)
+
+
+@pytest.mark.parametrize(
+    "campos",
+    [
+        cota_emprestada("ZZTF11", ETF, PF_PJ_EMISSOR="PF"),  # pessoa física: o CPF nem é lido
+        cota_emprestada("ZZTF11", "123"),  # CNPJ inválido
+        cota_emprestada("ZZTF11", ETF, tp_ativo="BDR de ETF"),  # o emissor do BDR não é o fundo
+    ],
+)
+def test_cota_emprestada_sem_cnpj_de_fundo_continua_sem_identificador(campos):
+    mes = mes_com_patrimonio().aplicacao("fi_BLC_8", FUNDO, CEDIDAS, "100.00", **campos)
+
+    assert itens(mes) == (ItemComposicao(None, D("0.1"), TipoItem.FUNDO),)
+
+
+def test_obrigacao_por_cota_recebida_em_emprestimo_continua_sem_identificador():
+    # A cota que o fundo pegou emprestada (posição vendida) fica como antes: dar o CNPJ abriria o
+    # ETF como posição vendida em cada empresa, decisão de metodologia ainda não tomada (DT-16).
+    mes = mes_com_patrimonio().aplicacao(
+        "fi_BLC_8", FUNDO, OBRIGACAO, "100.00", **cota_emprestada("ZZTF11", ETF)
+    )
+
+    assert itens(mes) == (ItemComposicao(None, D("-0.1"), TipoItem.FUNDO),)
+
+
 def test_cota_de_outro_fundo_aponta_para_o_cnpj_da_classe_investida():
     mes = mes_com_patrimonio().aplicacao(
         "fi_BLC_2", FUNDO, "Cotas de Fundos", "300.00", CNPJ_FUNDO_CLASSE_COTA=INVESTIDO
