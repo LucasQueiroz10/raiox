@@ -103,6 +103,17 @@ Fazer com pedidos nossos, nunca com dados de usuários.
    3, só a estrutura: quantos endereços vêm e em que posição está o IP da máquina que fez o teste.
    Nunca anotar os IPs. Acertar `RX_PROXIES_CONFIAVEIS` no deploy pela posição do caminho pelo
    domínio.
+
+   ```bash
+   SEGREDO=$(gcloud secrets versions access latest --project="$PROJETO" --secret=<segredo do aquecimento>)
+   curl -s -H "x-rx-aquecimento: $SEGREDO" https://sagitalapp.com.br/interno/ip-do-cliente
+   curl -s -H "x-rx-aquecimento: $SEGREDO" <endereço run.app>/interno/ip-do-cliente
+   unset SEGREDO
+   ```
+
+   O segredo fica numa variável, fora do histórico do terminal. Pelo domínio, o pedido só chega à
+   API porque o `firebase.json` do primeiro deploy encaminha também este caminho, e só ele: o
+   Firebase encaminha só o `/api/**` (ADR 0007, seção 2).
 3. **Limite por IP:** confirmar que o limite conta o IP da máquina do teste nos dois caminhos e
    registrar o resultado. Pelo `run.app`, o limite pode ser driblado (DT-11): o registro serve para o
    P3 saber o tamanho do risco.
@@ -112,10 +123,10 @@ Fazer com pedidos nossos, nunca com dados de usuários.
    - o job do Cloud Scheduler que chama o aquecimento termina com sucesso.
 5. **Remover a medição** (DT-17): depois de registrar as posições no ADR 0007 e acertar
    `RX_PROXIES_CONFIAVEIS`, remover o endpoint `/interno/ip-do-cliente` (`app/api/interno.py`),
-   seus testes (`test_medicao_ip.py`) e o trecho no `backend/CLAUDE.md`, num PR próprio, e fechar
-   a DT-17. No mesmo PR, o `scripts/testar_imagem.sh`, que hoje confere pela medição que a
-   aplicação lê o `X-Forwarded-For`, passa a conferir pelo limite por IP: com
-   `RX_PROXIES_CONFIAVEIS=2`, 20 análises com o mesmo penúltimo endereço e um primeiro endereço
+   seus testes (`test_medicao_ip.py`), o trecho no `backend/CLAUDE.md` e o encaminhamento desse
+   caminho no `firebase.json`, num PR próprio, e fechar a DT-17. No mesmo PR, o
+   `scripts/testar_imagem.sh`, que hoje confere pela medição que a aplicação lê o
+   `X-Forwarded-For`, passa a conferir pelo limite por IP: com `RX_PROXIES_CONFIAVEIS=2`, 20 análises com o mesmo penúltimo endereço e um primeiro endereço
    forjado diferente em cada uma; a 21ª recebe 429, e uma com outro penúltimo endereço recebe 200.
 
 ---

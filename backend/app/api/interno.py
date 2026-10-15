@@ -1,7 +1,8 @@
 """Endpoints internos: aquecimento e medição do X-Forwarded-For (ADR 0007, seção 3).
 
-Ficam fora do /api, então o Firebase não os encaminha; como o endereço run.app é público, exigem
-o segredo do aquecimento no cabeçalho e respondem 404 sem ele, como se não existissem.
+Ficam fora do /api, então o Firebase não os encaminha (a exceção é a medição, só no primeiro
+deploy: ADR 0007, seção 2); como o endereço run.app é público, exigem o segredo do aquecimento no
+cabeçalho e respondem 404 sem ele, como se não existissem.
 
 - POST /interno/aquecer: o Cloud Scheduler chama depois da carga diária da CDA, para nenhum
   usuário pagar a releitura dos dados. Relê dentro do próprio pedido (no Cloud Run não há CPU fora
