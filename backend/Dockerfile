@@ -16,6 +16,9 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH=/opt/venv/bin:$PATH
 
+# As dependências vão num ambiente virtual criado aqui, dentro da imagem, em /opt/venv. Não é o
+# .venv do computador, que fica fora da imagem (.dockerignore): este nasce do zero em cada
+# construção, separado do Python do sistema da imagem base, e o PATH acima o põe na frente.
 # Só wheels prontas (--only-binary): nada é compilado na construção, e cada pacote confere com o
 # hash do requirements.txt.
 COPY requirements.txt /tmp/requirements.txt
