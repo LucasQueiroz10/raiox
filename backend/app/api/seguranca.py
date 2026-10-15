@@ -40,7 +40,7 @@ def chave_do_limite(
     rede inteira não zera o limite trocando de endereço dentro dela.
     """
     if proxies_confiaveis > 0:
-        enderecos = [e.strip() for cabecalho in cabecalhos_xff for e in cabecalho.split(",")]
+        enderecos = enderecos_do_xff(cabecalhos_xff)
         if len(enderecos) >= proxies_confiaveis:
             chave = _chave_do_ip(enderecos[-proxies_confiaveis])
             if chave is not None:
@@ -50,6 +50,11 @@ def chave_do_limite(
     # Fora do Cloud Run (ex.: o TestClient, que se apresenta como "testclient"), o valor da
     # conexão pode não ser um IP: fica como veio.
     return _chave_do_ip(ip_conexao) or ip_conexao
+
+
+def enderecos_do_xff(cabecalhos_xff: Sequence[str]) -> list[str]:
+    """Os endereços dos cabeçalhos X-Forwarded-For, da esquerda para a direita, como um só."""
+    return [e.strip() for cabecalho in cabecalhos_xff for e in cabecalho.split(",")]
 
 
 def _chave_do_ip(endereco: str) -> str | None:
