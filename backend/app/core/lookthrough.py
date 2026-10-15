@@ -8,6 +8,7 @@ from enum import StrEnum
 
 from app.core.composicao import (
     Categoria,
+    ClasseFii,
     Composicao,
     ItemComposicao,
     Posicao,
@@ -83,6 +84,7 @@ class ResultadoLookthrough:
     )
     # Pela empresa do ativo-objeto; None = derivativo sem ativo-objeto.
     derivativos_por_empresa: dict[str | None, Decimal] = field(default_factory=dict)
+    fiis: dict[ClasseFii, Decimal] = field(default_factory=dict)  # FIIs, pelo tipo e segmento
     avisos: set[Aviso] = field(default_factory=set)
     fundos: dict[str, ResumoFundo] = field(default_factory=dict)
 
@@ -90,6 +92,10 @@ class ResultadoLookthrough:
         if empresa_id not in self.empresas:
             self.empresas[empresa_id] = ExposicaoEmpresa(empresa_id)
         return self.empresas[empresa_id]
+
+    def _fii(self, valor: Decimal, classe: ClasseFii) -> None:
+        self.categorias[Categoria.FUNDOS_IMOBILIARIOS] += valor
+        self.fiis[classe] = self.fiis.get(classe, Decimal(0)) + valor
 
     def _nao_aberto(self, valor: Decimal, codigo: CodigoAviso, fundo_id: str | None) -> None:
         self.categorias[Categoria.NAO_ABERTO] += valor
@@ -112,6 +118,7 @@ def abrir_carteira(
     composicoes: Mapping[str, Composicao],
     *,
     empresa_do_ativo: Mapping[str, str] | None = None,
+    fiis: Mapping[str, ClasseFii] | None = None,
     max_passos: int = MAX_PASSOS,
 ) -> ResultadoLookthrough:
     """Distribui o valor de cada posição até as empresas, sem normalizar pesos.
@@ -119,10 +126,15 @@ def abrir_carteira(
     empresa_do_ativo liga cada ação (ativo_id) à empresa emissora (empresa_id), para as classes da
     mesma empresa somarem juntas (ADR 0005). Ação fora dela é a própria empresa.
 
+    fiis dá a classe de cada FII conhecido (pelo ativo_id). O FII não tem composição para abrir: o
+    valor dele, direto ou dentro de um fundo, vai para a categoria dos fundos imobiliários, pelo
+    tipo, em vez de "não aberto" (ADR 0008, etapa 4.3). Se um FII tiver composição, ela vale mais.
+
     Usado pela API e, pela X-03, também pelo lote do IrRAE (DT-9: Decimal é mais lento que float).
     """
     r = ResultadoLookthrough()
     ligacao = empresa_do_ativo or {}
+    classe_fii = fiis or {}
     with localcontext(prec=PRECISAO):
         pilha = []
         for p in posicoes:
@@ -142,6 +154,8 @@ def abrir_carteira(
             composicao = composicoes.get(item.ativo_id) if item.ativo_id else None
             if composicao is not None:
                 pilha.extend(_abrir_fundo(r, atual, composicao))
+            elif item.ativo_id in classe_fii:
+                r._fii(atual.valor, classe_fii[item.ativo_id])
             elif item.tipo is TipoItem.FUNDO and item.ativo_id:
                 r._nao_aberto(atual.valor, CodigoAviso.FUNDO_SEM_COMPOSICAO, item.ativo_id)
             elif item.tipo is TipoItem.FUNDO:

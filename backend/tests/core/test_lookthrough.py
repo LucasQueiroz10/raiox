@@ -112,6 +112,7 @@ def test_cada_tipo_vai_para_a_sua_categoria_sem_normalizar():
         Categoria.OUTROS: D("40"),
         Categoria.NAO_IDENTIFICADO: D("130"),  # 1000 - soma dos itens
         Categoria.NAO_ABERTO: D("0"),
+        Categoria.FUNDOS_IMOBILIARIOS: D("0"),  # categoria nova (ADR 0008, etapa 4.3)
     }
     assert sum(r.categorias.values()) == r.total
 

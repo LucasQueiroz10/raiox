@@ -82,6 +82,18 @@ a página do conjunto de dados não trazem aviso (conferido em 12/10/2026).
 | `raiox.nota_confidencial` | Parte da carteira que o gestor pode manter em sigilo por um período, conforme regra da CVM. | rascunho |
 | `raiox.credito_sem_emissor` | Crédito sem emissor identificado | rascunho |
 | `raiox.nota_credito_sem_emissor` | Títulos de crédito privado, como debêntures, cuja empresa emissora não conseguimos identificar. | rascunho |
+| `raiox.fundos_imobiliarios` | Fundos imobiliários | rascunho |
+| `raiox.fii.tijolo` | Tijolo: {segmento} | rascunho |
+| `raiox.fii.tijolo_varios_segmentos` | Tijolo, vários segmentos | rascunho |
+| `raiox.fii.papel` | Papel | rascunho |
+| `raiox.fii.fundo_de_fundos` | Fundo de fundos | rascunho |
+| `raiox.fii.generico` | Sem tipo predominante | rascunho |
+| `raiox.nota_fii` | Mostramos cada fundo imobiliário pelo que predomina na carteira que ele informa à CVM: imóveis (tijolo), títulos de crédito imobiliário (papel) ou cotas de outros fundos imobiliários (fundo de fundos), quando esse grupo passa da metade do investido. Os imóveis e os títulos de cada fundo não são abertos. | rascunho |
+
+`raiox.fundos_imobiliarios` a `raiox.nota_fii`: textos do PR 4.3 do ADR 0008 (14/10/2026), para o M1
+revisar. Cada fatia de `fiis_por_tipo` usa o texto do seu tipo; no tijolo, `{segmento}` é o segmento
+como o fundo declara à CVM (ex.: Logística), e sem segmento vale `raiox.fii.tijolo_varios_segmentos`.
+A regra do tipo está em `backend/ingest/cvm_fii.py` (matriz de dados, fonte 36).
 
 `raiox.confidencial` e `raiox.nota_confidencial`: decisão do M1 em 12/10/2026 (ADR 0008, seção 7): a
 parte em sigilo é uma categoria própria, separada do "não identificado". Texto da nota proposto por ele.
@@ -94,13 +106,15 @@ Quando aparecem as notas:
 - `raiox.nota_credito_sem_emissor`: sempre que o crédito sem emissor for diferente de zero, junto do
   valor, separado do crédito com emissor (pedido do M1).
 - `raiox.nota_posicoes_vendidas`: sempre que o total em posições vendidas for diferente de zero. O texto deve seguir a linha da nota de derivativos, explicando que a identificação da exposição é limitada.
+- `raiox.nota_fii`: sempre que a categoria dos fundos imobiliários for diferente de zero, junto das
+  fatias por tipo.
 
 ## Avisos comuns
 
 | Identificador | Texto | Status |
 |---|---|---|
 | `avisos.nao_e_recomendacao` | Este raio-x descreve a sua carteira. Não é recomendação de compra, venda ou de qualquer mudança nos seus investimentos. | rascunho |
-| `avisos.creditos_fontes` | Fontes: CVM, Dados Abertos (CDA, FCA e Cadastro), licença ODbL; Banco Central do Brasil, PTAX, licença ODbL. Dados processados pela Sagital, que não tem vínculo com essas instituições. | rascunho |
+| `avisos.creditos_fontes` | Fontes: CVM, Dados Abertos (CDA, FCA, Informe Mensal de FII e Cadastro), licença ODbL; Banco Central do Brasil, PTAX, licença ODbL. Dados processados pela Sagital, que não tem vínculo com essas instituições. | rascunho |
 | `avisos.ciclo` | Alguns fundos investem uns nos outros em círculo. Seguimos esse caminho até o valor ficar abaixo de 0,1% e mostramos o restante como não aberto. | rascunho |
 | `avisos.fundo_sem_composicao` | Não encontramos a composição de um dos seus fundos. O valor dele aparece como não aberto. | rascunho |
 
@@ -109,7 +123,7 @@ ODbL (CVM e Banco Central) exige o crédito onde os dados aparecem; a landing e 
 esses dados. Junta o texto do M1 de 12/10/2026 ("Fonte: CVM, Dados Abertos (CDA, FCA e Cadastro).
 Licença ODbL. Dados processados pelo Projeto RX.") com o crédito que já existia, com o nome da Sagital.
 A SEC sai enquanto nenhum dado dela aparece na tela: quando o N-PORT entrar, voltar a citar "SEC,
-Estados Unidos".
+Estados Unidos". O "Informe Mensal de FII" entrou em 14/10/2026, com os FIIs no raio-x (fonte 36).
 
 ## Avisos e erros da API
 

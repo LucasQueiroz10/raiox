@@ -22,6 +22,9 @@ class Categoria(StrEnum):
     ACOES = "acoes"
     VENDIDO = "vendido"  # ações com peso negativo (venda a descoberto)
     FUNDOS = "fundos"
+    # FII conhecido, pelo tipo da carteira que informa à CVM: não tem composição para abrir
+    # (ADR 0008, etapa 4.3).
+    FUNDOS_IMOBILIARIOS = "fundos_imobiliarios"
     CAIXA = "caixa"
     DERIVATIVOS = "derivativos"  # valor de mercado, não a exposição econômica
     CREDITO = "credito"
@@ -29,6 +32,24 @@ class Categoria(StrEnum):
     OUTROS = "outros"
     NAO_IDENTIFICADO = "nao_identificado"  # o que falta ou sobra para 100%
     NAO_ABERTO = "nao_aberto"  # ciclo, cadeia longa demais ou fundo sem composição
+
+
+class TipoFII(StrEnum):
+    """Tipo de fundo imobiliário pela carteira do informe mensal da CVM: o grupo com mais da metade
+    do investido (regra em ingest/cvm_fii.py; matriz de dados, fonte 36)."""
+
+    TIJOLO = "tijolo"
+    PAPEL = "papel"
+    FUNDO_DE_FUNDOS = "fundo_de_fundos"
+    GENERICO = "generico"  # sem grupo com mais da metade, ou sem carteira informada
+
+
+@dataclass(frozen=True, slots=True)
+class ClasseFii:
+    """Como um FII aparece no raio-x: o tipo e, no tijolo, o segmento que o fundo declara."""
+
+    tipo: TipoFII
+    segmento: str | None = None  # só no tijolo; None: vários segmentos
 
 
 _CATEGORIA_DO_TIPO = {
@@ -79,7 +100,10 @@ class Composicao:
     def pesos_por_categoria(self) -> dict[Categoria, Decimal]:
         """Peso de cada categoria no fundo, sem normalizar; a diferença para 100% fica
         em NAO_IDENTIFICADO."""
-        pesos = {c: Decimal(0) for c in Categoria if c is not Categoria.NAO_ABERTO}
+        # "Não aberto" e "fundos imobiliários" só existem no look-through: dentro do fundo, a cota
+        # de um FII é "fundos".
+        so_no_lookthrough = (Categoria.NAO_ABERTO, Categoria.FUNDOS_IMOBILIARIOS)
+        pesos = {c: Decimal(0) for c in Categoria if c not in so_no_lookthrough}
         for item in self.itens:
             pesos[categoria_do_item(item.tipo, item.peso)] += item.peso
         pesos[Categoria.NAO_IDENTIFICADO] = 1 - sum(item.peso for item in self.itens)

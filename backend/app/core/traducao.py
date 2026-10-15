@@ -26,7 +26,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Literal
 
-from app.core.composicao import TipoItem
+from app.core.composicao import ClasseFii, TipoItem
 
 type TipoIdentificador = Literal["isin", "ticker_b3", "ticker_eua", "cnpj"]
 
@@ -40,7 +40,8 @@ class AtivoIdentificado:
     ticker_b3: str | None = None
     ticker_eua: str | None = None
     isin: str | None = None
-    fii: bool = False  # FII: entra na busca pela raiz do ISIN
+    # Só nos FIIs: o tipo e o segmento. Entra na busca pela raiz do ISIN e no raio-x.
+    fii: ClasseFii | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,6 +53,7 @@ class TabelaIdentificacao:
     ativo_do_isin: Mapping[str, str]
     fii_da_raiz: Mapping[str, str]  # só as raízes de um FII só
     tipo_do_ativo: Mapping[str, TipoItem]
+    classe_do_fii: Mapping[str, ClasseFii]  # para o raio-x mostrar os FIIs pelo tipo
 
     @classmethod
     def montar(cls, ativos: Iterable[AtivoIdentificado]) -> TabelaIdentificacao:
@@ -67,7 +69,7 @@ class TabelaIdentificacao:
                 if valor in indice:
                     raise ValueError(f"{campo} repetido na identificação")
                 indice[valor] = a.ativo_id
-        raizes = Counter(a.isin[2:6] for a in ativos if a.fii and a.isin)
+        raizes = Counter(a.isin[2:6] for a in ativos if a.fii is not None and a.isin)
         return cls(
             ativo_do_ticker_b3=indices["ticker_b3"],
             ativo_do_ticker_eua=indices["ticker_eua"],
@@ -75,9 +77,10 @@ class TabelaIdentificacao:
             fii_da_raiz={
                 a.isin[2:6]: a.ativo_id
                 for a in ativos
-                if a.fii and a.isin and raizes[a.isin[2:6]] == 1
+                if a.fii is not None and a.isin and raizes[a.isin[2:6]] == 1
             },
             tipo_do_ativo={a.ativo_id: a.tipo for a in ativos},
+            classe_do_fii={a.ativo_id: a.fii for a in ativos if a.fii is not None},
         )
 
 

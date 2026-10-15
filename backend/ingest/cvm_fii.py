@@ -42,10 +42,10 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-from enum import StrEnum
 from pathlib import Path
 from typing import IO
 
+from app.core.composicao import TipoFII
 from ingest import arquivos_cvm
 from ingest.arquivos_cvm import LayoutInesperado, linhas_csv
 
@@ -79,13 +79,6 @@ COLUNAS: dict[str, tuple[str, ...]] = {
         "Provisoes_Contigencias", "Outros_Valores_Pagar", "Total_Passivo",
     ),
 }  # fmt: skip
-
-
-class TipoFII(StrEnum):
-    TIJOLO = "tijolo"
-    PAPEL = "papel"
-    FUNDO_DE_FUNDOS = "fundo_de_fundos"
-    GENERICO = "generico"  # sem grupo com mais da metade, ou sem carteira informada
 
 
 # Colunas de cada grupo no quadro de ativos. CRI e LCI são as colunas antigas, hoje vazias (os

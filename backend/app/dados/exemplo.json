@@ -146,6 +146,15 @@
     "ZZETFBR00018": "ETF Exemplo Brasil",
     "ZZFOF0000016": "Fundo de Fundos Exemplo (FOF)"
   },
+  "fiis": [
+    {
+      "ativo_id": "ZZZZFLCTF000",
+      "nome": "FII Exemplo Logística",
+      "ticker_b3": "ZZFL11",
+      "tipo": "tijolo",
+      "segmento": "Logística"
+    }
+  ],
   "tickers_b3_dos_fundos": {
     "ZZETFIA00019": "ZZIA11",
     "ZZETFBR00018": "ZZEB11"

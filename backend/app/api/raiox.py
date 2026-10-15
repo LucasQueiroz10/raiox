@@ -12,7 +12,7 @@ from app.api import esquemas as e
 from app.api.seguranca import LimitadorPorJanela, LimiteDeAnalises, ServidorOcupado
 from app.core.agregacao import NUCLEO, Fatia, RaioX, agregar
 from app.core.cambio import PtaxUsada, para_reais
-from app.core.composicao import Categoria, Posicao, TipoItem
+from app.core.composicao import Categoria, ClasseFii, Posicao, TipoItem
 from app.core.lookthrough import abrir_carteira
 from app.core.traducao import traduzir
 from app.dados.postgres import DadosIndisponiveis
@@ -111,9 +111,25 @@ def _subtemas(fatias: dict[object, Fatia]) -> list[e.FatiaSubtema]:
     return saida
 
 
+def _fiis(fiis: dict[ClasseFii, Decimal], total: Decimal) -> list[e.FatiaFii]:
+    """As fatias dos FIIs, maior primeiro (no empate, pelo tipo e pelo segmento)."""
+    return [
+        e.FatiaFii(
+            tipo=classe.tipo.value,
+            segmento=classe.segmento,
+            valor=_reais(valor),
+            percentual=_fracao(valor / total) if total else Decimal(0),
+        )
+        for classe, valor in sorted(
+            fiis.items(), key=lambda item: (-item[1], item[0].tipo, item[0].segmento or "")
+        )
+    ]
+
+
 def _montar_resposta(
     raio_x: RaioX,
     categorias: dict[Categoria, Decimal],
+    fiis: list[e.FatiaFii],
     fundos: list[e.Fundo],
     avisos: list[e.Aviso],
     repo: RepositorioDados,
@@ -144,6 +160,7 @@ def _montar_resposta(
         por_tema=_fatias(raio_x.por_tema),
         por_subtema=_subtemas(raio_x.por_subtema),
         categorias={cat.value: _reais(v) for cat, v in categorias.items()},
+        fiis_por_tipo=fiis,
         derivativos_por_setor=_fatias(raio_x.derivativos_por_setor),
         credito_por_setor=_fatias(raio_x.credito_por_setor),
         vendido_por_setor=_fatias(raio_x.vendido_por_setor),
@@ -220,7 +237,10 @@ def _analisar(
         )
         posicoes.append(Posicao(ativo_id, para_reais(p.valor, p.moeda, ptax), tipo))
     resultado = abrir_carteira(
-        posicoes, repo.composicoes(), empresa_do_ativo=repo.empresa_do_ativo()
+        posicoes,
+        repo.composicoes(),
+        empresa_do_ativo=repo.empresa_do_ativo(),
+        fiis=identificacao.classe_do_fii,
     )
     raio_x = agregar(resultado, repo.tabela_classificacao())
 
@@ -240,4 +260,5 @@ def _analisar(
         e.Aviso(codigo=a.codigo.value, fundo_id=a.fundo_id)
         for a in sorted(resultado.avisos, key=lambda a: (a.codigo, a.fundo_id or ""))
     ]
-    return _montar_resposta(raio_x, resultado.categorias, fundos, avisos, repo, ptax)
+    fiis = _fiis(resultado.fiis, resultado.total)
+    return _montar_resposta(raio_x, resultado.categorias, fiis, fundos, avisos, repo, ptax)

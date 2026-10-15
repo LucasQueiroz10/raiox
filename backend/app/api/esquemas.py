@@ -166,6 +166,17 @@ class Empresa(BaseModel):
     classes: list[Classe]  # maior primeiro
 
 
+class FatiaFii(BaseModel):
+    """Os FIIs da carteira (diretos e dentro de fundos) de um tipo e, no tijolo, de um segmento
+    (ADR 0008, etapa 4.3). segmento None: papel, fundo de fundos, genérico ou tijolo com vários
+    segmentos."""
+
+    tipo: Literal["tijolo", "papel", "fundo_de_fundos", "generico"]
+    segmento: str | None
+    valor: Decimal
+    percentual: Decimal
+
+
 class DemaisEmpresas(BaseModel):
     quantidade: int
     valor: Decimal
@@ -202,6 +213,7 @@ class RaioXResposta(BaseModel):
     por_tema: list[Fatia]
     por_subtema: list[FatiaSubtema]
     categorias: dict[str, Decimal]
+    fiis_por_tipo: list[FatiaFii]  # maior primeiro
     derivativos_por_setor: list[Fatia]
     credito_por_setor: list[Fatia]
     vendido_por_setor: list[Fatia]

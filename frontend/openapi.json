@@ -379,6 +379,50 @@
         "title": "Fatia",
         "description": "nome None = sem classificação (ou núcleo, em tema/subtema; ver categoria)."
       },
+      "FatiaFii": {
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "tijolo",
+              "papel",
+              "fundo_de_fundos",
+              "generico"
+            ],
+            "title": "Tipo"
+          },
+          "segmento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segmento"
+          },
+          "valor": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valor"
+          },
+          "percentual": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Percentual"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo",
+          "segmento",
+          "valor",
+          "percentual"
+        ],
+        "title": "FatiaFii",
+        "description": "Os FIIs da carteira (diretos e dentro de fundos) de um tipo e, no tijolo, de um segmento\n(ADR 0008, etapa 4.3). segmento None: papel, fundo de fundos, genérico ou tijolo com vários\nsegmentos."
+      },
       "FatiaSubtema": {
         "properties": {
           "nome": {
@@ -640,6 +684,13 @@
             "type": "object",
             "title": "Categorias"
           },
+          "fiis_por_tipo": {
+            "items": {
+              "$ref": "#/components/schemas/FatiaFii"
+            },
+            "type": "array",
+            "title": "Fiis Por Tipo"
+          },
           "derivativos_por_setor": {
             "items": {
               "$ref": "#/components/schemas/Fatia"
@@ -696,6 +747,7 @@
           "por_tema",
           "por_subtema",
           "categorias",
+          "fiis_por_tipo",
           "derivativos_por_setor",
           "credito_por_setor",
           "vendido_por_setor",
