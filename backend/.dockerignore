@@ -1,0 +1,12 @@
+# Contexto da imagem (Dockerfile): só entra o que a imagem usa. Tudo o mais fica de fora, inclusive
+# .venv/, tests/ e qualquer .env (segredos nunca entram na imagem; ADR 0007, seção 6).
+*
+!requirements.txt
+!alembic.ini
+!app/
+!banco/
+!cargas/
+!ingest/
+**/__pycache__
+**/.env
+**/.env.*
