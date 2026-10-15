@@ -51,7 +51,8 @@ Status possíveis: `a escrever` · `rascunho` · `aprovado`
 
 `cambio.aviso_bcb`: aviso de responsabilidade do Banco Central que a planilha de fontes (ficha FP-36)
 manda repassar ao usuário. Redação proposta pelo M1 em 13/10/2026. `{data_consulta}` é a data em que
-a PTAX foi obtida do Banco Central (a data da própria cotação está em `cambio.ptax_usada`). Falta
+a PTAX foi obtida do Banco Central, o campo `ptax.data_consulta` da resposta (a data da própria
+cotação está em `cambio.ptax_usada`). Falta
 confirmar se a última frase é texto oficial do Banco Central ou redação nossa: a resposta da API PTAX e
 a página do conjunto de dados não trazem aviso (conferido em 12/10/2026).
 

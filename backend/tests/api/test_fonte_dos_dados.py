@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from app.config import Config
 from app.dados.exemplo import RepositorioExemplo
 from app.dados.postgres import DadosIndisponiveis, RepositorioPostgres
+from app.dados.ptax import FontePtax, FontePtaxBanco
 from app.main import criar_app
 
 CARTEIRA = {
@@ -67,3 +68,12 @@ def test_cada_analise_pede_uma_foto_so_dos_dados():
 
     assert resposta.status_code == 503
     assert dados.fotos == 1
+
+
+def test_sem_banco_a_ptax_vem_direto_do_banco_central():
+    assert isinstance(criar_app(_config()).state.ptax, FontePtax)
+
+
+def test_com_banco_a_ptax_vem_do_banco_e_a_api_nao_chama_o_banco_central():
+    # DT-1 fechada: a carga diária grava a PTAX e a API só lê.
+    assert isinstance(criar_app(_config(BANCO_FORA_DO_AR)).state.ptax, FontePtaxBanco)

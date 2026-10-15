@@ -199,9 +199,13 @@ class Aviso(BaseModel):
 
 
 class Ptax(BaseModel):
+    """A PTAX usada nas posições em dólar. data_consulta: o dia em que a cotação foi obtida do
+    Banco Central, para o aviso do BCB (`cambio.aviso_bcb` em docs/textos_telas.md)."""
+
     valor: Decimal
     data_cotacao: date
     data_pedida: date
+    data_consulta: date
 
 
 class RaioXResposta(BaseModel):

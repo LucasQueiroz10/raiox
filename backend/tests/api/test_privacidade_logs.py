@@ -52,7 +52,7 @@ INVALIDA = {
 
 class PtaxFixa:
     def cotacao(self, data_pedida=None):
-        return PtaxUsada(date(2026, 9, 28), date(2026, 9, 25), D("5.0000"))
+        return PtaxUsada(date(2026, 9, 28), date(2026, 9, 25), D("5.0000"), date(2026, 9, 25))
 
 
 class RepositorioQuebrado(RepositorioExemplo):

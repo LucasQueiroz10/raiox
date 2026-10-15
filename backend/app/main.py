@@ -14,6 +14,7 @@ from app.api.seguranca import CabecalhosDeSeguranca, LimiteDeCorpo
 from app.config import Config
 from app.dados.exemplo import RepositorioExemplo
 from app.dados.postgres import RepositorioPostgres
+from app.dados.ptax import FonteCambio, FontePtax, FontePtaxBanco
 from app.dados.repositorio import FonteDados
 
 MAX_CORPO = 1024 * 1024  # 1 MB; 500 posições ocupam uns 50 KB
@@ -23,15 +24,17 @@ PREFIXO_API = "/api"
 ESPERA_CONEXAO_S = 5  # com o banco fora do ar, a análise responde 503 logo, sem ficar presa
 
 
-def _fonte_dos_dados(config: Config) -> FonteDados:
-    """Banco quando RX_BANCO_URL está definida; senão, o exemplo sintético (ADR 0006).
-    Não conecta aqui: a primeira leitura acontece na partida do servidor."""
+def _fontes(config: Config) -> tuple[FonteDados, FonteCambio]:
+    """Os dados públicos e a PTAX. Com RX_BANCO_URL, os dois vêm do banco, pelo mesmo motor (ADR
+    0006; a PTAX é gravada pela carga diária e a API não chama o Banco Central: DT-1 fechada).
+    Sem ela, o exemplo sintético e a PTAX buscada no Banco Central (desenvolvimento). Não conecta
+    aqui: a primeira leitura acontece na partida do servidor."""
     if config.banco_url is None:
-        return RepositorioExemplo()
+        return RepositorioExemplo(), FontePtax()
     motor = create_engine(
         config.banco_url, pool_pre_ping=True, connect_args={"connect_timeout": ESPERA_CONEXAO_S}
     )
-    return RepositorioPostgres(motor)
+    return RepositorioPostgres(motor), FontePtaxBanco(motor)
 
 
 @asynccontextmanager
@@ -53,7 +56,7 @@ def criar_app(config: Config) -> FastAPI:
         openapi_url="/openapi.json" if documentacao else None,
         lifespan=_ciclo_de_vida,
     )
-    app.state.dados = _fonte_dos_dados(config)
+    app.state.dados, app.state.ptax = _fontes(config)
     app.state.segredo_aquecimento = config.segredo_aquecimento
     app.add_exception_handler(RequestValidationError, entrada_invalida)
 

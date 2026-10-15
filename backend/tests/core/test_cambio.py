@@ -130,3 +130,17 @@ valores = st.decimals(min_value=D("0"), max_value=D("1e9"), places=2)
 @given(valores, valores)
 def test_conversao_e_linear(a, b):
     assert para_reais(a + b, "USD", PTAX) == para_reais(a, "USD", PTAX) + para_reais(b, "USD", PTAX)
+
+
+def test_ptax_escolhida_leva_a_data_em_que_foi_consultada():
+    # O aviso do BCB diz quando a PTAX foi obtida (`cambio.aviso_bcb`); com a carga diária, pode
+    # ser dias antes da análise.
+    consultas = {date(2026, 9, 25): date(2026, 9, 25)}
+
+    p = escolher_ptax(COTACOES, date(2026, 9, 27), consultas)
+
+    assert (p.data_cotacao, p.data_consulta) == (date(2026, 9, 25), date(2026, 9, 25))
+
+
+def test_sem_as_datas_de_consulta_a_ptax_fica_sem_ela():
+    assert escolher_ptax(COTACOES, date(2026, 9, 25)).data_consulta is None

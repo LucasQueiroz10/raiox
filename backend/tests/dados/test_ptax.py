@@ -120,3 +120,10 @@ def test_depois_de_uma_falha_so_tenta_de_novo_em_5_minutos():
     relogio.segundos = 3700 + 301
     f.cotacao()
     assert len(banco.chamadas) == 3
+
+
+def test_cotacao_buscada_na_hora_tem_o_dia_da_busca_como_data_de_consulta():
+    # Sem banco (desenvolvimento), a consulta ao Banco Central acontece na hora da análise.
+    p = fonte(BancoCentralFalso(resposta(("2026-09-28", 5.4)))).cotacao()
+
+    assert (p.data_cotacao, p.data_consulta) == (HOJE, HOJE)

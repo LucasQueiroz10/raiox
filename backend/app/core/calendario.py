@@ -1,7 +1,11 @@
 """Calendário de dias úteis: feriados nacionais do calendário ANBIMA."""
 
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta, timezone
 from functools import cache
+
+# Horário de Brasília. Deslocamento fixo: o Brasil não tem horário de verão desde 2019 (Decreto
+# 9.772/2019), e assim não é preciso a base de fusos (tzdata), que o Windows não traz.
+BRASILIA = timezone(timedelta(hours=-3), "BRT")
 
 # (mês, dia) dos feriados de data fixa.
 _FERIADOS_FIXOS = [(1, 1), (4, 21), (5, 1), (9, 7), (10, 12), (11, 2), (11, 15), (12, 25)]
@@ -48,3 +52,9 @@ def ultimo_dia_util(dia: date) -> date:
     while not dia_util(dia):
         dia -= timedelta(days=1)
     return dia
+
+
+def hoje_em_brasilia(agora: datetime | None = None) -> date:
+    """O dia de hoje em Brasília. O servidor roda em UTC: das 21h à meia-noite de Brasília, o dia
+    dele já é o seguinte, e a PTAX pedida sairia com a data errada."""
+    return (agora or datetime.now(UTC)).astimezone(BRASILIA).date()

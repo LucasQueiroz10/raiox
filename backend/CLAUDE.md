@@ -30,7 +30,9 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 - yfinance é proibido (bloqueado no ruff por flake8-tidy-imports.banned-api).
 - app/core/ é puro: sem FastAPI, sem banco, sem rede. O I/O fica em app/api/, app/dados/ e ingest/.
 - app/dados/: de onde vêm composições, ligação ativo -> empresa, classificação e nomes (protocolo
-  RepositorioDados) e a PTAX (FontePtax, com cache). Com RX_BANCO_URL a API usa o
+  RepositorioDados) e a PTAX (FonteCambio, em app/dados/ptax.py). Com RX_BANCO_URL, a PTAX vem
+  da ref.ptax_vigente (FontePtaxBanco), gravada pela carga diária, e a API não chama o Banco
+  Central; sem ela, a FontePtax busca no Banco Central, com cache. Com RX_BANCO_URL a API usa o
   RepositorioPostgres (app/dados/postgres.py): lê as visões vigentes como rx_api, guarda uma foto em
   memória e só relê quando sai carga nova (DT-10), sem travar as análises: um pedido só relê,
   fora da trava, e os outros seguem com a foto anterior. Nada roda em segundo plano (no Cloud
@@ -117,8 +119,13 @@ Regras:
     python -m cargas.cadastro --pasta DIR       lê os zips já baixados (nomes do portal)
 - Leitores da CVM (ingest/): cvm_cda.py, cvm_fca.py e cvm_fii.py, com o que é comum em
   arquivos_cvm.py. Só stdlib, para rodarem na imagem de produção.
+- PTAX (fonte 12 da matriz), dias úteis às 13h30 e às 18h (ADR 0007, seção 5): os últimos 15
+  dias, gravando só as datas novas ou corrigidas; variação de mais de 10% sobre o dia útil
+  anterior trava a carga:
+    python -m cargas.ptax                       os últimos 15 dias
+    python -m cargas.ptax --dias 60             uma janela maior (primeira carga)
 - Testes: tests/cargas (sem banco, job "backend") e tests/banco/test_rotina_carga.py,
-  test_carga_cvm.py e test_carga_cadastro.py (com banco, job "banco").
+  test_carga_cvm.py, test_carga_cadastro.py e test_carga_ptax.py (com banco, job "banco").
 - Medição da foto da API (DT-10), com o banco carregado e RX_BANCO_URL do rx_api:
     python -m medicoes.foto_dos_dados
 - Pico de memória de uma carga (ADR 0007, seção 5). Publica de verdade: só aceita RX_BANCO_URL do

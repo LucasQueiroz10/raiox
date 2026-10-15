@@ -213,6 +213,7 @@ o `RepositorioDados`. O `RepositorioPostgres` entra logo depois, sem mudar a API
 ## Consequências
 
 - A DT-1 fecha no PR que levar a PTAX para o banco (ingestão diária e a API lendo a tabela).
+  Fechada em 14/10/2026: `cargas/ptax.py` e `FontePtaxBanco` (`app/dados/ptax.py`).
 - `RepositorioPostgres` passa a implementar o `RepositorioDados`; o `RepositorioExemplo` continua
   para testes e desenvolvimento.
 - O GET /fontes usa as cargas publicadas para mostrar a data de cada fonte.
