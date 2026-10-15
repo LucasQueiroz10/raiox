@@ -145,7 +145,12 @@ def test_carteira_pelo_ticker_soma_as_classes_e_acha_o_fii_pela_raiz(banco_novo,
 
     (empresa,) = corpo["empresas"]
     assert (empresa["empresa_id"], empresa["total"]) == (f"BR:CNPJ:{EMPRESA}", "150.00")
-    assert corpo["avisos"] == [{"codigo": "fundo_sem_composicao", "fundo_id": f"CNPJ:{FII}"}]
+    # Desde o PR 4.3, o FII conhecido entra na categoria dos fundos imobiliários, pelo tipo, sem o
+    # aviso de fundo sem composição.
+    assert corpo["avisos"] == []
+    assert corpo["fiis_por_tipo"] == [
+        {"tipo": "tijolo", "segmento": "Logística", "valor": "30.00", "percentual": "0.1667"}
+    ]
 
 
 def test_queda_grande_no_numero_de_ativos_nao_publica(banco_novo, curadoria_vazia):

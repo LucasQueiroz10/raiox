@@ -140,6 +140,25 @@ export interface components {
             /** Valor Preliminar */
             valor_preliminar: string;
         };
+        /**
+         * FatiaFii
+         * @description Os FIIs da carteira (diretos e dentro de fundos) de um tipo e, no tijolo, de um segmento
+         *     (ADR 0008, etapa 4.3). segmento None: papel, fundo de fundos, genérico ou tijolo com vários
+         *     segmentos.
+         */
+        FatiaFii: {
+            /**
+             * Tipo
+             * @enum {string}
+             */
+            tipo: "tijolo" | "papel" | "fundo_de_fundos" | "generico";
+            /** Segmento */
+            segmento: string | null;
+            /** Valor */
+            valor: string;
+            /** Percentual */
+            percentual: string;
+        };
         /** FatiaSubtema */
         FatiaSubtema: {
             /** Nome */
@@ -247,6 +266,8 @@ export interface components {
             categorias: {
                 [key: string]: string;
             };
+            /** Fiis Por Tipo */
+            fiis_por_tipo: components["schemas"]["FatiaFii"][];
             /** Derivativos Por Setor */
             derivativos_por_setor: components["schemas"]["Fatia"][];
             /** Credito Por Setor */

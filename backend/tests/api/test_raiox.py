@@ -343,3 +343,27 @@ def test_isin_americano_da_422_pedindo_o_ticker_sem_repetir_o_valor(cliente):
 )
 def test_identificador_invalido_da_422(cliente, entrada):
     assert cliente.post("/api/raiox", json=entrada).status_code == 422
+
+
+# --- FIIs no raio-x (ADR 0008, etapa 4.3) ---
+
+
+def test_fii_entra_na_categoria_e_nas_fatias_pelo_tipo(cliente):
+    # FII marcado como ação: vale o tipo da identificação (fundo).
+    entrada = carteira(ticker("ZZFL11", "300.00"), pos(BANCO, "700.00"))
+
+    corpo = cliente.post("/api/raiox", json=entrada).json()
+
+    assert corpo["categorias"]["fundos_imobiliarios"] == "300.00"
+    assert corpo["categorias"]["nao_aberto"] == "0.00"
+    assert corpo["fiis_por_tipo"] == [
+        {"tipo": "tijolo", "segmento": "Logística", "valor": "300.00", "percentual": "0.3000"}
+    ]
+    assert corpo["avisos"] == []
+
+
+def test_carteira_sem_fii_tem_a_categoria_zerada_e_nenhuma_fatia(cliente):
+    corpo = cliente.post("/api/raiox", json=REFERENCIA).json()
+
+    assert corpo["categorias"]["fundos_imobiliarios"] == "0.00"
+    assert corpo["fiis_por_tipo"] == []
