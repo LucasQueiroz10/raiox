@@ -126,8 +126,9 @@ Fazer com pedidos nossos, nunca com dados de usuários.
    seus testes (`test_medicao_ip.py`), o trecho no `backend/CLAUDE.md` e o encaminhamento desse
    caminho no `firebase.json`, num PR próprio, e fechar a DT-17. No mesmo PR, o
    `scripts/testar_imagem.sh`, que hoje confere pela medição que a aplicação lê o
-   `X-Forwarded-For`, passa a conferir pelo limite por IP: com `RX_PROXIES_CONFIAVEIS=2`, 20 análises com o mesmo penúltimo endereço e um primeiro endereço
-   forjado diferente em cada uma; a 21ª recebe 429, e uma com outro penúltimo endereço recebe 200.
+   `X-Forwarded-For`, passa a conferir pelo limite por IP: com `RX_PROXIES_CONFIAVEIS=2`, 20
+   análises com o mesmo penúltimo endereço e um primeiro endereço forjado diferente em cada uma; a
+   21ª recebe 429, e uma com outro penúltimo endereço recebe 200.
 
 ---
 
