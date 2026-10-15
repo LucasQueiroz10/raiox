@@ -156,7 +156,12 @@ seção 3).
       fundos ligado a uma companhia (o resto são BDRs, 3,7%, e 0,1% de empresas pequenas).
    2. **Entrada por ticker e por CNPJ** no `POST /api/raiox` (ADR 0005, seção 5).
    3. **FIIs no raio-x:** a categoria "Fundos imobiliários", com o tipo de cada FII (regra em
-      `backend/ingest/cvm_fii.py`), em vez de "não aberto".
+      `backend/ingest/cvm_fii.py`), em vez de "não aberto". Feita em 14/10/2026: vale para o FII
+      direto e para o FII dentro de fundos, que o CDA traz no bloco de cotas de fundos com o CNPJ
+      (agosto de 2026: 2.840 linhas, R$ 47,8 bi; nenhuma no bloco de ações). A resposta da API
+      traz as fatias por tipo e, no tijolo, por segmento (`fiis_por_tipo`). As cotas de FII
+      emprestadas (bloco 8, R$ 140 mi em agosto) ainda chegam sem o CNPJ e ficam como "fundo sem
+      identificador": o leitor passa a pegá-lo num PR pequeno logo depois.
 
    Sem os PRs 4.2 e 4.3, o ETF, o fundo e o FII da carteira do usuário não são abertos.
 5. **PTAX no banco:** carga diária; fecha a DT-1.
