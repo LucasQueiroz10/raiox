@@ -9,7 +9,12 @@ from functools import cache
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.api import esquemas as e
-from app.api.seguranca import LimitadorPorJanela, LimiteDeAnalises, ServidorOcupado
+from app.api.seguranca import (
+    LimitadorPorJanela,
+    LimiteDeAnalises,
+    ServidorOcupado,
+    chave_do_limite,
+)
 from app.core.agregacao import NUCLEO, Fatia, RaioX, agregar
 from app.core.cambio import PtaxUsada, para_reais
 from app.core.composicao import Categoria, ClasseFii, Posicao, TipoItem
@@ -55,8 +60,13 @@ def verificar_taxa(
     request: Request,
     limitador: LimitadorPorJanela = Depends(obter_limitador_raiox),  # noqa: B008 - padrão do FastAPI
 ) -> None:
-    """Conta toda chamada ao /raiox, inclusive as que vão dar 422."""
-    ip = request.client.host if request.client else "sem-ip"
+    """Conta toda chamada ao /raiox, inclusive as que vão dar 422. A chave é o IP do cliente,
+    tirado do X-Forwarded-For conforme RX_PROXIES_CONFIAVEIS (DT-17)."""
+    ip = chave_do_limite(
+        request.headers.getlist("x-forwarded-for"),
+        request.client.host if request.client else None,
+        request.app.state.proxies_confiaveis,
+    )
     if not limitador.permitir(ip):
         raise HTTPException(
             429,

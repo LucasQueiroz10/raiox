@@ -8,9 +8,14 @@ RX_BANCO_URL: conexão com o PostgreSQL (postgresql+psycopg://...), com o usuár
     (ADR 0006). Sem ela, a API usa o conjunto de exemplo sintético; em produção é obrigatória.
 RX_SEGREDO_AQUECIMENTO: segredo que o Cloud Scheduler manda no aquecimento interno (ADR 0007,
     seção 3), com pelo menos 32 caracteres. Sem ele, o aquecimento não existe (responde 404).
+RX_PROXIES_CONFIAVEIS: quantos proxies confiáveis acrescentam um endereço ao X-Forwarded-For,
+    de 0 a 5; o IP do limite por IP é o N-ésimo endereço da direita (app/api/seguranca.py; DT-17).
+    Sem ela, 0: o IP da conexão. Obrigatória em produção, porque no Cloud Run a conexão vem do
+    Google e, com 0, todos os usuários dividiriam o mesmo limite.
 """
 
 import os
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
@@ -21,6 +26,8 @@ AMBIENTES = ("desenvolvimento", "producao")
 FRONT_LOCAL = "http://localhost:5173"
 DRIVER_BANCO = "postgresql+psycopg://"
 MIN_SEGREDO = 32
+# Pedido direto ao Cloud Run: 1; pelo Firebase, provavelmente 2 (a confirmar no primeiro deploy).
+MAX_PROXIES = 5
 
 
 @dataclass(frozen=True)
@@ -30,6 +37,7 @@ class Config:
     # Em produção leva a senha: fica fora do repr, para não acabar em log.
     banco_url: str | None = field(default=None, repr=False)
     segredo_aquecimento: str | None = field(default=None, repr=False)
+    proxies_confiaveis: int = 0
 
     @classmethod
     def do_ambiente(cls, ambiente: Mapping[str, str] = os.environ) -> Config:
@@ -66,9 +74,22 @@ class Config:
             raise ValueError(
                 f"RX_SEGREDO_AQUECIMENTO precisa de pelo menos {MIN_SEGREDO} caracteres"
             )
+        # DT-17: sem a variável em produção, todos os usuários dividiriam o limite do IP do Google.
+        bruto_proxies = ambiente.get("RX_PROXIES_CONFIAVEIS")
+        if bruto_proxies is None:
+            if producao:
+                raise ValueError("RX_PROXIES_CONFIAVEIS é obrigatória em produção")
+            proxies = 0
+        else:
+            # Só algarismos ASCII: str.isdigit aceitaria "²", e int() aceitaria "-1" e "+1".
+            valor = bruto_proxies.strip()
+            if re.fullmatch(r"[0-9]+", valor) is None or int(valor) > MAX_PROXIES:
+                raise ValueError(f"RX_PROXIES_CONFIAVEIS deve ser um inteiro de 0 a {MAX_PROXIES}")
+            proxies = int(valor)
         return cls(
             producao=producao,
             origens_permitidas=origens,
             banco_url=banco_url,
             segredo_aquecimento=segredo,
+            proxies_confiaveis=proxies,
         )

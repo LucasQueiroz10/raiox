@@ -13,7 +13,9 @@ def test_padrao_e_desenvolvimento_liberando_o_front_local():
 
 
 def test_producao_sem_origens_configuradas_nao_libera_nenhuma():
-    c = Config.do_ambiente({"RX_AMBIENTE": "producao", "RX_BANCO_URL": BANCO})
+    c = Config.do_ambiente(
+        {"RX_AMBIENTE": "producao", "RX_BANCO_URL": BANCO, "RX_PROXIES_CONFIAVEIS": "2"}
+    )
 
     assert c.producao is True
     assert c.origens_permitidas == ()
@@ -24,6 +26,7 @@ def test_origens_separadas_por_virgula():
         {
             "RX_AMBIENTE": "producao",
             "RX_BANCO_URL": BANCO,
+            "RX_PROXIES_CONFIAVEIS": "2",
             "RX_ORIGENS_PERMITIDAS": "https://rx.exemplo, https://www.rx.exemplo",
         }
     )
@@ -94,3 +97,28 @@ def test_segredo_do_aquecimento_curto_falha_na_partida_sem_repetir_o_valor():
         Config.do_ambiente({"RX_SEGREDO_AQUECIMENTO": "curto-sintetico"})
 
     assert "curto-sintetico" not in str(erro.value)
+
+
+def test_proxies_confiaveis_em_desenvolvimento_sao_zero_por_padrao():
+    assert Config.do_ambiente({}).proxies_confiaveis == 0
+
+
+def test_le_os_proxies_confiaveis():
+    assert Config.do_ambiente({"RX_PROXIES_CONFIAVEIS": "2"}).proxies_confiaveis == 2
+
+
+def test_producao_exige_os_proxies_confiaveis():
+    # Sem a variável, no Cloud Run todos os usuários dividiriam o limite do IP do Google (DT-17).
+    with pytest.raises(ValueError):
+        Config.do_ambiente({"RX_AMBIENTE": "producao", "RX_BANCO_URL": BANCO})
+
+    declarado = Config.do_ambiente(
+        {"RX_AMBIENTE": "producao", "RX_BANCO_URL": BANCO, "RX_PROXIES_CONFIAVEIS": "0"}
+    )
+    assert declarado.proxies_confiaveis == 0  # zero declarado vale: é o IP da conexão
+
+
+@pytest.mark.parametrize("valor", ["-1", "1.5", "um", "²", "6", " "])
+def test_proxies_confiaveis_invalidos_falham_na_partida(valor):
+    with pytest.raises(ValueError):
+        Config.do_ambiente({"RX_PROXIES_CONFIAVEIS": valor})
