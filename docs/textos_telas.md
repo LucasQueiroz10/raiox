@@ -145,9 +145,18 @@ Um texto para cada código que a API devolve (`avisos[].codigo` e `detail.codigo
 | `erros.cambio_indisponivel` | Não conseguimos a cotação do dólar agora. Tente de novo mais tarde ou informe os valores em reais. | rascunho |
 | `erros.dados_indisponiveis` | Não conseguimos carregar os dados dos fundos agora. Tente de novo em alguns instantes. | rascunho |
 | `erros.erro_interno` | Algo deu errado do nosso lado. Tente de novo em alguns instantes. | rascunho |
+| `avisos.tipo_corrigido` | Consideramos este ativo como {tipo}, conforme a nossa base de ativos, e não como {tipo_marcado}. | rascunho |
+| `avisos.tipo_corrigido.acao` | ação | rascunho |
+| `avisos.tipo_corrigido.fundo` | fundo | rascunho |
 
 `avisos.composicao_antiga` e `avisos.fundo_sem_composicao_utilizavel`: pedidos do M1 em 12/10/2026
 (ADR 0008, seção 7). Os códigos na API saem do PR 2.1 da carga da CVM; conferir os nomes quando ele
 entrar. No primeiro, `{data}` é a data da composição do fundo (`fundos[].data_referencia`); o fundo
 continua aberto, com o aviso. O segundo vale para fundo com patrimônio zerado ou negativo, que a carga
 registra sem composição.
+
+`avisos.tipo_corrigido`: recomendação de 15/10/2026, aprovada pelo Lucas (não fazia parte da
+decisão do tipo de 14/10). Aparece junto da posição que a pessoa marcou com o tipo diferente do
+da base (ADR 0005, seção 5): o aviso traz `posicao`, o índice da posição na lista enviada, e
+`tipo`, o tipo usado. `{tipo}` é o `tipo` do aviso e `{tipo_marcado}` é o tipo que a pessoa marcou
+naquela posição, os dois escritos com `avisos.tipo_corrigido.acao` ou `avisos.tipo_corrigido.fundo`.

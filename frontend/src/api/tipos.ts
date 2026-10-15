@@ -42,12 +42,23 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** Aviso */
+        /**
+         * Aviso
+         * @description Um aviso da análise, ligado a um fundo (fundo_id) ou a uma posição da entrada (posicao).
+         *
+         *     posicao é o índice da posição na lista enviada, a partir de 0, como o 422 aponta o campo: a
+         *     resposta não repete o identificador nem o valor. tipo só vem no tipo_corrigido: o tipo que a
+         *     base usou, no lugar do marcado (ADR 0005, seção 5).
+         */
         Aviso: {
             /** Codigo */
             codigo: string;
             /** Fundo Id */
             fundo_id: string | null;
+            /** Posicao */
+            posicao: number | null;
+            /** Tipo */
+            tipo: ("acao" | "fundo") | null;
         };
         /**
          * Classe

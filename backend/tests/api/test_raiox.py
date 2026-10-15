@@ -296,7 +296,10 @@ def test_tipo_da_identificacao_prevalece_sobre_o_declarado(cliente):
         "ZZ:BANCO",
         "500.00",
     )
-    assert corpo["avisos"] == []
+    # Desde o aviso tipo_corrigido, a resposta conta que o tipo marcado foi trocado.
+    assert corpo["avisos"] == [
+        {"codigo": "tipo_corrigido", "fundo_id": None, "posicao": 0, "tipo": "acao"}
+    ]
 
 
 def test_cnpj_com_mascara_e_minusculas_entra_como_fundo(cliente):
@@ -308,7 +311,14 @@ def test_cnpj_com_mascara_e_minusculas_entra_como_fundo(cliente):
 
     corpo = cliente.post("/api/raiox", json=entrada).json()
 
-    assert corpo["avisos"] == [{"codigo": "fundo_sem_composicao", "fundo_id": f"CNPJ:{fundo}"}]
+    assert corpo["avisos"] == [
+        {
+            "codigo": "fundo_sem_composicao",
+            "fundo_id": f"CNPJ:{fundo}",
+            "posicao": None,
+            "tipo": None,
+        }
+    ]
 
 
 def test_ticker_americano_entra_pelo_us(cliente):
@@ -360,7 +370,10 @@ def test_fii_entra_na_categoria_e_nas_fatias_pelo_tipo(cliente):
     assert corpo["fiis_por_tipo"] == [
         {"tipo": "tijolo", "segmento": "Logística", "valor": "300.00", "percentual": "0.3000"}
     ]
-    assert corpo["avisos"] == []
+    # Sem aviso de fundo sem composição; desde o aviso tipo_corrigido, avisa a troca do tipo.
+    assert corpo["avisos"] == [
+        {"codigo": "tipo_corrigido", "fundo_id": None, "posicao": 0, "tipo": "fundo"}
+    ]
 
 
 def test_carteira_sem_fii_tem_a_categoria_zerada_e_nenhuma_fatia(cliente):
