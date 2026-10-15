@@ -202,8 +202,8 @@ class Aviso(BaseModel):
 
     codigo: str
     fundo_id: str | None
-    posicao: int | None = None
-    tipo: Literal["acao", "fundo"] | None = None
+    posicao: int | None
+    tipo: Literal["acao", "fundo"] | None
 
 
 class Ptax(BaseModel):

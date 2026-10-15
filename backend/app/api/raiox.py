@@ -283,7 +283,7 @@ def _analisar(
     ]
     # Primeiro os avisos de posição, na ordem da entrada; depois os da abertura dos fundos.
     avisos = avisos_de_posicao + [
-        e.Aviso(codigo=a.codigo.value, fundo_id=a.fundo_id)
+        e.Aviso(codigo=a.codigo.value, fundo_id=a.fundo_id, posicao=None, tipo=None)
         for a in sorted(resultado.avisos, key=lambda a: (a.codigo, a.fundo_id or ""))
     ]
     fiis = _fiis(resultado.fiis, resultado.total)
