@@ -22,7 +22,7 @@ from app.main import app
 
 FOF, BANCO, CHIPS = "ZZFOF0000016", "ZZBANCO00013", "ZZCHIPS00019"
 ETF_BR, PETRO_PN, PETRO_ON = "ZZETFBR00018", "ZZPETRO00010", "ZZPETRO00028"
-PTAX = PtaxUsada(date(2026, 9, 28), date(2026, 9, 25), D("5.0000"))
+PTAX = PtaxUsada(date(2026, 9, 28), date(2026, 9, 25), D("5.0000"), date(2026, 9, 25))
 
 
 class PtaxFalsa:
@@ -163,6 +163,7 @@ def test_dolar_e_convertido_pela_ptax_e_a_resposta_mostra_a_cotacao(cliente, pta
         "valor": "5.0000",
         "data_cotacao": "2026-09-25",
         "data_pedida": "2026-09-28",
+        "data_consulta": "2026-09-25",  # para o aviso do BCB (decisão de 14/10/2026)
     }
     assert ptax.chamadas == 1
 

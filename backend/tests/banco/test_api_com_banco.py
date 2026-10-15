@@ -96,3 +96,28 @@ def test_raiox_lendo_o_banco_responde_como_o_exemplo_so_com_linhas_aprovadas(ban
     assert esperado.rascunhos  # o exemplo tem linhas preliminares, então o filtro faz diferença
     assert do_banco == _analisar(config, esperado)
     assert do_banco != _analisar(config)
+
+
+def test_carteira_em_dolar_usa_a_ptax_gravada_pela_carga_diaria(banco_novo):
+    from decimal import Decimal
+
+    from app.core.calendario import hoje_em_brasilia, ultimo_dia_util
+    from cargas.ptax import carregar
+
+    # A cotação do último dia útil de verdade: a análise usa a data de hoje.
+    dia = ultimo_dia_util(hoje_em_brasilia())
+    with banco_novo.conectar("rx_ingestao") as ingestao:
+        carregar_exemplo(ingestao)
+        carregar(ingestao, dia, lambda inicio, fim: {dia: Decimal("5.3000")})
+    app = criar_app(
+        Config(producao=False, origens_permitidas=(), banco_url=banco_novo.url("rx_api"))
+    )
+    carteira = {"posicoes": [{**CARTEIRA["posicoes"][1], "moeda": "USD", "valor": "100.00"}]}
+
+    with TestClient(app) as cliente:
+        corpo = cliente.post("/api/raiox", json=carteira).json()
+
+    assert corpo["total"] == "530.00"
+    assert corpo["ptax"]["valor"] == "5.3000"
+    assert corpo["ptax"]["data_cotacao"] == dia.isoformat()
+    assert corpo["ptax"]["data_consulta"]  # o dia em que a carga rodou

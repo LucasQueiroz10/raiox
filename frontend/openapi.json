@@ -621,15 +621,22 @@
             "type": "string",
             "format": "date",
             "title": "Data Pedida"
+          },
+          "data_consulta": {
+            "type": "string",
+            "format": "date",
+            "title": "Data Consulta"
           }
         },
         "type": "object",
         "required": [
           "valor",
           "data_cotacao",
-          "data_pedida"
+          "data_pedida",
+          "data_consulta"
         ],
-        "title": "Ptax"
+        "title": "Ptax",
+        "description": "A PTAX usada nas posições em dólar. data_consulta: o dia em que a cotação foi obtida do\nBanco Central, para o aviso do BCB (`cambio.aviso_bcb` em docs/textos_telas.md)."
       },
       "RaioXResposta": {
         "properties": {

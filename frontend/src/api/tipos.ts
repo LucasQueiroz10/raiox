@@ -233,7 +233,11 @@ export interface components {
              */
             tipo: "acao" | "fundo";
         };
-        /** Ptax */
+        /**
+         * Ptax
+         * @description A PTAX usada nas posições em dólar. data_consulta: o dia em que a cotação foi obtida do
+         *     Banco Central, para o aviso do BCB (`cambio.aviso_bcb` em docs/textos_telas.md).
+         */
         Ptax: {
             /** Valor */
             valor: string;
@@ -247,6 +251,11 @@ export interface components {
              * Format: date
              */
             data_pedida: string;
+            /**
+             * Data Consulta
+             * Format: date
+             */
+            data_consulta: string;
         };
         /** RaioXResposta */
         RaioXResposta: {

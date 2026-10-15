@@ -16,7 +16,7 @@ from app.core.composicao import Categoria, ClasseFii, Posicao, TipoItem
 from app.core.lookthrough import abrir_carteira
 from app.core.traducao import traduzir
 from app.dados.postgres import DadosIndisponiveis
-from app.dados.ptax import CambioIndisponivel, FontePtax
+from app.dados.ptax import CambioIndisponivel, FonteCambio
 from app.dados.repositorio import RepositorioDados
 
 router = APIRouter()
@@ -36,9 +36,9 @@ def obter_repositorio(request: Request) -> RepositorioDados:
         raise HTTPException(503, detail={"codigo": "dados_indisponiveis"}) from erro
 
 
-@cache
-def obter_fonte_ptax() -> FontePtax:
-    return FontePtax()
+def obter_fonte_ptax(request: Request) -> FonteCambio:
+    """A PTAX do banco ou, sem banco, do Banco Central (app/main.py)."""
+    return request.app.state.ptax
 
 
 @cache
@@ -143,7 +143,12 @@ def _montar_resposta(
         total=_reais(raio_x.total),
         versao_classificacao=raio_x.versao_classificacao,
         ptax=(
-            e.Ptax(valor=ptax.valor, data_cotacao=ptax.data_cotacao, data_pedida=ptax.data_pedida)
+            e.Ptax(
+                valor=ptax.valor,
+                data_cotacao=ptax.data_cotacao,
+                data_pedida=ptax.data_pedida,
+                data_consulta=ptax.data_consulta,
+            )
             if ptax
             else None
         ),
@@ -206,7 +211,7 @@ def _montar_resposta(
 def raiox(
     entrada: e.EntradaRaioX,
     repo: RepositorioDados = Depends(obter_repositorio),  # noqa: B008 - padrão do FastAPI
-    fonte_ptax: FontePtax = Depends(obter_fonte_ptax),  # noqa: B008 - padrão do FastAPI
+    fonte_ptax: FonteCambio = Depends(obter_fonte_ptax),  # noqa: B008 - padrão do FastAPI
     limite: LimiteDeAnalises = Depends(obter_limite_de_analises),  # noqa: B008 - padrão do FastAPI
 ) -> e.RaioXResposta:
     ptax = None
