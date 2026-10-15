@@ -168,7 +168,7 @@ seção 3).
       desenho eram quase todos obrigações por cotas recebidas em empréstimo, que ficam na DT-16.
 
    Sem os PRs 4.2 e 4.3, o ETF, o fundo e o FII da carteira do usuário não são abertos.
-5. **PTAX no banco:** carga diária; fecha a DT-1.
+5. **PTAX no banco:** carga diária; fecha a DT-1. Feita em 14/10/2026 (`cargas/ptax.py`).
 
 Meta: etapas 2 a 5 entre 13 e 18/10, deixando 19 a 23/10 para o P3 (HTTPS, telas, importação de CSV e
 testes). Se faltar tempo, a prioridade é o que abre as carteiras (2.2, 3 e 4); o PR 2.1 pode ficar por
