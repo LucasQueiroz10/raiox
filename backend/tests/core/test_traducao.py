@@ -2,7 +2,7 @@
 
 import pytest
 
-from app.core.composicao import TipoItem
+from app.core.composicao import ClasseFii, TipoFII, TipoItem
 from app.core.traducao import AtivoIdentificado, TabelaIdentificacao, traduzir
 from tests.ficticios import cnpj, isin_da_raiz
 
@@ -14,15 +14,16 @@ FII, ISIN_DO_FII = f"CNPJ:{cnpj('FII')}", isin_da_raiz("ZZFI", "CTF00")
 # Dois FIIs com a mesma raiz no ISIN: pela raiz, não dá para saber qual é.
 FII_B, FII_C = f"CNPJ:{cnpj('FII-B')}", f"CNPJ:{cnpj('FII-C')}"
 ACAO_EUA = "US:ZZQ"
+LOGISTICA, PAPEL = ClasseFii(TipoFII.TIJOLO, "Logística"), ClasseFii(TipoFII.PAPEL)
 
 TABELA = TabelaIdentificacao.montar(
     [
         AtivoIdentificado(ON, ACAO, ticker_b3="ZZAA3", isin=ON),
         AtivoIdentificado(PN, ACAO, ticker_b3="ZZAA4"),
         AtivoIdentificado(ETF, FUNDO, ticker_b3="ZZTF11"),
-        AtivoIdentificado(FII, FUNDO, isin=ISIN_DO_FII, fii=True),
-        AtivoIdentificado(FII_B, FUNDO, isin=isin_da_raiz("ZZDU", "CTF00"), fii=True),
-        AtivoIdentificado(FII_C, FUNDO, isin=isin_da_raiz("ZZDU", "CTF01"), fii=True),
+        AtivoIdentificado(FII, FUNDO, isin=ISIN_DO_FII, fii=LOGISTICA),
+        AtivoIdentificado(FII_B, FUNDO, isin=isin_da_raiz("ZZDU", "CTF00"), fii=PAPEL),
+        AtivoIdentificado(FII_C, FUNDO, isin=isin_da_raiz("ZZDU", "CTF01"), fii=PAPEL),
         AtivoIdentificado(ACAO_EUA, ACAO, ticker_eua="ZZQ"),
     ]
 )
@@ -116,3 +117,8 @@ def test_identificacao_com_identificador_repetido_e_recusada(repetidos):
 def test_tipo_de_identificador_sem_traducao_e_erro_e_nao_um_ativo_vazio():
     with pytest.raises(ValueError, match="tipo de identificador"):
         traduzir("cusip", "ZZAA3", ACAO, TABELA)  # type: ignore[arg-type]
+
+
+def test_tabela_guarda_a_classe_de_cada_fii():
+    # Para o raio-x mostrar os FIIs pelo tipo (ADR 0008, etapa 4.3).
+    assert TABELA.classe_do_fii == {FII: LOGISTICA, FII_B: PAPEL, FII_C: PAPEL}

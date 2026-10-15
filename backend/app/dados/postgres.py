@@ -29,7 +29,7 @@ from app.core.classificacao import (
     Status,
     TabelaClassificacao,
 )
-from app.core.composicao import Composicao, ItemComposicao, TipoItem
+from app.core.composicao import ClasseFii, Composicao, ItemComposicao, TipoFII, TipoItem
 from app.core.traducao import AtivoIdentificado, TabelaIdentificacao
 
 INTERVALO_S = 60  # de quanto em quanto tempo, no máximo, confere se saiu carga nova
@@ -135,7 +135,7 @@ def ler_foto(conexao: Connection) -> FotoDados:
     for r in conexao.execute(
         text(
             "SELECT ativo_id, tipo, empresa_id, nome, aproximado_por, ticker_b3, ticker_eua, isin,"
-            " fii_tipo FROM ref.ativo_vigente"
+            " fii_tipo, fii_segmento FROM ref.ativo_vigente"
         )
     ):
         identificados.append(
@@ -145,7 +145,7 @@ def ler_foto(conexao: Connection) -> FotoDados:
                 ticker_b3=r.ticker_b3,
                 ticker_eua=r.ticker_eua,
                 isin=r.isin,
-                fii=r.fii_tipo is not None,
+                fii=ClasseFii(TipoFII(r.fii_tipo), r.fii_segmento) if r.fii_tipo else None,
             )
         )
         if r.empresa_id:

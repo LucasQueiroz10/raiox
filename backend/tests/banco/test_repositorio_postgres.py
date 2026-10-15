@@ -15,7 +15,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import make_url
 
 from app.core.classificacao import Origem, ParticipacaoTema, Status
-from app.core.composicao import ItemComposicao, TipoItem
+from app.core.composicao import ClasseFii, ItemComposicao, TipoFII, TipoItem
 from app.core.traducao import traduzir
 from app.dados.exemplo import RepositorioExemplo
 from app.dados.postgres import (
@@ -152,6 +152,22 @@ def test_identificacao_traz_tickers_isin_e_o_fii_pela_raiz(repo, ingestao):
     assert traduzir("ticker_b3", "ZZFI11", TipoItem.ACAO, t) == (fii, TipoItem.FUNDO)
     assert traduzir("isin", isin_do_fii, TipoItem.ACAO, t) == (fii, TipoItem.FUNDO)
     assert traduzir("ticker_eua", "ZZETF", TipoItem.ACAO, t) == (ETF_EUA, TipoItem.FUNDO)
+
+
+def test_identificacao_traz_a_classe_de_cada_fii(repo, ingestao):
+    carga = abrir_carga(ingestao, "identificacao")
+    tijolo, papel = f"CNPJ:{cnpj('FII-TIJOLO')}", f"CNPJ:{cnpj('FII-PAPEL')}"
+    ingestao.execute(
+        "INSERT INTO ref.ativo (carga_id, ativo_id, tipo, fii_tipo, fii_segmento)"
+        " VALUES (%s, %s, 'fundo', 'tijolo', 'Logística'), (%s, %s, 'fundo', 'papel', NULL)",
+        (carga, tijolo, carga, papel),
+    )
+    publicar(ingestao, carga)
+
+    assert repo.identificacao().classe_do_fii == {
+        tijolo: ClasseFii(TipoFII.TIJOLO, "Logística"),
+        papel: ClasseFii(TipoFII.PAPEL),
+    }
 
 
 def test_le_a_classificacao_do_exemplo_so_com_as_linhas_aprovadas(repo, ingestao):

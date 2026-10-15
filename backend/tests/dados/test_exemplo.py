@@ -96,3 +96,16 @@ def test_identificacao_liga_os_tickers_sinteticos_aos_ativos():
     # ETF marcado como ação: vale o tipo da identificação.
     assert traduzir("ticker_b3", "ZZEB11", TipoItem.ACAO, t) == ("ZZETFBR00018", TipoItem.FUNDO)
     assert all(ticker.startswith("ZZ") for ticker in t.ativo_do_ticker_b3)
+
+
+def test_tem_um_fii_de_tijolo_com_ticker_e_nome():
+    from app.core.composicao import ClasseFii, TipoFII
+    from app.core.traducao import traduzir
+
+    repo = RepositorioExemplo()
+    t = repo.identificacao()
+    fii, tipo = traduzir("ticker_b3", "ZZFL11", TipoItem.ACAO, t)
+
+    assert tipo is TipoItem.FUNDO
+    assert t.classe_do_fii == {fii: ClasseFii(TipoFII.TIJOLO, "Logística")}
+    assert repo.nome(fii)

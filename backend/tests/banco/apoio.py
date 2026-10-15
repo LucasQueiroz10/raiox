@@ -143,6 +143,21 @@ def carregar_exemplo(conexao: psycopg.Connection) -> None:
                 fundo,
             ),
         )
+    for f in dados["fiis"]:
+        conexao.execute(
+            "INSERT INTO ref.ativo"
+            " (carga_id, ativo_id, tipo, nome, ticker_b3, isin, fii_tipo, fii_segmento)"
+            " VALUES (%s, %s, 'fundo', %s, %s, %s, %s, %s)",
+            (
+                carga,
+                f["ativo_id"],
+                f["nome"],
+                f["ticker_b3"],
+                f["ativo_id"],
+                f["tipo"],
+                f["segmento"],
+            ),
+        )
     publicar(conexao, carga)
 
     carga = abrir_carga(conexao, "classificacao")

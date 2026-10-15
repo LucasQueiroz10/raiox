@@ -13,7 +13,7 @@ from app.core.classificacao import (
     ParticipacaoTema,
     TabelaClassificacao,
 )
-from app.core.composicao import Composicao, ItemComposicao, TipoItem
+from app.core.composicao import ClasseFii, Composicao, ItemComposicao, TipoFII, TipoItem
 from app.core.identificadores import normalizar_isin, normalizar_ticker_b3
 from app.core.traducao import AtivoIdentificado, TabelaIdentificacao
 
@@ -79,7 +79,18 @@ class RepositorioExemplo:
             )
             for fundo in self._composicoes
         ]
-        return TabelaIdentificacao.montar(acoes + fundos)
+        # FIIs: sem composição; o raio-x os mostra pelo tipo (ADR 0008, etapa 4.3).
+        fiis = [
+            AtivoIdentificado(
+                normalizar_isin(f["ativo_id"]),
+                TipoItem.FUNDO,
+                ticker_b3=ticker(f["ticker_b3"]),
+                isin=normalizar_isin(f["ativo_id"]),
+                fii=ClasseFii(TipoFII(f["tipo"]), f["segmento"]),
+            )
+            for f in self._dados["fiis"]
+        ]
+        return TabelaIdentificacao.montar(acoes + fundos + fiis)
 
     @cached_property
     def _empresa_do_ativo(self) -> dict[str, str]:
@@ -110,6 +121,7 @@ class RepositorioExemplo:
     @cached_property
     def _nomes(self) -> dict[str, str]:
         nomes = dict(self._dados["nomes"])
+        nomes.update({f["ativo_id"]: f["nome"] for f in self._dados["fiis"]})
         for e in self._dados["empresas"]:
             nomes[e["empresa_id"]] = e["nome"]
             nomes.update({a["ativo_id"]: a["nome"] for a in e["ativos"] if "nome" in a})
