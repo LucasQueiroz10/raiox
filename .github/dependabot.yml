@@ -41,6 +41,19 @@ updates:
       - dependency-name: postgres
         update-types: ["version-update:semver-major"]
 
+  - package-ecosystem: docker
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      # Só as correções (3.14.x) e o digest. O Python muda de versão (3.15) junto com o CI e o
+      # target-version do ruff, à mão.
+      - dependency-name: python
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

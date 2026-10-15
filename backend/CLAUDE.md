@@ -148,6 +148,25 @@ Regras:
     RX_SEGREDO_AQUECIMENTO=...              segredo do aquecimento interno (32+ caracteres); sem
                                             ele, o aquecimento responde 404
   Valor inválido derruba o servidor na partida, de propósito.
-- Produção: uvicorn app.main:app --no-server-header --forwarded-allow-ips=<IP do proxy>
-  O IP do limite é o da conexão; o uvicorn só aceita o X-Forwarded-For vindo desses IPs.
-  Nunca use --forwarded-allow-ips="*" sem um proxy que sobrescreva o X-Forwarded-For.
+- Produção: o comando da imagem (Dockerfile), uvicorn app.main:app --host 0.0.0.0 --port 8080
+  --no-server-header --no-proxy-headers --no-access-log. Sem o X-Forwarded-For, o IP do limite é
+  o da conexão, que no Cloud Run é da infraestrutura do Google: ler o IP do cliente vem antes do
+  primeiro deploy (ADR 0007, seção 3). Nunca use --forwarded-allow-ips="*" sem um proxy que
+  sobrescreva o X-Forwarded-For. Sem log de acesso: o Cloud Run já registra cada pedido, com o IP.
+
+## Imagem: Dockerfile (ver ADR 0007)
+Uma imagem para a API, as cargas e as migrações (Cloud Run e Cloud Run Jobs), com um comando para
+cada uma. Leva só o requirements.txt e o código de app/, banco/, cargas/ e ingest/ (.dockerignore);
+roda com o usuário rx, sem root e sem escrita no código. Comandos dentro de backend/, com o Docker
+aberto:
+- docker build -t rx-backend .
+- scripts/testar_imagem.sh [IMAGEM]           com o venv ativo: constrói (ou usa a IMAGEM dada) e
+                                              testa o conteúdo, as migrações, a carga da CVM com zip
+                                              sintético e a API em produção lendo o banco, num
+                                              PostgreSQL descartável (no CI: job "imagem")
+- Jobs: python -m alembic upgrade head (como rx_dono); python -m cargas.cvm, cargas.cadastro e
+  cargas.ptax (como rx_ingestao).
+- Python e Debian fixados pelo digest. O Dependabot propõe as correções (3.14.x); a troca de versão
+  (3.15) é à mão, junto com o CI e o target-version do ruff.
+- pip com CERTIFICATE_VERIFY_FAILED no docker build: um antivírus está inspecionando o HTTPS da
+  máquina. Libere pypi.org e files.pythonhosted.org na inspeção; não mude o Dockerfile por isso.
