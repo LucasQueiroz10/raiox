@@ -9,7 +9,8 @@ o segredo do aquecimento no cabeçalho e respondem 404 sem ele, como se não exi
 - GET /interno/ip-do-cliente (DT-17): no primeiro deploy, o Lucas chama uma vez pelo domínio e
   outra direto ao run.app, para ver em que posição do X-Forwarded-For o IP dele chega e acertar
   RX_PROXIES_CONFIAVEIS. Devolve os endereços só para quem chamou e não os registra em log; no ADR
-  vão só as posições, nunca os IPs.
+  vão só as posições, nunca os IPs. Temporário: sai num PR próprio depois da medição
+  (docs/runbooks/producao.md, seção 3, passo 5).
 """
 
 import hmac

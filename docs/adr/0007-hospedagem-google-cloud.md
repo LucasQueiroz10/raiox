@@ -67,7 +67,10 @@ desenvolvimento e a produção se comportarem igual: `/api/raiox`, `/api/saude` 
   nunca o primeiro. A posição exata é conferida no primeiro deploy, com pedidos nossos: um pelo
   domínio e outro direto ao endereço `run.app` (abaixo), registrando a estrutura do cabeçalho nos
   dois casos (só as posições, nunca os IPs). Nunca `--forwarded-allow-ips="*"` sem esse tratamento
-  (`backend/CLAUDE.md`).
+  (`backend/CLAUDE.md`). A medição usa o endpoint interno temporário `GET /interno/ip-do-cliente`
+  (DT-17), com o segredo do aquecimento. Depois de registrar as posições aqui e acertar
+  `RX_PROXIES_CONFIAVEIS`, o endpoint sai num PR próprio e a DT-17 fecha (roteiro de operação,
+  seção 3, passo 5).
 - **Tempo por requisição:** o encaminhamento do Firebase tem limite de 60 s; o pior caso da análise
   fica em uns 2 s (DT-4).
 - **Cobrança por pedido** (o padrão do Cloud Run): a CPU só existe enquanto há pedido em andamento.

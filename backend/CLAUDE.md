@@ -145,7 +145,8 @@ Regras:
   menos ou com valor que não é IP. IPv6 conta pela rede /64. Quem lê o cabeçalho é a aplicação.
 - GET /interno/ip-do-cliente (app/api/interno.py; DT-17): com o segredo do aquecimento no
   x-rx-aquecimento, devolve os endereços do X-Forwarded-For e a chave do limite, sem log; sem o
-  segredo, 404. Serve para medir a posição no primeiro deploy (ADR 0007, seção 3).
+  segredo, 404. Serve para medir a posição no primeiro deploy (ADR 0007, seção 3). Temporário:
+  sai depois da medição (docs/runbooks/producao.md, seção 3, passo 5).
 - Configuração pelas variáveis de ambiente do processo (app/config.py):
     RX_AMBIENTE=desenvolvimento|producao   produção desliga /docs, /redoc e /openapi.json e liga o HSTS
     RX_ORIGENS_PERMITIDAS=https://...       origens do front no CORS, separadas por vírgula
