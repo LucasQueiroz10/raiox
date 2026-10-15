@@ -46,7 +46,9 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 - A carteira entra por identificador e tipo_identificador (isin, ticker_b3, ticker_eua ou cnpj; ADR
   0005, seção 5), validados em core/identificadores (ISIN e CNPJ com dígito verificador; ISIN só de
   país da lista permitida) e traduzidos para o ativo_id em core/traducao, pela identificação da foto.
-  Para ativo conhecido, vale o tipo da identificação, não o declarado.
+  Para ativo conhecido, vale o tipo da identificação, não o declarado; quando eles divergem, a
+  resposta traz o aviso tipo_corrigido, com o índice da posição (posicao) e o tipo usado, sem
+  repetir o identificador.
 - POST /api/raiox não grava nem registra em log o conteúdo da carteira. Respostas de erro também
   não repetem a entrada: 422 traz só campo, motivo e mensagem; exceção inesperada vira 500
   genérico e o log guarda só o tipo e o arquivo:linha (app/api/erros.py).

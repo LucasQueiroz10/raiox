@@ -4,7 +4,8 @@
   implementação para a revisão do PR.
 - **Data:** 2026-10-02. Revisado em 2026-10-04 com o resultado preliminar da T-01 (seções 2, 3, 4 e 6) e em
   2026-10-08 com o CNPJ alfanumérico (seções 2, 3 e 5), em 2026-10-13 com o código interno da B3 e a
-  raiz do ticker (seções 2 e 5) e em 2026-10-14 com a entrada por identificador na API (seção 5).
+  raiz do ticker (seções 2 e 5), em 2026-10-14 com a entrada por identificador na API (seção 5) e
+  em 2026-10-15 com o aviso de tipo corrigido (seção 5).
 - **Decisores:** Lucas (Membro 2) e M1. Decisão conjunta R-02 de `docs/decisoes_m1_irrae_v1.1.md`.
 - **Substitui:** a linha "Identificador de empresa" do ADR 0003 e a regra "a chave de empresa é o ISIN" do
   `CLAUDE.md`. **Afeta:** o ADR 0002 (identificação do ativo) e a D-17 da v1.1 do IrRAE.
@@ -144,6 +145,12 @@ Cada posição passa a ter `identificador` e `tipo_identificador`, no lugar do c
   obrigatório, mas, para um ativo que a identificação conhece, vale o tipo dela; o declarado só vale
   para o identificador desconhecido. Assim, um FII marcado como ação não vira uma empresa sem
   classificação, e uma ação marcada como fundo não vira "não aberto".
+- **Aviso de tipo corrigido** (recomendação aprovada pelo Lucas em 15/10/2026): quando o tipo da
+  base diverge do marcado, a resposta traz o aviso `tipo_corrigido`, para a pessoa entender onde a
+  posição foi parar e corrigir a marcação na próxima vez. O aviso aponta a posição pelo índice na
+  lista enviada (`posicao`, a partir de 0, como o 422 aponta o campo) e traz o tipo usado (`tipo`);
+  não repete o identificador nem o valor, e nada vai para o log. Texto em
+  `docs/textos_telas.md` (`avisos.tipo_corrigido`).
 - A tradução está em `backend/app/core/traducao.py`; a validação, em `backend/app/core/identificadores.py`.
 
 ### 6. Ingestão
