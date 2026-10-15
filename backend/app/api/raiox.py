@@ -29,6 +29,9 @@ router = APIRouter()
 MAX_EMPRESAS_NA_RESPOSTA = 200  # as maiores da carteira; o resto vai somado em demais_empresas
 ANALISES_POR_MINUTO = 20  # por IP
 MAX_ANALISES_SIMULTANEAS = 4  # por servidor
+# Para um ativo que a base conhece, vale o tipo dela; a resposta avisa quando ele diverge do
+# marcado (ADR 0005, seção 5).
+TIPO_CORRIGIDO = "tipo_corrigido"
 _CENTAVOS = Decimal("0.01")
 _QUATRO_CASAS = Decimal("0.0001")
 
@@ -246,11 +249,18 @@ def _analisar(
     # Cada posição chega ao ativo_id pela identificação da mesma foto (ADR 0005, seção 5).
     identificacao = repo.identificacao()
     posicoes = []
-    for p in entrada.posicoes:
-        ativo_id, tipo = traduzir(
-            p.tipo_identificador, p.identificador, TipoItem(p.tipo), identificacao
-        )
+    avisos_de_posicao = []
+    for indice, p in enumerate(entrada.posicoes):
+        marcado = TipoItem(p.tipo)
+        ativo_id, tipo = traduzir(p.tipo_identificador, p.identificador, marcado, identificacao)
         posicoes.append(Posicao(ativo_id, para_reais(p.valor, p.moeda, ptax), tipo))
+        # O traduzir devolve o marcado para o identificador desconhecido: tipo diferente só
+        # acontece com ativo conhecido. O aviso aponta a posição pelo índice, sem repetir o
+        # identificador.
+        if tipo is not marcado:
+            avisos_de_posicao.append(
+                e.Aviso(codigo=TIPO_CORRIGIDO, fundo_id=None, posicao=indice, tipo=tipo.value)
+            )
     resultado = abrir_carteira(
         posicoes,
         repo.composicoes(),
@@ -271,7 +281,8 @@ def _analisar(
         )
         for f in sorted(resultado.fundos.values(), key=lambda f: f.fundo_id)
     ]
-    avisos = [
+    # Primeiro os avisos de posição, na ordem da entrada; depois os da abertura dos fundos.
+    avisos = avisos_de_posicao + [
         e.Aviso(codigo=a.codigo.value, fundo_id=a.fundo_id)
         for a in sorted(resultado.avisos, key=lambda a: (a.codigo, a.fundo_id or ""))
     ]
