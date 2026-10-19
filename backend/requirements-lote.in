@@ -3,7 +3,7 @@
 #   python -m piptools compile --generate-hashes --strip-extras --allow-unsafe -o requirements-lote.txt requirements-lote.in
 # Versões em comum com o desenvolvimento ficam presas às do requirements-dev.txt.
 -c requirements-dev.txt
-numpy==2.5.3
+numpy==2.5.4
 scipy==1.18.1
 pandas==3.0.6
 lxml==6.1.3
