@@ -9,7 +9,7 @@
 # a configuração vem das variáveis de ambiente do Cloud Run (ADR 0007, seção 6).
 
 # Python e Debian fixados pelo digest; o Dependabot propõe as atualizações (.github/dependabot.yml).
-FROM python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170
+FROM python:3.14.8-slim-trixie@sha256:fbecd461fc72d21b2143c6eaba25143738079154a6d0ea3da3aec724f50eed4a
 
 # Sem buffer na saída, para os logs chegarem inteiros ao Cloud Logging mesmo se o job morrer.
 ENV PYTHONUNBUFFERED=1 \
