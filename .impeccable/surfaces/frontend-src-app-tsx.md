@@ -21,6 +21,10 @@ Momento memorável: a abertura em camadas (resposta do Lucas, 10/11/2026).
 
 Indecidido: tema claro (opcional na especificação); a faixa da carteira (V-09).
 
+Para o PR 3 (primeiras figuras com dados): as anotações nos quatro cantos (carteira, data de
+referência, fonte, data do cálculo), a Martian Mono nas medidas e o acento âmbar no número
+principal e na maior contribuição.
+
 ## Direction contract
 
 THESIS: A vitrine é uma sala de leitura de exame de imagem. A carteira é a imagem, e cada camada
@@ -36,10 +40,11 @@ imagem; cantos retos.
 STORY: o visitante entende que um ETF é uma pilha de empresas, escolhe uma carteira, lê a exposição
 com faixa e confere de onde veio cada número.
 
-FIRST VIEWPORT: no desktop, à esquerda (5 de 12 colunas) o título em duas linhas, o subtítulo, o
-aviso e a lista das três carteiras como séries de um exame (nome grande, descrição); à direita
-(7 colunas) a pilha dos quatro cortes em perspectiva, cada um anotado com o nome e a frase da
-camada. No celular: título, pilha compacta, lista.
+FIRST VIEWPORT: no desktop, a pergunta em duas linhas e o subtítulo na largura toda; embaixo, à
+esquerda (5 de 12 colunas) o aviso e a lista das três carteiras como séries de um exame (nome
+grande, descrição); à direita (7 colunas) a pilha dos quatro cortes em perspectiva, cada um
+anotado com o nome e a frase da camada. No celular: pergunta, lista, pilha com cada corte na sua
+linha. (Revisado em 10/11/2026: numa coluna de 5/12, a pergunta quebrava em sete linhas.)
 
 FORM: mundo próprio fixado pela especificação (seção 7), posição 1 de 1. Assinatura: os cortes se
 separam uma vez quando a figura entra na tela; com movimento reduzido, já aparecem separados.

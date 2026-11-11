@@ -45,3 +45,6 @@ test-results/
 .DS_Store
 Thumbs.db
 .idea/
+
+# Capturas de revisão da impeccable: só para a sessão, não entram no repositório.
+.impeccable/review/
