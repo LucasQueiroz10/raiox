@@ -2,7 +2,7 @@
 
 - **Status:** aceito em 10/11/2026 (arquivamento do produto e rumo da vitrine). Os pontos da seção 5
   ainda esperam decisão.
-- **Data:** 2026-11-10.
+- **Data:** 2026-11-10. Revisado no mesmo dia com a hospedagem (V-07) e as pendências de segurança.
 - **Decisor:** Lucas (Membro 2). A vitrine é um projeto conjunto do Lucas e do M1; o que muda a
   metodologia do IrRAE continua com o M1 (ADR 0004).
 - **Relacionados:** ADR 0004 (IrRAE), 0005 (identificação), 0006 (banco e lista de espera, seção 9),
@@ -65,6 +65,31 @@ completa, com as correções da conferência de 10/11/2026, está em `docs/vitri
   e falha se não fechar.
 - **Identificação:** como no ADR 0005. Nenhum CUSIP, SEDOL ou ISIN fora da lista permitida, nem no
   snapshot.
+- **O lote não é hospedado.** Ele roda na máquina do Lucas e, mais tarde, pode rodar num workflow
+  manual ou agendado do GitHub Actions. Em qualquer caso, os snapshots novos entram por PR. Uma
+  rodada por mês basta: o CDA sai todo mês e o N-PORT só fica público a cada trimestre. O Cloud Run,
+  o Cloud SQL e o Cloud Scheduler do ADR 0007 eram do produto e ficam arquivados.
+
+**Hospedagem (V-07, decidida pelo Lucas em 10/11/2026):** Cloudflare, no plano gratuito, com Pages
+ou Workers com arquivos estáticos (a escolha entre os dois fica para o PR de deploy).
+
+- **Deploy pelo GitHub Actions:** o workflow compila o front e envia só a pasta `dist/` com o
+  `wrangler`. Não usamos a integração da Cloudflare com o GitHub, que daria ao app dela acesso de
+  leitura ao repositório privado inteiro, incluindo o produto arquivado.
+- **Token mínimo:** o token de API só edita o projeto do site, numa conta só. Ele fica nos Secrets do
+  GitHub e é usado num ambiente que pede a aprovação do Lucas.
+- **Nada injetado na página:** o Web Analytics da Cloudflare e os recursos que acrescentam script
+  (Rocket Loader, Email Obfuscation, desafios de bot) ficam desligados. A CSP estrita bloqueia o que
+  escapar.
+- **Rotas e cabeçalhos versionados no repositório:** `_redirects` para as rotas da SPA e `_headers`
+  com a CSP, o HSTS, o `X-Content-Type-Options` e o `Referrer-Policy`, em `frontend/public/`.
+- **Prévia privada:** cada deploy de prévia tem um endereço próprio, protegido pelo Cloudflare Access,
+  que só abre para o Lucas e o M1 (código por e-mail). O site não tem login nem rota de
+  administração: proteção feita no navegador seria só aparência, e a administração já acontece por PR.
+- **Volume de acessos:** só o que o painel da Cloudflare mostra pelo lado do servidor, sem script no
+  site.
+- **IP do visitante:** como em qualquer hospedagem, a Cloudflare recebe o IP de quem acessa, nos
+  registros dela. A vitrine não coleta nem grava nada.
 
 ### 3. Regras de dados
 
@@ -124,11 +149,25 @@ completa, com as correções da conferência de 10/11/2026, está em `docs/vitri
 | V-03 | Licença do snapshot do `ibovespa`: o JSON baixado pelo navegador é uma base derivada da CVM, e a ODbL pede a mesma licença | Declarar ODbL no próprio JSON e na página `/fontes` | Lucas, de preferência com advogado (matriz, ponto de atenção 1) |
 | V-04 | Corte de cobertura do IrRAE no `sp500` e no `ibovespa` | Maiores posições até a maior cobertura possível; o resto "não coberto" ou "só prior", sempre com a cobertura na tela | M1 |
 | V-06 | Repositório público ou privado | Repositório privado; publicar só o site gerado | Lucas |
-| V-07 | Hospedagem e domínio | Hospedagem estática (o Firebase Hosting já está no ADR 0007) | Lucas |
+| V-07 | Domínio (a hospedagem já foi decidida: Cloudflare, seção 2) | Começar no endereço gratuito da Cloudflare e ligar um domínio próprio depois | Lucas |
 | V-09 | Faixa da carteira: a especificação mostra só o cenário comonotônico, e a D-01 apresenta os dois cenários de referência | Levar ao M1; até lá, seguir a D-01 | M1 |
 
 Já decididos em 10/11/2026: código do produto mantido (V-05), N-PORT liberado desde 12/10/2026
-(V-02), autoria do Lucas e do M1 (V-08) e a marca Sagital.
+(V-02), autoria do Lucas e do M1 (V-08), a marca Sagital e a hospedagem na Cloudflare (V-07, menos
+o domínio).
+
+### Segurança antes de publicar
+
+Levantamento de 10/11/2026. Cada item entra no PR indicado, com teste quando houver código.
+
+| # | Item | PR |
+|---|---|---|
+| S-1 | O esquema do snapshot aceita link de fonte só com `https://` e só nos domínios das fontes permitidas na matriz. Um link `javascript:` executaria código no navegador do visitante. | 2, contrato |
+| S-2 | Snapshot novo entra só por PR, com o diff revisado, e nunca direto no deploy. O script valida o esquema e a soma de 100% antes de gravar. | 5, script de snapshot |
+| S-3 | Cabeçalhos no `_headers`: CSP só com o próprio domínio, sem script inline, sem `eval` e sem iframe; HSTS; `X-Content-Type-Options: nosniff`; `Referrer-Policy`. | 6, deploy |
+| S-4 | Deploy com o token mínimo, no ambiente com aprovação, e prévias protegidas pelo Cloudflare Access (seção 2). | 6, deploy |
+| S-5 | Antes de tornar o repositório público (V-06): trocar o e-mail de autor dos commits pelo endereço `noreply` do GitHub, porque o histórico mostra o e-mail pessoal. Vale também conferir a autenticação em dois fatores das contas e a DT-6. | Antes da V-06 |
+| S-6 | Limitar o tamanho descompactado na leitura dos zips da CVM (`ingest/arquivos_cvm.py`). Risco baixo: a origem é oficial, por https, e a leitura é em fluxo. | 5, ou antes se o lote mudar |
 
 ## Consequências
 
