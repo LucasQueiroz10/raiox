@@ -13,43 +13,151 @@ Fonte única de todos os textos da interface da Sagital.
 
 Status possíveis: `a escrever` · `rascunho` · `aprovado`
 
-Com o produto arquivado (ADR 0009), a interface publicada é só a da vitrine (seção "Vitrine"). As
-seções Landing, Cadastro e Câmbio ficam para a retomada do produto. As de Raio-X e de avisos valem
-para a vitrine no que couber, porque a vitrine também mostra cobertura, composições e fontes.
+Com o produto arquivado (ADR 0009), a interface publicada é só a da vitrine, que tem textos próprios
+(seção "Vitrine"). As demais seções ficam para a retomada do produto.
 
 ---
 
 ## Vitrine
 
-Transcritos de `docs/vitrine/especificacao.md` em 10/11/2026, para revisão do M1.
+Partem de `docs/vitrine/especificacao.md` e foram reescritos em 10/11/2026, a pedido do Lucas, para
+revisão do M1.
+
+Critérios da reescrita:
+- o visitante não traz carteira: falamos com "você" e da carteira como "esta carteira";
+- termo técnico (IrRAE, P5, P95, look-through) só um clique abaixo, nunca no primeiro nível;
+- nenhum verbo de recomendação; o termo é sempre "faixa estimada";
+- sem travessão longo; o travessão curto aparece só dentro das faixas numéricas (`69% [56–81]`);
+- cada ideia dita uma vez; o título já explica, o texto embaixo só acrescenta.
+
+Glossário, para manter os mesmos termos em todo o site:
+- **cadeia de IA:** o tema medido (nome na configuração do IrRAE: Cadeia de IA);
+- **exposição:** quanto da carteira, ou da empresa, depende da cadeia de IA;
+- **faixa estimada:** a faixa entre o P5 e o P95 dos sorteios do modelo;
+- **coberta / não coberta:** parte da carteira com ou sem estimativa;
+- **abrir (um ETF):** trocar o ETF pelas empresas que ele tem.
+
+### Navegação e moldura
 
 | Identificador | Texto | Status |
 |---|---|---|
-| `vitrine.inicio.frase` | Raio-x de carteira: quanto do seu dinheiro depende, de verdade, da cadeia de IA. | rascunho |
-| `vitrine.inicio.aviso` | Projeto pessoal, sem fins comerciais. Não é recomendação de investimento. | rascunho |
-| `vitrine.rodape` | Projeto pessoal, sem fins comerciais. Não é recomendação de investimento. Sem vínculo com a SEC, a CVM, a B3, a S&P Dow Jones Indices, os gestores dos ETFs ou as empresas citadas. Nomes de índices, fundos e empresas pertencem aos seus titulares e aparecem só para identificar as carteiras. | rascunho |
-| `vitrine.dados_ilustrativos` | Dados ilustrativos: ainda não calculados com dados reais | rascunho |
+| `vitrine.nav.inicio` | Início | rascunho |
+| `vitrine.nav.carteiras` | Carteiras | rascunho |
+| `vitrine.nav.metodologia` | Como medimos | rascunho |
+| `vitrine.nav.fontes` | Fontes | rascunho |
+| `vitrine.nav.pular_para_conteudo` | Pular para o conteúdo | rascunho |
+| `vitrine.dados_ilustrativos` | Números ilustrativos. Ainda não foram calculados com dados reais. | rascunho |
+| `vitrine.rodape` | Projeto independente, sem fins comerciais. Não é recomendação de investimento. Sem vínculo com a SEC, a CVM, a B3, a S&P Dow Jones Indices, os gestores dos ETFs ou as empresas citadas. Nomes de índices, fundos e empresas pertencem aos seus titulares e aparecem só para identificar as carteiras. | rascunho |
+| `vitrine.rodape.autoria` | | a escrever |
+
+### Início
+
+| Identificador | Texto | Status |
+|---|---|---|
+| `vitrine.inicio.titulo` | Quanto uma carteira depende, de fato, da cadeia de IA? | rascunho |
+| `vitrine.inicio.subtitulo` | Abrimos três carteiras públicas até as empresas e medimos quanto cada empresa depende da cadeia de IA. | rascunho |
+| `vitrine.inicio.aviso` | Projeto independente, sem fins comerciais. Não é recomendação de investimento. | rascunho |
+| `vitrine.inicio.escolha` | Escolha uma carteira | rascunho |
+| `vitrine.inicio.camadas.titulo` | Do ETF à empresa, em quatro camadas | rascunho |
+| `vitrine.inicio.camadas.carteira` | Carteira: partimos dos pesos de cada posição. | rascunho |
+| `vitrine.inicio.camadas.fundos` | Fundos: trocamos cada ETF pelas empresas que ele declara ter. | rascunho |
+| `vitrine.inicio.camadas.empresas` | Empresas: somamos a mesma empresa quando ela aparece por mais de um caminho. | rascunho |
+| `vitrine.inicio.camadas.exposicao` | Exposição: medimos quanto cada empresa depende da cadeia de IA. | rascunho |
+
+### Carteiras
+
+| Identificador | Texto | Status |
+|---|---|---|
 | `vitrine.carteira.big_techs.nome` | 4 big techs americanas | rascunho |
 | `vitrine.carteira.big_techs.descricao` | NVIDIA, Amazon, Apple e Microsoft, 25% cada. | rascunho |
 | `vitrine.carteira.sp500.nome` | S&P 500 | rascunho |
+| `vitrine.carteira.sp500.descricao` | Um ETF que replica o índice (IVV), aberto pela carteira que ele declara à SEC. | rascunho |
 | `vitrine.carteira.ibovespa.nome` | Ibovespa | rascunho |
-| `vitrine.carteira.etf_do_indice` | Carteira de um ETF que replica o índice, na data {data}. | rascunho |
+| `vitrine.carteira.ibovespa.descricao` | Um ETF que replica o índice (BOVA11), aberto pela carteira que ele informa à CVM. | rascunho |
+| `vitrine.carteira.etf_do_indice` | Carteira do {etf}, ETF que replica o índice, em {data}. Não é a composição oficial do índice. | rascunho |
+| `vitrine.carteira.data_referencia` | Carteira de {data} | rascunho |
+| `vitrine.carteira.data_calculo` | Calculado em {data} | rascunho |
+
+### Raio-x da carteira
+
+| Identificador | Texto | Status |
+|---|---|---|
+| `vitrine.raiox.exposicao` | Exposição à cadeia de IA | rascunho |
+| `vitrine.raiox.fora_do_tema` | Fora da cadeia de IA | rascunho |
+| `vitrine.raiox.nao_coberto` | Não coberta | rascunho |
+| `vitrine.raiox.por_setor` | Por setor | rascunho |
+| `vitrine.raiox.por_tema` | Por tema | rascunho |
+| `vitrine.raiox.setor_e_tema` | Por setor, cada empresa entra inteira em um setor. Por tema, ela é repartida pelo que de fato faz. Por isso as duas visões dão números diferentes. | rascunho |
+| `vitrine.raiox.subtemas` | Onde está a exposição | rascunho |
+| `vitrine.raiox.cobertura` | Estimativa completa para {percentual} da carteira | rascunho |
+| `vitrine.raiox.cobertura.so_setor` | Estimada só pelo setor: {percentual} | rascunho |
+| `vitrine.raiox.cobertura.nota` | A parte não coberta fica de fora da estimativa. Não completamos com número inventado. | rascunho |
+| `vitrine.raiox.empresas` | Empresas | rascunho |
+| `vitrine.raiox.empresas.peso` | Peso | rascunho |
+| `vitrine.raiox.empresas.contribuicao` | Contribuição | rascunho |
+| `vitrine.raiox.empresas.contribuicao_ajuda` | Peso da empresa vezes a exposição dela: quanto ela soma à exposição da carteira. | rascunho |
+| `vitrine.raiox.empresas.ver_todas` | Ver as {quantidade} empresas | rascunho |
+| `vitrine.raiox.aberto_em` | 100% no {etf}, aberto em {quantidade} empresas. | rascunho |
+
+### Faixa e selo
+
+| Identificador | Texto | Status |
+|---|---|---|
 | `vitrine.faixa.rotulo` | faixa estimada | rascunho |
+| `vitrine.faixa.ajuda_empresa` | Nos {sorteios} sorteios do modelo, 5% dos resultados ficaram abaixo desta faixa e 5% acima. | rascunho |
 | `vitrine.faixa.ajuda_carteira` | Faixa estimada, supondo que os erros das empresas andam juntos. | rascunho |
-| `vitrine.cobertura` | IrRAE calculado para {percentual} do peso da carteira | rascunho |
+| `vitrine.selo.alta` | Faixa estreita | rascunho |
+| `vitrine.selo.media` | Faixa média | rascunho |
+| `vitrine.selo.preliminar` | Preliminar | rascunho |
+| `vitrine.selo.ajuda` | O selo vem da largura da faixa: quanto mais evidência, mais estreita ela fica. | rascunho |
+
+### Empresa
+
+| Identificador | Texto | Status |
+|---|---|---|
+| `vitrine.empresa.componentes` | De onde vem a estimativa | rascunho |
+| `vitrine.empresa.componentes_ajuda` | Quando uma fonte falta, o peso dela passa para as que estão presentes. | rascunho |
+| `vitrine.empresa.componente_ausente` | Sem dado | rascunho |
+| `vitrine.empresa.fontes` | Documentos usados | rascunho |
+| `vitrine.empresa.so_setor` | Ainda não reunimos os documentos desta empresa. A estimativa usa só o setor dela e por isso é preliminar. | rascunho |
+| `vitrine.empresa.nao_coberta` | Ainda não estimamos esta empresa. Ela entra na parte não coberta da carteira. | rascunho |
+
+### Metodologia, fontes e erros
+
+| Identificador | Texto | Status |
+|---|---|---|
+| `vitrine.metodologia.titulo` | Como medimos | rascunho |
 | `vitrine.metodologia.dirichlet` | Mais evidência, faixa mais estreita. | rascunho |
-| `vitrine.carteira.sp500.descricao` | | a escrever |
-| `vitrine.carteira.ibovespa.descricao` | | a escrever |
-| `vitrine.visoes.setor_e_tema` | | a escrever |
+| `vitrine.metodologia.nao_faz` | O modelo não prevê preço e não diz o que comprar ou vender. Ele descreve quanto da atividade de cada empresa está ligada à cadeia de IA. | rascunho |
+| `vitrine.fontes.titulo` | Fontes e licenças | rascunho |
+| `vitrine.erro.carregar` | Não foi possível carregar esta carteira. Recarregue a página para tentar de novo. | rascunho |
+| `vitrine.erro.formato` | Os dados desta carteira estão num formato que o site não reconhece. Tente outra carteira. | rascunho |
+| `vitrine.erro.pagina` | Esta página não existe. | rascunho |
+| `vitrine.erro.voltar` | Voltar às carteiras | rascunho |
 
-`vitrine.inicio.aviso` e `vitrine.rodape`: o texto de origem diz "projeto pessoal"; a vitrine é do
-Lucas e do M1 (ADR 0009). Conferir a palavra na revisão.
+Notas para a revisão:
 
-`vitrine.faixa.ajuda_carteira`: depende da V-09 do ADR 0009. Se o M1 mantiver os dois cenários da
-D-01, o texto muda. Nunca usar "intervalo de confiança", "IC90" ou "conservadora".
-
-`vitrine.visoes.setor_e_tema`: uma linha explicando por que a visão por setor (a empresa inteira num
-setor) e a visão por tema (a empresa repartida) dão números diferentes.
+- **"Projeto independente"** (`vitrine.inicio.aviso`, `vitrine.rodape`): a especificação dizia
+  "projeto pessoal", mas a vitrine é do Lucas e do M1 (ADR 0009). "Independente" diz que não há
+  empresa por trás sem sugerir um autor só.
+- **`vitrine.inicio.titulo`:** a frase da especificação ("quanto do seu dinheiro depende...") falava
+  do dinheiro do visitante, que não traz carteira. A pergunta agora é sobre "uma carteira", e o
+  "de fato" separa depender da cadeia de IA de só parecer uma empresa de IA.
+- **`vitrine.faixa.ajuda_empresa`:** explica o P5 e o P95 sem citar "90%", para não ser lido como
+  nível de confiança. `{sorteios}` é o `n_amostras` do snapshot.
+- **`vitrine.faixa.ajuda_carteira`:** é o rótulo obrigatório da especificação, mantido literal.
+  Depende da V-09 do ADR 0009: se o M1 mantiver os dois cenários da D-01, o texto muda. Nunca usar
+  "intervalo de confiança", "IC90" ou "conservadora".
+- **Selo:** "alta" e "média" viraram "Faixa estreita" e "Faixa média", porque o selo mede a largura
+  da faixa, não a exposição. "Alta" sozinho seria lido como exposição alta.
+- **`vitrine.raiox.cobertura`:** "IrRAE calculado para X% do peso" virou "estimativa completa",
+  para o nome do modelo não aparecer no primeiro nível. O nome IrRAE fica na página "Como medimos".
+- **`vitrine.empresa.so_setor` e `vitrine.empresa.nao_coberta`:** explicam o porquê sem mostrar faixa
+  inventada (especificação, seção 5.3).
+- **`vitrine.metodologia.nao_faz`:** confirmar com o M1 se "quanto da atividade" resume bem os
+  componentes A, Ir, B, R, N, C e P.
+- **`vitrine.rodape.autoria`:** espera a V-08 (nome e link dos autores).
+- Os textos longos da página "Como medimos" entram depois, num bloco próprio.
 
 ---
 
