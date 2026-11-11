@@ -42,6 +42,7 @@ Glossário, para manter os mesmos termos em todo o site:
 
 | Identificador | Texto | Status |
 |---|---|---|
+| `vitrine.marca` | Sagital | rascunho |
 | `vitrine.nav.inicio` | Início | rascunho |
 | `vitrine.nav.carteiras` | Carteiras | rascunho |
 | `vitrine.nav.metodologia` | Como medimos | rascunho |
