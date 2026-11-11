@@ -4,7 +4,7 @@ Descubra onde seu dinheiro realmente está.
 
 O Projeto RX abre os ETFs e fundos da carteira do investidor até chegar às empresas (*look-through*) e mostra quanto do patrimônio está concentrado no mesmo setor, tema ou empresa, inclusive quando essa concentração está escondida em vários fundos diferentes.
 
-> **Status:** em desenvolvimento. Protótipo 1 previsto para novembro de 2026.
+> **Status:** produto arquivado em 10/11/2026, com roteiro para retomar no ADR 0009. O repositório segue como vitrine: um site estático que mostra o raio-x de três carteiras públicas, sem entrada de dados do visitante (`docs/vitrine/especificacao.md`). As seções abaixo descrevem o produto arquivado.
 
 > **Aviso:** o Projeto RX é uma ferramenta de informação sobre a carteira do próprio usuário. Ele descreve a exposição e **não faz recomendação** de investimento.
 

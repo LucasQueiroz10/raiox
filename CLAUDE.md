@@ -3,16 +3,20 @@ Protótipo web que mostra quanto da carteira está concentrado por empresa, seto
 e subtema, abrindo ETFs e fundos em cadeia (look-through) até as empresas.
 Descreve exposição; nunca recomenda compra ou venda.
 
-## Fase atual: protótipo 1
-Entra: cadastro manual; CSV da B3 e da Avenue; câmbio pela PTAX; raio-x por setor/tema/subtema;
-empresas "escondidas"; cobertura da classificação; data de cada composição; rótulo de
-aproximação nos ETFs UCITS; créditos às fontes; landing page com lista de espera.
-Fora: contas, alertas, rentabilidade, cotações automáticas, IR, Open Finance, recomendações.
+## Fase atual: vitrine (ADR 0009)
+O produto está arquivado desde 10/11/2026 (tag produto-arquivado-2026-11); o roteiro para
+retomar está no ADR 0009, seção 4. O código do produto continua na main e no CI, mas não é
+publicado: nada de deploy, cargas agendadas, lista de espera nem importação de CSV.
+A vitrine é um site estático, sem fins comerciais, do Lucas e do M1, com a marca Sagital. O
+visitante escolhe uma de três carteiras públicas (big-techs, sp500 pelo IVV, ibovespa pelo BOVA11)
+e vê o raio-x dela com o IrRAE. Especificação: docs/vitrine/especificacao.md.
 Dados:
-- Carteiras de usuários não são gravadas no PostgreSQL nem no navegador.
-  POST /api/raiox processa em memória e descarta.
-- O único dado pessoal gravado é o e-mail da lista de espera.
-Estas regras só mudam com decisão registrada em ADR em docs/adr/ (previsto para o MVP 1.1).
+- O visitante não envia nada: sem carteira, ticker, arquivo, conta ou e-mail. Nenhum dado pessoal.
+- Os resultados vêm de snapshots JSON gerados em lote no backend; o navegador não chama a API
+  nem serviços externos.
+- Sem números de IrRAE com dados reais até a decisão V-01; até lá, snapshots sintéticos com a
+  faixa "Dados ilustrativos".
+Estas regras só mudam com decisão registrada em ADR em docs/adr/.
 
 ## Arquitetura
 - backend/: Python 3.14, FastAPI, Pydantic; ambiente com venv + pip (requirements.txt).
@@ -26,6 +30,7 @@ Estas regras só mudam com decisão registrada em ADR em docs/adr/ (previsto par
 - Fontes: CVM (CDA, ODbL, crédito obrigatório) e SEC (N-PORT). UCITS é aproximado pelo
   ETF americano do mesmo índice.
 - Tipos do front gerados do OpenAPI do FastAPI (openapi-typescript); nunca editados à mão.
+  O tipo do snapshot da vitrine é gerado do JSON Schema exportado pelo backend (ADR 0009).
 
 ## Regras obrigatórias
 - Teste primeiro. Nenhuma função do motor entra sem um teste que a descreva.
