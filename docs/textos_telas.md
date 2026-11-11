@@ -13,6 +13,44 @@ Fonte única de todos os textos da interface da Sagital.
 
 Status possíveis: `a escrever` · `rascunho` · `aprovado`
 
+Com o produto arquivado (ADR 0009), a interface publicada é só a da vitrine (seção "Vitrine"). As
+seções Landing, Cadastro e Câmbio ficam para a retomada do produto. As de Raio-X e de avisos valem
+para a vitrine no que couber, porque a vitrine também mostra cobertura, composições e fontes.
+
+---
+
+## Vitrine
+
+Transcritos de `docs/vitrine/especificacao.md` em 10/11/2026, para revisão do M1.
+
+| Identificador | Texto | Status |
+|---|---|---|
+| `vitrine.inicio.frase` | Raio-x de carteira: quanto do seu dinheiro depende, de verdade, da cadeia de IA. | rascunho |
+| `vitrine.inicio.aviso` | Projeto pessoal, sem fins comerciais. Não é recomendação de investimento. | rascunho |
+| `vitrine.rodape` | Projeto pessoal, sem fins comerciais. Não é recomendação de investimento. Sem vínculo com a SEC, a CVM, a B3, a S&P Dow Jones Indices, os gestores dos ETFs ou as empresas citadas. Nomes de índices, fundos e empresas pertencem aos seus titulares e aparecem só para identificar as carteiras. | rascunho |
+| `vitrine.dados_ilustrativos` | Dados ilustrativos: ainda não calculados com dados reais | rascunho |
+| `vitrine.carteira.big_techs.nome` | 4 big techs americanas | rascunho |
+| `vitrine.carteira.big_techs.descricao` | NVIDIA, Amazon, Apple e Microsoft, 25% cada. | rascunho |
+| `vitrine.carteira.sp500.nome` | S&P 500 | rascunho |
+| `vitrine.carteira.ibovespa.nome` | Ibovespa | rascunho |
+| `vitrine.carteira.etf_do_indice` | Carteira de um ETF que replica o índice, na data {data}. | rascunho |
+| `vitrine.faixa.rotulo` | faixa estimada | rascunho |
+| `vitrine.faixa.ajuda_carteira` | Faixa estimada, supondo que os erros das empresas andam juntos. | rascunho |
+| `vitrine.cobertura` | IrRAE calculado para {percentual} do peso da carteira | rascunho |
+| `vitrine.metodologia.dirichlet` | Mais evidência, faixa mais estreita. | rascunho |
+| `vitrine.carteira.sp500.descricao` | | a escrever |
+| `vitrine.carteira.ibovespa.descricao` | | a escrever |
+| `vitrine.visoes.setor_e_tema` | | a escrever |
+
+`vitrine.inicio.aviso` e `vitrine.rodape`: o texto de origem diz "projeto pessoal"; a vitrine é do
+Lucas e do M1 (ADR 0009). Conferir a palavra na revisão.
+
+`vitrine.faixa.ajuda_carteira`: depende da V-09 do ADR 0009. Se o M1 mantiver os dois cenários da
+D-01, o texto muda. Nunca usar "intervalo de confiança", "IC90" ou "conservadora".
+
+`vitrine.visoes.setor_e_tema`: uma linha explicando por que a visão por setor (a empresa inteira num
+setor) e a visão por tema (a empresa repartida) dão números diferentes.
+
 ---
 
 ## Landing

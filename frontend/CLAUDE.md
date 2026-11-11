@@ -12,6 +12,10 @@
 - npm audit --audit-level=high
 
 ## Regras
+- Fase vitrine (ADR 0009): o site é estático e lê só os snapshots JSON. Nenhuma tela recebe
+  carteira, ticker, arquivo ou e-mail; nenhuma chamada à API nem a serviços externos. Os créditos
+  vêm de fontes_carteira e fontes do snapshot. As regras de formulário e de CSV abaixo valem
+  quando o produto voltar.
 - src/api/tipos.ts é gerado; nunca editar à mão. Se a API mudar, regenerar e commitar:
   no backend, python -m app.exportar_openapi; aqui, npm run gerar-tipos. O workflow "contrato"
   do CI falha se openapi.json ou tipos.ts estiverem desatualizados.
