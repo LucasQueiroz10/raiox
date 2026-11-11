@@ -6,6 +6,7 @@ Fonte única de todos os textos da interface da Sagital.
 
 - O front copia cada texto **literalmente** para `frontend/src/textos.ts`, sem mudar nenhuma palavra, acento ou pontuação.
 - Só textos com status **aprovado** entram no código. Textos em **rascunho** ou **a escrever** não aparecem na interface.
+- **Exceção da vitrine (ADR 0009):** os textos da seção "Vitrine" entram na interface como estão, em rascunho ou aprovados (decisão do Lucas em 10/11/2026). Texto **a escrever** continua fora, porque não tem texto. A regra de status volta a valer para o produto, se ele for retomado.
 - Os textos descrevem a exposição da carteira e **nunca recomendam** compra, venda ou rebalanceamento.
 - Toda mudança em um texto aprovado volta para **rascunho** e passa por nova revisão (Membro 1).
 - Cada texto tem um identificador (`tela.nome`) que o código usa para encontrá-lo.
@@ -130,6 +131,12 @@ Glossário, para manter os mesmos termos em todo o site:
 | `vitrine.metodologia.dirichlet` | Mais evidência, faixa mais estreita. | rascunho |
 | `vitrine.metodologia.nao_faz` | O modelo não prevê preço e não diz o que comprar ou vender. Ele descreve quanto da atividade de cada empresa está ligada à cadeia de IA. | rascunho |
 | `vitrine.fontes.titulo` | Fontes e licenças | rascunho |
+| `vitrine.fontes.intro` | Todos os números da vitrine vêm de dados públicos. Estas são as fontes e as licenças que seguimos. | rascunho |
+| `vitrine.fontes.cvm` | Fonte: CVM, Dados Abertos (licença ODbL). Carteira do BOVA11 pela Composição e Diversificação das Aplicações (CDA). | rascunho |
+| `vitrine.fontes.sec` | Fonte: SEC, sistema EDGAR (dados públicos dos Estados Unidos). Carteira do IVV pelo formulário N-PORT. | rascunho |
+| `vitrine.fontes.sem_vinculo` | A Sagital não tem vínculo com a CVM, a SEC ou as empresas citadas, nem fala em nome delas. | rascunho |
+| `vitrine.fontes.licenca_cvm` | Licença ODbL | rascunho |
+| `vitrine.metodologia.provisorio` | Esta página ainda está sendo escrita. O método completo entra aqui em breve. | rascunho |
 | `vitrine.erro.carregar` | Não foi possível carregar esta carteira. Recarregue a página para tentar de novo. | rascunho |
 | `vitrine.erro.formato` | Os dados desta carteira estão num formato que o site não reconhece. Tente outra carteira. | rascunho |
 | `vitrine.erro.pagina` | Esta página não existe. | rascunho |
