@@ -1,0 +1,626 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Snapshot da vitrine da Sagital",
+    "version": "1"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Carteira": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "enum": [
+              "big-techs",
+              "sp500",
+              "ibovespa"
+            ],
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "descricao": {
+            "title": "Descricao",
+            "type": "string"
+          },
+          "data_referencia": {
+            "format": "date",
+            "title": "Data Referencia",
+            "type": "string"
+          },
+          "posicoes": {
+            "items": {
+              "$ref": "#/components/schemas/Posicao"
+            },
+            "minItems": 1,
+            "title": "Posicoes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "descricao",
+          "data_referencia",
+          "posicoes"
+        ],
+        "title": "Carteira",
+        "type": "object"
+      },
+      "Cobertura": {
+        "additionalProperties": false,
+        "properties": {
+          "peso_com_irrae": {
+            "title": "Peso Com Irrae",
+            "type": "number"
+          },
+          "peso_so_prior": {
+            "title": "Peso So Prior",
+            "type": "number"
+          },
+          "peso_nao_coberto": {
+            "title": "Peso Nao Coberto",
+            "type": "number"
+          }
+        },
+        "required": [
+          "peso_com_irrae",
+          "peso_so_prior",
+          "peso_nao_coberto"
+        ],
+        "title": "Cobertura",
+        "type": "object"
+      },
+      "Componente": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "peso_p": {
+            "title": "Peso P",
+            "type": "number"
+          },
+          "presente": {
+            "title": "Presente",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "peso_p",
+          "presente"
+        ],
+        "title": "Componente",
+        "type": "object"
+      },
+      "Empresa": {
+        "additionalProperties": false,
+        "properties": {
+          "empresa_id": {
+            "title": "Empresa Id",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "pais": {
+            "enum": [
+              "BR",
+              "US"
+            ],
+            "title": "Pais",
+            "type": "string"
+          },
+          "peso_efetivo": {
+            "title": "Peso Efetivo",
+            "type": "number"
+          },
+          "caminho": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Caminho",
+            "type": "array"
+          },
+          "setor": {
+            "title": "Setor",
+            "type": "string"
+          },
+          "irrae": {
+            "$ref": "#/components/schemas/Irrae"
+          },
+          "fontes": {
+            "items": {
+              "$ref": "#/components/schemas/FonteEmpresa"
+            },
+            "title": "Fontes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "empresa_id",
+          "ticker",
+          "nome",
+          "pais",
+          "peso_efetivo",
+          "caminho",
+          "setor",
+          "irrae",
+          "fontes"
+        ],
+        "title": "Empresa",
+        "type": "object"
+      },
+      "Exposicao": {
+        "additionalProperties": false,
+        "properties": {
+          "setores": {
+            "items": {
+              "$ref": "#/components/schemas/Setor"
+            },
+            "title": "Setores",
+            "type": "array"
+          },
+          "temas": {
+            "items": {
+              "$ref": "#/components/schemas/Tema"
+            },
+            "title": "Temas",
+            "type": "array"
+          },
+          "fora_do_tema": {
+            "title": "Fora Do Tema",
+            "type": "number"
+          },
+          "nao_coberto": {
+            "title": "Nao Coberto",
+            "type": "number"
+          }
+        },
+        "required": [
+          "setores",
+          "temas",
+          "fora_do_tema",
+          "nao_coberto"
+        ],
+        "title": "Exposicao",
+        "type": "object"
+      },
+      "Folha": {
+        "additionalProperties": false,
+        "properties": {
+          "media": {
+            "title": "Media",
+            "type": "number"
+          },
+          "p5": {
+            "title": "P5",
+            "type": "number"
+          },
+          "p95": {
+            "title": "P95",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "media",
+          "p5",
+          "p95",
+          "id",
+          "nome"
+        ],
+        "title": "Folha",
+        "type": "object"
+      },
+      "FonteCarteira": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "pattern": "^F[PA]-[0-9]{2}$",
+            "title": "Id",
+            "type": "string"
+          },
+          "descricao": {
+            "title": "Descricao",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "data_referencia": {
+            "format": "date",
+            "title": "Data Referencia",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "descricao",
+          "url",
+          "data_referencia"
+        ],
+        "title": "FonteCarteira",
+        "type": "object"
+      },
+      "FonteEmpresa": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "pattern": "^F[PA]-[0-9]{2}$",
+            "title": "Id",
+            "type": "string"
+          },
+          "descricao": {
+            "title": "Descricao",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "data": {
+            "format": "date",
+            "title": "Data",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "descricao",
+          "url",
+          "data"
+        ],
+        "title": "FonteEmpresa",
+        "type": "object"
+      },
+      "Irrae": {
+        "additionalProperties": false,
+        "properties": {
+          "origem": {
+            "enum": [
+              "irrae",
+              "so_prior",
+              "nao_coberto"
+            ],
+            "title": "Origem",
+            "type": "string"
+          },
+          "tema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Tema"
+          },
+          "media": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Media"
+          },
+          "p5": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "P5"
+          },
+          "p95": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "P95"
+          },
+          "selo": {
+            "anyOf": [
+              {
+                "enum": [
+                  "alta",
+                  "media",
+                  "preliminar"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Selo"
+          },
+          "folhas": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/Folha"
+            },
+            "title": "Folhas",
+            "type": "array"
+          },
+          "componentes": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/Componente"
+            },
+            "title": "Componentes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "origem"
+        ],
+        "title": "Irrae",
+        "type": "object"
+      },
+      "Modelo": {
+        "additionalProperties": false,
+        "properties": {
+          "versao_irrae": {
+            "title": "Versao Irrae",
+            "type": "string"
+          },
+          "n_amostras": {
+            "exclusiveMinimum": 0,
+            "title": "N Amostras",
+            "type": "integer"
+          },
+          "semente": {
+            "title": "Semente",
+            "type": "integer"
+          },
+          "gerado_em": {
+            "format": "date-time",
+            "title": "Gerado Em",
+            "type": "string"
+          },
+          "cenario_faixa_carteira": {
+            "const": "comonotonico",
+            "title": "Cenario Faixa Carteira",
+            "type": "string"
+          }
+        },
+        "required": [
+          "versao_irrae",
+          "n_amostras",
+          "semente",
+          "gerado_em",
+          "cenario_faixa_carteira"
+        ],
+        "title": "Modelo",
+        "type": "object"
+      },
+      "Posicao": {
+        "additionalProperties": false,
+        "properties": {
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "tipo": {
+            "enum": [
+              "acao",
+              "etf"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "peso": {
+            "title": "Peso",
+            "type": "number"
+          }
+        },
+        "required": [
+          "ticker",
+          "nome",
+          "tipo",
+          "peso"
+        ],
+        "title": "Posicao",
+        "type": "object"
+      },
+      "Setor": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "peso": {
+            "title": "Peso",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "peso"
+        ],
+        "title": "Setor",
+        "type": "object"
+      },
+      "Subtema": {
+        "additionalProperties": false,
+        "properties": {
+          "media": {
+            "title": "Media",
+            "type": "number"
+          },
+          "p5": {
+            "title": "P5",
+            "type": "number"
+          },
+          "p95": {
+            "title": "P95",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "media",
+          "p5",
+          "p95",
+          "id",
+          "nome"
+        ],
+        "title": "Subtema",
+        "type": "object"
+      },
+      "Tema": {
+        "additionalProperties": false,
+        "properties": {
+          "media": {
+            "title": "Media",
+            "type": "number"
+          },
+          "p5": {
+            "title": "P5",
+            "type": "number"
+          },
+          "p95": {
+            "title": "P95",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "subtemas": {
+            "items": {
+              "$ref": "#/components/schemas/Subtema"
+            },
+            "title": "Subtemas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "media",
+          "p5",
+          "p95",
+          "id",
+          "nome",
+          "subtemas"
+        ],
+        "title": "Tema",
+        "type": "object"
+      },
+      "Snapshot": {
+        "additionalProperties": false,
+        "description": "O snapshot de uma carteira da vitrine.",
+        "properties": {
+          "versao_schema": {
+            "const": "1",
+            "title": "Versao Schema",
+            "type": "string"
+          },
+          "ilustrativo": {
+            "title": "Ilustrativo",
+            "type": "boolean"
+          },
+          "carteira": {
+            "$ref": "#/components/schemas/Carteira"
+          },
+          "modelo": {
+            "$ref": "#/components/schemas/Modelo"
+          },
+          "cobertura": {
+            "$ref": "#/components/schemas/Cobertura"
+          },
+          "exposicao": {
+            "$ref": "#/components/schemas/Exposicao"
+          },
+          "empresas": {
+            "items": {
+              "$ref": "#/components/schemas/Empresa"
+            },
+            "title": "Empresas",
+            "type": "array"
+          },
+          "fontes_carteira": {
+            "items": {
+              "$ref": "#/components/schemas/FonteCarteira"
+            },
+            "title": "Fontes Carteira",
+            "type": "array"
+          }
+        },
+        "required": [
+          "versao_schema",
+          "ilustrativo",
+          "carteira",
+          "modelo",
+          "cobertura",
+          "exposicao",
+          "empresas",
+          "fontes_carteira"
+        ],
+        "title": "Snapshot",
+        "type": "object"
+      }
+    }
+  }
+}

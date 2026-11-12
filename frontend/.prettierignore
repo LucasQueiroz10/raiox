@@ -4,5 +4,7 @@ CLAUDE.md
 # Gerados (npm run gerar-tipos); nunca editados à mão
 openapi.json
 src/api/tipos.ts
+snapshot.openapi.json
+src/vitrine/tipos.ts
 # Snapshots de exemplo gerados no backend (python -m vitrine.exemplo).
 src/dados_exemplo/

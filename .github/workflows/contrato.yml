@@ -1,7 +1,8 @@
 name: contrato
 
-# Confere que o contrato da API commitado (frontend/openapi.json) e os tipos gerados dele
-# (frontend/src/api/tipos.ts) batem com o código do backend.
+# Confere que os contratos commitados batem com o código do backend: o da API
+# (frontend/openapi.json e frontend/src/api/tipos.ts) e o do snapshot da vitrine
+# (frontend/snapshot.openapi.json e frontend/src/vitrine/tipos.ts).
 
 on:
   pull_request:
@@ -55,5 +56,21 @@ jobs:
         run: |
           if ! git diff --exit-code -- frontend/openapi.json frontend/src/api/tipos.ts; then
             echo "::error::Contrato desatualizado. Rode 'python -m app.exportar_openapi' no backend e 'npm run gerar-tipos' no front, e commite os dois arquivos."
+            exit 1
+          fi
+
+      # Vitrine (ADR 0009): o snapshot tem o próprio esquema, exportado do modelo Pydantic.
+      - name: Exportar o esquema do snapshot
+        working-directory: backend
+        run: python -m vitrine.exportar_esquema
+
+      - name: Gerar o tipo do snapshot
+        working-directory: frontend
+        run: npm run gerar-tipos-snapshot
+
+      - name: Conferir que o snapshot não mudou
+        run: |
+          if ! git diff --exit-code -- frontend/snapshot.openapi.json frontend/src/vitrine/tipos.ts; then
+            echo "::error::Esquema do snapshot desatualizado. Rode 'python -m vitrine.exportar_esquema' no backend e 'npm run gerar-tipos-snapshot' no front, e commite os dois arquivos."
             exit 1
           fi
