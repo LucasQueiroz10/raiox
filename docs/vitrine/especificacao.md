@@ -20,15 +20,22 @@ ADR 0009:
 5. **Caminhos:** a rota é `POST /api/raiox` (ADR 0007). O script fica em `backend/scripts/`, e a
    configuração no backend, e não em `scripts/` e `config/` na raiz.
 6. **Contrato:** o tipo do snapshot é gerado de um JSON Schema exportado por um modelo Pydantic do
-   backend, como os tipos da API, e não escrito à mão em zod. Os ids seguem o ADR 0005 (`ativo_id` e
-   `empresa_id`), e não o ticker puro.
-7. **Textos de tela:** entram primeiro em `docs/textos_telas.md` (seção "Vitrine"), em rascunho, e só
-   vão para a interface depois de aprovados.
+   backend, como os tipos da API, e não escrito à mão em zod. O contrato inteiro é conferido no CI;
+   o navegador faz só uma checagem leve (ADR 0009, seção 2). As empresas seguem o `empresa_id` do
+   ADR 0005; as posições da carteira trazem o ticker, que é o que a tela mostra. O snapshot ganhou o
+   campo `ilustrativo`, e o tema da Cadeia de IA usa o id da configuração do IrRAE (`ia`), não
+   `cadeia_ia`.
+7. **Textos de tela:** entram primeiro em `docs/textos_telas.md` (seção "Vitrine") e vão para a
+   interface como estão, mesmo em rascunho (decisão do Lucas, 10/11/2026; regra no próprio
+   documento).
 8. **Cobertura americana:** o `big-techs` e o `sp500` precisam da tabela de empresas da SEC (fonte 7),
    que ainda não foi carregada (DT-3). O leitor do N-PORT (`ingest/nport.py`) só foi testado com
    fixture.
 9. **BOVA11:** não está na curadoria de ETFs (`cargas/curadoria/fundos_listados.csv`). O CNPJ vem do
    Cadastro de Fundos da CVM, como o texto pede.
+10. **Snapshots de exemplo:** empresas reais, com pesos e exposição inventados (decisão do Lucas,
+    11/11/2026; ADR 0009, seção 2). O item 5 da seção 3 ("nunca inventar números realistas para
+    NVDA, AAPL") fica limitado assim: números sorteados, marcados como ilustrativos e sem fonte.
 
 ---
 

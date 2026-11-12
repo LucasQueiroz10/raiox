@@ -11,6 +11,10 @@ Python 3.14 com venv + pip. Não usar uv, poetry nem pip fora do venv.
 - python -m ruff check . && python -m ruff format --check .
 - uvicorn app.main:app --reload               servidor local
 - python -m app.exportar_openapi              gera ../frontend/openapi.json (depois: npm run gerar-tipos no front)
+- python -m vitrine.exportar_esquema          gera ../frontend/snapshot.openapi.json (depois: npm run
+                                              gerar-tipos-snapshot no front)
+- python -m vitrine.exemplo                   regrava os snapshots de exemplo em
+                                              ../frontend/src/dados_exemplo/ (um teste confere)
 - pip-audit --require-hashes --disable-pip -r requirements.txt   auditoria de dependências
 
 ## Dependências (travadas com hash pelo pip-tools)

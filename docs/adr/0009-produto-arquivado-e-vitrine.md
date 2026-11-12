@@ -55,11 +55,23 @@ completa, com as correções da conferência de 10/11/2026, está em `docs/vitri
 - **Sem servidor de cálculo:** os resultados são calculados antes, em lote, e publicados como
   arquivos JSON (snapshots), um por carteira. O navegador não chama a API da Sagital nem serviços
   externos, e o site não tem analytics.
-- **Enquanto não houver cálculo com dados reais,** o site usa snapshots sintéticos e mostra a faixa
-  "Dados ilustrativos". Nunca números "realistas" inventados para empresas reais.
-- **Contrato do snapshot:** um modelo Pydantic no backend define o formato e exporta um JSON Schema;
-  o tipo TypeScript do front é gerado desse esquema, como os tipos da API, e nunca é escrito à mão.
-  O front valida o arquivo ao carregar e mostra um erro claro se ele não bater.
+- **Enquanto não houver cálculo com dados reais,** o site usa snapshots de exemplo
+  (`python -m vitrine.exemplo`) e mostra a faixa "Números ilustrativos" em todas as páginas.
+  Decisão do Lucas em 11/11/2026: os exemplos usam **empresas reais**, com pesos em % e exposição
+  inventados, e nada em reais. Para limitar o risco de um número inventado circular como real:
+  os números são sorteados com semente fixa (não ajustados à mão), todo snapshot de exemplo traz
+  `ilustrativo: true` e nenhum cita fonte. Os CNPJs e setores das empresas brasileiras vêm do
+  cadastro da CVM carregado no banco local, não digitados de memória.
+- **Contrato do snapshot** (`backend/vitrine/snapshot.py`): um modelo Pydantic define o formato,
+  com pesos em Decimal, e garante o fechamento em 100%, a coerência entre a exposição e as
+  empresas, a taxonomia, os componentes e o selo da configuração do IrRAE, o `empresa_id` do
+  ADR 0005 e os links de fonte (S-1). Ele exporta o esquema (`python -m vitrine.exportar_esquema`),
+  e o tipo TypeScript do front é gerado dele, como os tipos da API, nunca escrito à mão.
+- **Validação (decisão do Lucas em 11/11/2026):** o contrato inteiro é conferido no lote e no CI,
+  pelo modelo. No navegador, só uma checagem leve (versão do esquema, carteira certa, marca de
+  ilustrativo) e a segunda trava dos links, com erro claro na tela se falhar. Validar o JSON
+  Schema no navegador exigiria eval (Ajv), que a CSP estrita (S-3) proíbe, ou uma segunda fonte
+  do contrato escrita à mão (zod).
 - **Script de snapshot no backend** (`backend/scripts/`), usando o `app/core/lookthrough.py` e o
   `irrae/`, com testes em dados sintéticos. Ele confere que temas + fora do tema + não coberto = 100%
   e falha se não fechar.

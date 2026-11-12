@@ -8,6 +8,8 @@
 - npm run format:check    Prettier
 - npm run typecheck       tsc --noEmit
 - npm run gerar-tipos     openapi-typescript openapi.json -o src/api/tipos.ts
+- npm run gerar-tipos-snapshot   tipo do snapshot da vitrine (src/vitrine/tipos.ts), a partir do
+                          snapshot.openapi.json exportado no backend (python -m vitrine.exportar_esquema)
 - npx playwright test     ponta a ponta
 - npm audit --audit-level=high
 
