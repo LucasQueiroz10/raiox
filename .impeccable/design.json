@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-10T23:30:00-03:00",
+  "title": "Design System: Sagital",
+  "extensions": {
+    "colorMeta": {
+      "laudo-noturno": { "role": "neutral", "displayName": "Laudo noturno", "canonical": "#0a1017", "tonalRamp": ["#05090d", "#0a1017", "#131e29", "#1f2f3d", "#344b5e", "#557185", "#8aa3b5", "#d3dee6"] },
+      "ciano-de-contraste": { "role": "primary", "displayName": "Ciano de contraste", "canonical": "#6fd0e0", "tonalRamp": ["#0b3a42", "#13525c", "#1d6e7a", "#2b8c99", "#45abb9", "#6fd0e0", "#9fe1ec", "#d4f3f8"] },
+      "ambar-de-destaque": { "role": "secondary", "displayName": "Âmbar de destaque", "canonical": "#f2b544", "tonalRamp": ["#4a3204", "#6b4a0a", "#8f6513", "#b5821f", "#d89c2f", "#f2b544", "#f7cd7f", "#fce9c4"] },
+      "texto-suave": { "role": "neutral", "displayName": "Texto suave", "canonical": "#9cb0bd" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "A pergunta do início e o nome da carteira." },
+      "title": { "displayName": "Title", "purpose": "Nome de cada carteira na lista de séries." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Entrada dos cortes e retorno de toque." },
+      { "name": "abertura-dos-cortes", "value": "900ms, 70ms entre cortes, legendas 220ms depois", "purpose": "A única animação assinada; com movimento reduzido, aberta direto e legendas só por opacidade (200ms)." }
+    ],
+    "breakpoints": [
+      { "name": "margem-desktop", "value": "768px" },
+      { "name": "duas-colunas", "value": "960px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Série (carteira)",
+      "kind": "custom",
+      "refersTo": "serie",
+      "description": "Uma carteira na lista de escolha: linha com nome e descrição, sem cartão.",
+      "html": "<a class=\"ds-serie\" href=\"#\"><span class=\"ds-serie-nome\">S&amp;P 500</span><span class=\"ds-serie-desc\">Um ETF que replica o índice (IVV).</span></a>",
+      "css": ".ds-serie{display:grid;gap:4px;padding:18px 0;border-bottom:1px solid #1c2a36;color:#e3ebf0;text-decoration:none;font-family:'Schibsted Grotesk Variable',system-ui,sans-serif;transition:transform 160ms cubic-bezier(0.23,1,0.32,1)}.ds-serie-nome{font-size:1.5rem;font-weight:600;transition:color 160ms ease,transform 200ms cubic-bezier(0.23,1,0.32,1)}.ds-serie-desc{color:#9cb0bd;font-size:.9375rem}.ds-serie:hover .ds-serie-nome{color:#6fd0e0;transform:translateX(4px)}.ds-serie:focus-visible{outline:2px solid #6fd0e0;outline-offset:3px;border-radius:2px}.ds-serie:active{transform:scale(.99)}"
+    },
+    {
+      "name": "Seletor de carteiras",
+      "kind": "nav",
+      "refersTo": "seletor-aba",
+      "description": "Abas de texto para trocar de carteira; a atual com linha ciano embaixo.",
+      "html": "<nav class=\"ds-seletor\"><a href=\"#\">4 big techs americanas</a><a href=\"#\" aria-current=\"page\">S&amp;P 500</a><a href=\"#\">Ibovespa</a></nav>",
+      "css": ".ds-seletor{display:flex;flex-wrap:wrap;border-bottom:1px solid #2a3f4f;font-family:'Schibsted Grotesk Variable',system-ui,sans-serif}.ds-seletor a{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;margin-bottom:-1px;color:#9cb0bd;text-decoration:none;border-bottom:2px solid transparent}.ds-seletor a[aria-current=page]{color:#e3ebf0;border-bottom-color:#6fd0e0}.ds-seletor a:hover{color:#e3ebf0}.ds-seletor a:focus-visible{outline:2px solid #6fd0e0;outline-offset:3px;border-radius:2px}"
+    },
+    {
+      "name": "Link",
+      "kind": "custom",
+      "refersTo": "link",
+      "description": "Link de texto em ciano, sublinhado fino.",
+      "html": "<a class=\"ds-link\" href=\"#\">Licença ODbL</a>",
+      "css": ".ds-link{color:#6fd0e0;text-decoration-thickness:1px;text-underline-offset:.22em;font-family:'Schibsted Grotesk Variable',system-ui,sans-serif}.ds-link:hover{text-decoration-thickness:2px}.ds-link:focus-visible{outline:2px solid #6fd0e0;outline-offset:3px;border-radius:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Sala de Laudo",
+    "overview": "A vitrine é lida como um exame de imagem numa sala de laudo: tela escura, luz baixa, o olhar indo direto ao que a imagem mostra. A carteira é a imagem; cada camada do look-through é um corte que se separa para mostrar o que há dentro.",
+    "keyCharacteristics": [
+      "Fundo de monitor de laudo, tema escuro como padrão.",
+      "Linhas de 1px no lugar de caixas; listas como séries de exame, não cartões.",
+      "Um único acento quente, raro.",
+      "Uma animação assinada: os cortes que se separam."
+    ],
+    "rules": [
+      { "name": "The One Voice Rule", "body": "O âmbar aparece no máximo duas vezes por tela: o número principal e a maior contribuição.", "section": "colors" },
+      { "name": "The Cold Neutral Rule", "body": "Neutros sempre frios, puxados do azul do fundo; texto secundário nunca em cinza puro.", "section": "colors" },
+      { "name": "The No Kicker Rule", "body": "Nenhum rótulo pequeno em caixa alta acima de título.", "section": "typography" },
+      { "name": "The Flat Film Rule", "body": "Nada flutua: sem sombra, brilho ou desfoque como decoração.", "section": "elevation" },
+      { "name": "The Gentle Reduction Rule", "body": "Movimento reduzido tira o deslocamento, não a animação toda: opacidade e cor continuam, porque ajudam a entender o que mudou.", "section": "components" }
+    ],
+    "dos": [
+      "Do usar linhas de 1px para separar, no lugar de caixas.",
+      "Do manter o âmbar só no número principal e na maior contribuição.",
+      "Do tematizar seleção, foco e barra de rolagem com a paleta.",
+      "Do servir as fontes pelo próprio site."
+    ],
+    "donts": [
+      "Don't lembrar corretora ou banco: nada de verde e vermelho de cotação.",
+      "Don't usar neon, brilho, gradiente ou energia de cripto.",
+      "Don't montar a página com cartões iguais ou hero de template de startup.",
+      "Don't pôr rótulo em caixa alta acima de título."
+    ]
+  }
+}

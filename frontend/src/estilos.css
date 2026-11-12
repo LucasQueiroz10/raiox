@@ -1,0 +1,535 @@
+/*
+ * Mundo visual da vitrine (registro em .impeccable/surfaces): uma sala de leitura de exame de
+ * imagem. Fundo de monitor de laudo, cortes em ciano fino, um único acento âmbar reservado ao
+ * número principal e à maior contribuição. Cantos retos. Sem brilho, sem gradiente.
+ * Tema escuro é o padrão da especificação (seção 7); o claro é opcional e fica para depois.
+ */
+
+:root {
+  color-scheme: dark;
+
+  --fundo: #0a1017;
+  --fundo-elevado: #0f1822;
+  --linha: #1c2a36;
+  --linha-forte: #2a3f4f;
+  --texto: #e3ebf0;
+  --texto-suave: #9cb0bd;
+  --ciano: #6fd0e0;
+  --ciano-linha: rgb(111 208 224 / 0.55);
+  --ciano-suave: rgb(111 208 224 / 0.12);
+  --ambar: #f2b544;
+
+  /* A fonte das medidas (Martian Mono) entra com a primeira medida na tela (PR 3). */
+  --fonte-texto: "Schibsted Grotesk Variable", system-ui, sans-serif;
+
+  --raio: 2px;
+  --margem: 16px;
+  --largura: 1200px;
+
+  /* Curvas da emil-design-eng: saída forte para o que entra e para o retorno de toque. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --margem: 32px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--fundo);
+  scrollbar-color: var(--linha-forte) var(--fundo);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-texto);
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  display: contents;
+}
+
+::selection {
+  background: rgb(111 208 224 / 0.32);
+  color: var(--texto);
+}
+
+h1,
+h2,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(2rem, 1.35rem + 2.2vw, 3.25rem);
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+
+h1:focus {
+  outline: none;
+}
+
+a {
+  color: var(--ciano);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a:hover {
+    text-decoration-thickness: 2px;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--ciano);
+  outline-offset: 3px;
+  border-radius: var(--raio);
+}
+
+.aviso {
+  color: var(--texto-suave);
+  font-size: 0.875rem;
+}
+
+/* Atalho para o conteúdo: escondido até receber o foco do teclado. */
+.pular {
+  position: absolute;
+  left: var(--margem);
+  top: 8px;
+  z-index: 10;
+  padding: 10px 14px;
+  background: var(--fundo-elevado);
+  border: 1px solid var(--ciano);
+  border-radius: var(--raio);
+  transform: translateY(-160%);
+}
+
+.pular:focus {
+  transform: none;
+}
+
+/* Cabeçalho */
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: var(--largura);
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 0 var(--margem);
+  border-bottom: 1px solid var(--linha);
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--texto);
+  font-weight: 650;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.marca-simbolo {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--ciano);
+  stroke-width: 1.5;
+}
+
+.topo-links {
+  display: flex;
+  gap: 4px;
+}
+
+.topo-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  color: var(--texto-suave);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.topo-links a[aria-current="page"] {
+  color: var(--texto);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .topo-links a:hover {
+    color: var(--texto);
+  }
+}
+
+/* Conteúdo */
+
+.conteudo {
+  flex: 1;
+  width: 100%;
+  max-width: var(--largura);
+  margin: 0 auto;
+  padding: 40px var(--margem) 72px;
+}
+
+.conteudo:focus {
+  outline: none;
+}
+
+/* Início: a pergunta ocupa a largura toda; embaixo, a escolha à esquerda e os cortes à direita. */
+
+.inicio {
+  display: grid;
+  gap: 40px;
+}
+
+.inicio-pergunta {
+  display: grid;
+  gap: 16px;
+}
+
+/* Medida em em, do próprio título: duas linhas no desktop, sem depender da largura da tela. */
+.inicio-pergunta h1 {
+  max-width: 15em;
+}
+
+.inicio-subtitulo {
+  max-width: 56ch;
+  color: var(--texto-suave);
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.inicio-corpo {
+  display: grid;
+  gap: 48px;
+}
+
+@media (min-width: 960px) {
+  .inicio {
+    padding-top: 16px;
+  }
+
+  .inicio-corpo {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 64px;
+    align-items: start;
+  }
+}
+
+.inicio-escolha {
+  margin-top: 24px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* As carteiras como séries de um exame: linhas, não cartões. */
+
+.series {
+  margin-top: 12px;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--linha-forte);
+}
+
+.series li {
+  border-bottom: 1px solid var(--linha);
+}
+
+.serie {
+  display: grid;
+  gap: 4px;
+  padding: 18px 0;
+  color: var(--texto);
+  text-decoration: none;
+  transition: transform 160ms var(--ease-out);
+}
+
+.serie:active {
+  transform: scale(0.99);
+}
+
+.serie-nome {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  transition:
+    color 160ms ease,
+    transform 200ms var(--ease-out);
+}
+
+.serie-descricao {
+  max-width: 48ch;
+  color: var(--texto-suave);
+  font-size: 0.9375rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .serie:hover .serie-nome {
+    color: var(--ciano);
+    transform: translateX(4px);
+  }
+}
+
+/* Figura das camadas: quatro cortes empilhados que se separam uma vez. */
+
+.camadas {
+  --passo: 72px;
+  display: grid;
+  gap: 20px;
+}
+
+@media (min-width: 960px) {
+  .camadas {
+    --passo: 92px;
+  }
+}
+
+.camadas-titulo {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.camadas-pilha {
+  display: grid;
+  padding: 0;
+  list-style: none;
+  /* Os planos girados passam um pouco da caixa; nada deles pode empurrar a página para o lado. */
+  overflow: clip;
+}
+
+.corte {
+  display: grid;
+  grid-template-columns: minmax(0, 9fr) minmax(0, 11fr);
+  gap: 16px;
+  align-items: center;
+  transition: transform 900ms var(--ease-out);
+  transition-delay: calc(var(--i) * 70ms);
+}
+
+.corte + .corte {
+  margin-top: 6px;
+}
+
+/* No desktop, o plano girado ocupa menos altura que a caixa dele e as legendas cabem ao lado:
+   os cortes sobem um sobre o outro. No celular, a legenda é mais alta que o plano, e cada corte
+   fica na sua linha. */
+@media (min-width: 960px) {
+  .corte {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .corte + .corte {
+    margin-top: -12%;
+  }
+}
+
+.corte-plano {
+  perspective: 900px;
+}
+
+.corte-plano svg {
+  display: block;
+  width: 84%;
+  margin-inline: auto;
+  height: auto;
+  overflow: visible;
+  transform: rotateX(56deg) rotateZ(-34deg);
+  transform-origin: center;
+}
+
+.corte-borda {
+  fill: var(--fundo-elevado);
+  stroke: var(--linha-forte);
+  stroke-width: 1;
+}
+
+.corte-celula {
+  fill: var(--ciano-suave);
+  stroke: var(--ciano-linha);
+  stroke-width: 0.75;
+}
+
+/* Na última camada, a intensidade de cada célula é a exposição desenhada. */
+.corte:last-child .corte-celula {
+  fill: var(--ciano);
+  stroke: none;
+}
+
+.corte-legenda {
+  color: var(--texto-suave);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  /* A legenda entra: ease-out nos dois, para ela aparecer logo e assentar devagar. */
+  transition:
+    opacity 500ms var(--ease-out),
+    transform 600ms var(--ease-out);
+  transition-delay: calc(var(--i) * 70ms + 220ms);
+}
+
+.corte-legenda strong {
+  color: var(--texto);
+  font-weight: 600;
+}
+
+/* Fechada: os cortes se sobrepõem e as legendas esperam. */
+.camadas[data-aberta="false"] .corte {
+  transform: translateY(calc(var(--i) * var(--passo) * -1));
+}
+
+.camadas[data-aberta="false"] .corte-legenda {
+  opacity: 0;
+  transform: translateX(-6px);
+}
+
+/* Movimento reduzido tira o deslocamento, não toda a animação: as legendas ainda surgem por
+   opacidade e o nome da série ainda muda de cor, que ajudam a entender o que mudou. */
+@media (prefers-reduced-motion: reduce) {
+  .corte,
+  .serie {
+    transition: none;
+  }
+
+  .corte-legenda {
+    transition: opacity 200ms var(--ease-out);
+    transition-delay: 0ms;
+  }
+
+  .camadas[data-aberta="false"] .corte-legenda {
+    transform: none;
+  }
+
+  .serie-nome {
+    transition: color 160ms ease;
+  }
+
+  .serie:active,
+  .serie:hover .serie-nome {
+    transform: none;
+  }
+}
+
+/* Raio-x da carteira */
+
+.carteira {
+  display: grid;
+  gap: 16px;
+}
+
+.seletor {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--linha-forte);
+}
+
+.seletor a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  margin-bottom: -1px;
+  color: var(--texto-suave);
+  font-size: 0.9375rem;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.seletor a[aria-current="page"] {
+  color: var(--texto);
+  border-bottom-color: var(--ciano);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .seletor a:hover {
+    color: var(--texto);
+  }
+}
+
+.carteira-descricao {
+  max-width: 60ch;
+  color: var(--texto-suave);
+  font-size: 1.125rem;
+}
+
+/* Páginas de leitura */
+
+.leitura {
+  display: grid;
+  gap: 20px;
+  max-width: 68ch;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+.leitura h1 {
+  font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem);
+  margin-bottom: 8px;
+}
+
+.fontes {
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--linha-forte);
+}
+
+.fontes li {
+  display: grid;
+  gap: 6px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.voltar {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* Rodapé */
+
+.rodape {
+  width: 100%;
+  max-width: var(--largura);
+  margin: 0 auto;
+  padding: 28px var(--margem) 48px;
+  border-top: 1px solid var(--linha);
+}
+
+.rodape p {
+  max-width: 92ch;
+  color: var(--texto-suave);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
