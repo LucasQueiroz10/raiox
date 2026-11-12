@@ -42,7 +42,7 @@ def _ler_config(nome: str) -> dict:
     return json.loads((_CONFIG_IRRAE / nome).read_text(encoding="utf-8"))
 
 
-_TAXONOMIA = _ler_config("taxonomia.json")["temas"]
+TAXONOMIA = _ler_config("taxonomia.json")["temas"]
 _COMPONENTES_CFG = _ler_config("componentes.json")
 # Nome de cada componente do IrRAE, na ordem da configuração.
 COMPONENTES: dict[str, str] = {
@@ -240,9 +240,9 @@ class Irrae(_Base):
         return self
 
     def _confere_taxonomia(self) -> None:
-        if self.tema not in _TAXONOMIA:
+        if self.tema not in TAXONOMIA:
             raise ValueError(f"tema {self.tema} fora da taxonomia do IrRAE")
-        folhas_do_tema = _TAXONOMIA[self.tema]["folhas"]
+        folhas_do_tema = TAXONOMIA[self.tema]["folhas"]
         for folha in self.folhas:
             if folhas_do_tema.get(folha.id) != folha.nome:
                 raise ValueError(f"folha {folha.id} fora da taxonomia do tema {self.tema}")
@@ -376,7 +376,7 @@ class Snapshot(_Base):
 
     def _confere_temas(self) -> None:
         for tema in self.exposicao.temas:
-            if tema.id not in _TAXONOMIA or tema.nome != _TAXONOMIA[tema.id]["nome"]:
+            if tema.id not in TAXONOMIA or tema.nome != TAXONOMIA[tema.id]["nome"]:
                 raise ValueError(f"tema {tema.id} fora da taxonomia do IrRAE")
             empresas = [e for e in self._cobertas() if e.irrae.tema == tema.id]
             # Faixa comonotônica: os quantis se somam ponderados (irrae/agregacao.py).
@@ -387,7 +387,7 @@ class Snapshot(_Base):
                 if not _perto(getattr(tema, campo), esperado, TOLERANCIA_DERIVADA):
                     nome = "média" if campo == "media" else campo
                     raise ValueError(f"{nome} do tema {tema.id} não bate com as empresas")
-            folhas = _TAXONOMIA[tema.id]["folhas"]
+            folhas = TAXONOMIA[tema.id]["folhas"]
             if [s.id for s in tema.subtemas] != list(folhas):
                 raise ValueError(f"os subtemas do tema {tema.id} precisam seguir a taxonomia")
             for sub in tema.subtemas:

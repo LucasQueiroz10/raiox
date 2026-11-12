@@ -1,0 +1,2186 @@
+{
+  "versao_schema": "1",
+  "ilustrativo": true,
+  "carteira": {
+    "id": "ibovespa",
+    "nome": "Ibovespa",
+    "descricao": "Um ETF que replica o índice (BOVA11), aberto pela carteira que ele informa à CVM.",
+    "data_referencia": "2026-09-30",
+    "posicoes": [
+      {
+        "ticker": "BOVA11",
+        "nome": "BOVA11",
+        "tipo": "etf",
+        "peso": 1.0
+      }
+    ]
+  },
+  "modelo": {
+    "versao_irrae": "1.1",
+    "n_amostras": 2000,
+    "semente": 0,
+    "gerado_em": "2026-11-11T00:00:00Z",
+    "cenario_faixa_carteira": "comonotonico"
+  },
+  "cobertura": {
+    "peso_com_irrae": 0.464625,
+    "peso_so_prior": 0.29924,
+    "peso_nao_coberto": 0.236135
+  },
+  "exposicao": {
+    "setores": [
+      {
+        "id": "Bancos",
+        "nome": "Bancos",
+        "peso": 0.252227
+      },
+      {
+        "id": "Petróleo e Gás",
+        "nome": "Petróleo e Gás",
+        "peso": 0.106516
+      },
+      {
+        "id": "Extração Mineral",
+        "nome": "Extração Mineral",
+        "peso": 0.0844
+      },
+      {
+        "id": "Bolsas de Valores/Mercadorias e Futuros",
+        "nome": "Bolsas de Valores/Mercadorias e Futuros",
+        "peso": 0.069268
+      },
+      {
+        "id": "Bebidas e Fumo",
+        "nome": "Bebidas e Fumo",
+        "peso": 0.068641
+      },
+      {
+        "id": "Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",
+        "nome": "Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",
+        "peso": 0.056078
+      },
+      {
+        "id": "Emp. Adm. Part. - Intermediação Financeira",
+        "nome": "Emp. Adm. Part. - Intermediação Financeira",
+        "peso": 0.054012
+      },
+      {
+        "id": "Papel e Celulose",
+        "nome": "Papel e Celulose",
+        "peso": 0.049944
+      },
+      {
+        "id": "Metalurgia e Siderurgia",
+        "nome": "Metalurgia e Siderurgia",
+        "peso": 0.042295
+      },
+      {
+        "id": "Energia Elétrica",
+        "nome": "Energia Elétrica",
+        "peso": 0.03592
+      },
+      {
+        "id": "Serviços médicos",
+        "nome": "Serviços médicos",
+        "peso": 0.030978
+      },
+      {
+        "id": "Serviços Transporte e Logística",
+        "nome": "Serviços Transporte e Logística",
+        "peso": 0.028875
+      },
+      {
+        "id": "Máquinas, Equipamentos, Veículos e Peças",
+        "nome": "Máquinas, Equipamentos, Veículos e Peças",
+        "peso": 0.023863
+      },
+      {
+        "id": "Comércio (Atacado e Varejo)",
+        "nome": "Comércio (Atacado e Varejo)",
+        "peso": 0.022298
+      },
+      {
+        "id": "Comunicação e Informática",
+        "nome": "Comunicação e Informática",
+        "peso": 0.02173
+      },
+      {
+        "id": "Saneamento, Serv. Água e Gás",
+        "nome": "Saneamento, Serv. Água e Gás",
+        "peso": 0.020837
+      },
+      {
+        "id": "Telecomunicações",
+        "nome": "Telecomunicações",
+        "peso": 0.012736
+      },
+      {
+        "id": "Emp. Adm. Part. - Petróleo e Gás",
+        "nome": "Emp. Adm. Part. - Petróleo e Gás",
+        "peso": 0.007737
+      },
+      {
+        "id": "Agricultura (Açúcar, Álcool e Cana)",
+        "nome": "Agricultura (Açúcar, Álcool e Cana)",
+        "peso": 0.006645
+      },
+      {
+        "id": "caixa_e_outros",
+        "nome": "Caixa e outros ativos",
+        "peso": 0.005
+      }
+    ],
+    "temas": [
+      {
+        "media": 0.158526,
+        "p5": 0.123121,
+        "p95": 0.205231,
+        "id": "ia",
+        "nome": "Cadeia de IA",
+        "subtemas": [
+          {
+            "media": 0.046606,
+            "p5": 0.037011,
+            "p95": 0.059684,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          },
+          {
+            "media": 0.008242,
+            "p5": 0.006132,
+            "p95": 0.015818,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          },
+          {
+            "media": 0.073888,
+            "p5": 0.065728,
+            "p95": 0.079968,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          },
+          {
+            "media": 0.014985,
+            "p5": 0.008071,
+            "p95": 0.025827,
+            "id": "ia.energia_dc",
+            "nome": "Energia para data centers"
+          },
+          {
+            "media": 0.014805,
+            "p5": 0.003042,
+            "p95": 0.04403,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ]
+      }
+    ],
+    "fora_do_tema": 0.605339,
+    "nao_coberto": 0.236135
+  },
+  "empresas": [
+    {
+      "empresa_id": "BR:CNPJ:33000167000101",
+      "ticker": "PETR4",
+      "nome": "Petrobras",
+      "pais": "BR",
+      "peso_efetivo": 0.087288,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Petróleo e Gás",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.663313,
+        "p5": 0.632627,
+        "p95": 0.7278,
+        "selo": "alta",
+        "folhas": [
+          {
+            "media": 0.663313,
+            "p5": 0.609189,
+            "p95": 0.689966,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.044948,
+            "presente": true
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.339326,
+            "presente": true
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.026686,
+            "presente": true
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.115052,
+            "presente": true
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.473988,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:33592510000154",
+      "ticker": "VALE3",
+      "nome": "Vale",
+      "pais": "BR",
+      "peso_efetivo": 0.0844,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Extração Mineral",
+      "irrae": {
+        "origem": "nao_coberto",
+        "tema": null,
+        "media": null,
+        "p5": null,
+        "p95": null,
+        "selo": null,
+        "folhas": [],
+        "componentes": []
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:60872504000123",
+      "ticker": "ITUB4",
+      "nome": "Itaú Unibanco",
+      "pais": "BR",
+      "peso_efetivo": 0.074942,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Bancos",
+      "irrae": {
+        "origem": "so_prior",
+        "tema": "ia",
+        "media": 0.005175,
+        "p5": 0.0,
+        "p95": 0.081142,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.005175,
+            "p5": 0.0,
+            "p95": 0.134131,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 1.0,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:60746948000112",
+      "ticker": "BBDC4",
+      "nome": "Bradesco",
+      "pais": "BR",
+      "peso_efetivo": 0.071015,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Bancos",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.028523,
+        "p5": 0.0,
+        "p95": 0.064899,
+        "selo": "alta",
+        "folhas": [
+          {
+            "media": 0.018271,
+            "p5": 0.0,
+            "p95": 0.05197,
+            "id": "ia.energia_dc",
+            "nome": "Energia para data centers"
+          },
+          {
+            "media": 0.005816,
+            "p5": 0.0,
+            "p95": 0.071229,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          },
+          {
+            "media": 0.004436,
+            "p5": 0.0,
+            "p95": 0.06993,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.452402,
+            "presente": true
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.173781,
+            "presente": true
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.044531,
+            "presente": true
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.329286,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:09346601000125",
+      "ticker": "B3SA3",
+      "nome": "B3",
+      "pais": "BR",
+      "peso_efetivo": 0.069268,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Bolsas de Valores/Mercadorias e Futuros",
+      "irrae": {
+        "origem": "so_prior",
+        "tema": "ia",
+        "media": 0.059756,
+        "p5": 0.0,
+        "p95": 0.157911,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.059756,
+            "p5": 0.0,
+            "p95": 0.154652,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 1.0,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:07526557000100",
+      "ticker": "ABEV3",
+      "nome": "Ambev",
+      "pais": "BR",
+      "peso_efetivo": 0.068641,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Bebidas e Fumo",
+      "irrae": {
+        "origem": "nao_coberto",
+        "tema": null,
+        "media": null,
+        "p5": null,
+        "p95": null,
+        "selo": null,
+        "folhas": [],
+        "componentes": []
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:84429695000111",
+      "ticker": "WEGE3",
+      "nome": "WEG",
+      "pais": "BR",
+      "peso_efetivo": 0.056078,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.237666,
+        "p5": 0.201379,
+        "p95": 0.278241,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.237666,
+            "p5": 0.178675,
+            "p95": 0.300589,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 1.0,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:00000000000191",
+      "ticker": "BBAS3",
+      "nome": "Banco do Brasil",
+      "pais": "BR",
+      "peso_efetivo": 0.055324,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Bancos",
+      "irrae": {
+        "origem": "so_prior",
+        "tema": "ia",
+        "media": 0.014869,
+        "p5": 0.0,
+        "p95": 0.072522,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.014869,
+            "p5": 0.0,
+            "p95": 0.127544,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 1.0,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:61532644000115",
+      "ticker": "ITSA4",
+      "nome": "Itaúsa",
+      "pais": "BR",
+      "peso_efetivo": 0.054012,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Emp. Adm. Part. - Intermediação Financeira",
+      "irrae": {
+        "origem": "nao_coberto",
+        "tema": null,
+        "media": null,
+        "p5": null,
+        "p95": null,
+        "selo": null,
+        "folhas": [],
+        "componentes": []
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:30306294000145",
+      "ticker": "BPAC11",
+      "nome": "BTG Pactual",
+      "pais": "BR",
+      "peso_efetivo": 0.050946,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Bancos",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.054849,
+        "p5": 0.0,
+        "p95": 0.088255,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.030708,
+            "p5": 0.0,
+            "p95": 0.060291,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          },
+          {
+            "media": 0.024141,
+            "p5": 0.0,
+            "p95": 0.087775,
+            "id": "ia.energia_dc",
+            "nome": "Energia para data centers"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 1.0,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:16404287000155",
+      "ticker": "SUZB3",
+      "nome": "Suzano",
+      "pais": "BR",
+      "peso_efetivo": 0.043807,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Papel e Celulose",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.104309,
+        "p5": 0.059183,
+        "p95": 0.134839,
+        "selo": "media",
+        "folhas": [
+          {
+            "media": 0.068042,
+            "p5": 0.013981,
+            "p95": 0.102082,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          },
+          {
+            "media": 0.036267,
+            "p5": 0.0,
+            "p95": 0.10363,
+            "id": "ia.energia_dc",
+            "nome": "Energia para data centers"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.23607,
+            "presente": true
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.026384,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.27098,
+            "presente": true
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.305374,
+            "presente": true
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.161192,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:33611500000119",
+      "ticker": "GGBR4",
+      "nome": "Gerdau",
+      "pais": "BR",
+      "peso_efetivo": 0.042295,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Metalurgia e Siderurgia",
+      "irrae": {
+        "origem": "so_prior",
+        "tema": "ia",
+        "media": 0.127288,
+        "p5": 0.0,
+        "p95": 0.26576,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.127288,
+            "p5": 0.067277,
+            "p95": 0.181918,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 1.0,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:16670085000155",
+      "ticker": "RENT3",
+      "nome": "Localiza",
+      "pais": "BR",
+      "peso_efetivo": 0.028875,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Serviços Transporte e Logística",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.732804,
+        "p5": 0.684598,
+        "p95": 0.755582,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.38471,
+            "p5": 0.349509,
+            "p95": 0.412661,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          },
+          {
+            "media": 0.348094,
+            "p5": 0.279425,
+            "p95": 0.386275,
+            "id": "ia.energia_dc",
+            "nome": "Energia para data centers"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 1.0,
+            "presente": true
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:06047087000139",
+      "ticker": "RDOR3",
+      "nome": "Rede D'Or",
+      "pais": "BR",
+      "peso_efetivo": 0.024688,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Serviços médicos",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.464825,
+        "p5": 0.411991,
+        "p95": 0.493185,
+        "selo": "alta",
+        "folhas": [
+          {
+            "media": 0.026003,
+            "p5": 0.0,
+            "p95": 0.064551,
+            "id": "ia.energia_dc",
+            "nome": "Energia para data centers"
+          },
+          {
+            "media": 0.359168,
+            "p5": 0.337972,
+            "p95": 0.390886,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          },
+          {
+            "media": 0.079654,
+            "p5": 0.05245,
+            "p95": 0.144529,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.779847,
+            "presente": true
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.220153,
+            "presente": true
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:03220438000173",
+      "ticker": "EQTL3",
+      "nome": "Equatorial",
+      "pais": "BR",
+      "peso_efetivo": 0.02462,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Energia Elétrica",
+      "irrae": {
+        "origem": "so_prior",
+        "tema": "ia",
+        "media": 0.048705,
+        "p5": 0.0,
+        "p95": 0.111482,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.048705,
+            "p5": 0.002799,
+            "p95": 0.104636,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 1.0,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:07689002000189",
+      "ticker": "EMBJ3",
+      "nome": "Embraer",
+      "pais": "BR",
+      "peso_efetivo": 0.023863,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Máquinas, Equipamentos, Veículos e Peças",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.440692,
+        "p5": 0.373244,
+        "p95": 0.461905,
+        "selo": "media",
+        "folhas": [
+          {
+            "media": 0.440692,
+            "p5": 0.38127,
+            "p95": 0.484901,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.135578,
+            "presente": true
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.034652,
+            "presente": true
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.056259,
+            "presente": true
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.211988,
+            "presente": true
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.059573,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.223732,
+            "presente": true
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.015141,
+            "presente": true
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.202213,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.060864,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:53113791000122",
+      "ticker": "TOTS3",
+      "nome": "Totvs",
+      "pais": "BR",
+      "peso_efetivo": 0.02173,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Comunicação e Informática",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.20463,
+        "p5": 0.136948,
+        "p95": 0.268217,
+        "selo": "media",
+        "folhas": [
+          {
+            "media": 0.20463,
+            "p5": 0.187256,
+            "p95": 0.234268,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.193848,
+            "presente": true
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.140565,
+            "presente": true
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.174441,
+            "presente": true
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.224435,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.113259,
+            "presente": true
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.018576,
+            "presente": true
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.134876,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:43776517000180",
+      "ticker": "SBSP3",
+      "nome": "Sabesp",
+      "pais": "BR",
+      "peso_efetivo": 0.020837,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Saneamento, Serv. Água e Gás",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.183659,
+        "p5": 0.095242,
+        "p95": 0.239519,
+        "selo": "media",
+        "folhas": [
+          {
+            "media": 0.023525,
+            "p5": 0.0,
+            "p95": 0.040624,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          },
+          {
+            "media": 0.015902,
+            "p5": 0.0,
+            "p95": 0.035651,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          },
+          {
+            "media": 0.144232,
+            "p5": 0.115671,
+            "p95": 0.170744,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.398402,
+            "presente": true
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.438343,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.039306,
+            "presente": true
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.073894,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.050055,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:10629105000168",
+      "ticker": "PRIO3",
+      "nome": "PRIO",
+      "pais": "BR",
+      "peso_efetivo": 0.019228,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Petróleo e Gás",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.509322,
+        "p5": 0.462019,
+        "p95": 0.591596,
+        "selo": "media",
+        "folhas": [
+          {
+            "media": 0.509322,
+            "p5": 0.464798,
+            "p95": 0.553136,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.306641,
+            "presente": true
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.647721,
+            "presente": true
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.045638,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:61585865000151",
+      "ticker": "RADL3",
+      "nome": "Raia Drogasil",
+      "pais": "BR",
+      "peso_efetivo": 0.013765,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Comércio (Atacado e Varejo)",
+      "irrae": {
+        "origem": "so_prior",
+        "tema": "ia",
+        "media": 0.023531,
+        "p5": 0.0,
+        "p95": 0.072278,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.023531,
+            "p5": 0.0,
+            "p95": 0.124554,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 1.0,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:02558157000162",
+      "ticker": "VIVT3",
+      "nome": "Vivo",
+      "pais": "BR",
+      "peso_efetivo": 0.012736,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Telecomunicações",
+      "irrae": {
+        "origem": "so_prior",
+        "tema": "ia",
+        "media": 0.147709,
+        "p5": 0.0,
+        "p95": 0.272354,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.147709,
+            "p5": 0.0,
+            "p95": 0.204555,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 1.0,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:17155730000164",
+      "ticker": "CMIG4",
+      "nome": "Cemig",
+      "pais": "BR",
+      "peso_efetivo": 0.0113,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Energia Elétrica",
+      "irrae": {
+        "origem": "nao_coberto",
+        "tema": null,
+        "media": null,
+        "p5": null,
+        "p95": null,
+        "selo": null,
+        "folhas": [],
+        "componentes": []
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:92754738000162",
+      "ticker": "LREN3",
+      "nome": "Lojas Renner",
+      "pais": "BR",
+      "peso_efetivo": 0.008533,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Comércio (Atacado e Varejo)",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.149534,
+        "p5": 0.087242,
+        "p95": 0.185748,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.138537,
+            "p5": 0.090042,
+            "p95": 0.169994,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          },
+          {
+            "media": 0.010997,
+            "p5": 0.0,
+            "p95": 0.07698,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 1.0,
+            "presente": true
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:33256439000139",
+      "ticker": "UGPA3",
+      "nome": "Ultrapar",
+      "pais": "BR",
+      "peso_efetivo": 0.007737,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Emp. Adm. Part. - Petróleo e Gás",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.078864,
+        "p5": 0.028743,
+        "p95": 0.143674,
+        "selo": "media",
+        "folhas": [
+          {
+            "media": 0.028126,
+            "p5": 0.0,
+            "p95": 0.076721,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          },
+          {
+            "media": 0.022703,
+            "p5": 0.000384,
+            "p95": 0.048746,
+            "id": "ia.energia_dc",
+            "nome": "Energia para data centers"
+          },
+          {
+            "media": 0.028035,
+            "p5": 0.006542,
+            "p95": 0.06983,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.074474,
+            "presente": true
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.106173,
+            "presente": true
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.349915,
+            "presente": true
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.23454,
+            "presente": true
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.124354,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.022862,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.087682,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:50746577000115",
+      "ticker": "CSAN3",
+      "nome": "Cosan",
+      "pais": "BR",
+      "peso_efetivo": 0.006645,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Agricultura (Açúcar, Álcool e Cana)",
+      "irrae": {
+        "origem": "nao_coberto",
+        "tema": null,
+        "media": null,
+        "p5": null,
+        "p95": null,
+        "selo": null,
+        "folhas": [],
+        "componentes": []
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:05197443000138",
+      "ticker": "HAPV3",
+      "nome": "Hapvida",
+      "pais": "BR",
+      "peso_efetivo": 0.00629,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Serviços médicos",
+      "irrae": {
+        "origem": "so_prior",
+        "tema": "ia",
+        "media": 0.1061,
+        "p5": 0.056895,
+        "p95": 0.270427,
+        "selo": "preliminar",
+        "folhas": [
+          {
+            "media": 0.1061,
+            "p5": 0.020209,
+            "p95": 0.257497,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 1.0,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "BR:CNPJ:89637490000145",
+      "ticker": "KLBN11",
+      "nome": "Klabin",
+      "pais": "BR",
+      "peso_efetivo": 0.006137,
+      "caminho": [
+        "BOVA11"
+      ],
+      "setor": "Papel e Celulose",
+      "irrae": {
+        "origem": "nao_coberto",
+        "tema": null,
+        "media": null,
+        "p5": null,
+        "p95": null,
+        "selo": null,
+        "folhas": [],
+        "componentes": []
+      },
+      "fontes": []
+    }
+  ],
+  "fontes_carteira": []
+}

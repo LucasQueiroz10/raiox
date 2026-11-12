@@ -1,0 +1,490 @@
+{
+  "versao_schema": "1",
+  "ilustrativo": true,
+  "carteira": {
+    "id": "big-techs",
+    "nome": "4 big techs americanas",
+    "descricao": "NVIDIA, Amazon, Apple e Microsoft, 25% cada.",
+    "data_referencia": "2026-09-30",
+    "posicoes": [
+      {
+        "ticker": "NVDA",
+        "nome": "NVIDIA",
+        "tipo": "acao",
+        "peso": 0.25
+      },
+      {
+        "ticker": "AMZN",
+        "nome": "Amazon",
+        "tipo": "acao",
+        "peso": 0.25
+      },
+      {
+        "ticker": "AAPL",
+        "nome": "Apple",
+        "tipo": "acao",
+        "peso": 0.25
+      },
+      {
+        "ticker": "MSFT",
+        "nome": "Microsoft",
+        "tipo": "acao",
+        "peso": 0.25
+      }
+    ]
+  },
+  "modelo": {
+    "versao_irrae": "1.1",
+    "n_amostras": 2000,
+    "semente": 0,
+    "gerado_em": "2026-11-11T00:00:00Z",
+    "cenario_faixa_carteira": "comonotonico"
+  },
+  "cobertura": {
+    "peso_com_irrae": 1.0,
+    "peso_so_prior": 0.0,
+    "peso_nao_coberto": 0.0
+  },
+  "exposicao": {
+    "setores": [
+      {
+        "id": "Semicondutores",
+        "nome": "Semicondutores",
+        "peso": 0.25
+      },
+      {
+        "id": "Comércio eletrônico e nuvem",
+        "nome": "Comércio eletrônico e nuvem",
+        "peso": 0.25
+      },
+      {
+        "id": "Hardware de consumo",
+        "nome": "Hardware de consumo",
+        "peso": 0.25
+      },
+      {
+        "id": "Software",
+        "nome": "Software",
+        "peso": 0.25
+      }
+    ],
+    "temas": [
+      {
+        "media": 0.304382,
+        "p5": 0.251218,
+        "p95": 0.349812,
+        "id": "ia",
+        "nome": "Cadeia de IA",
+        "subtemas": [
+          {
+            "media": 0.125694,
+            "p5": 0.099192,
+            "p95": 0.152372,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          },
+          {
+            "media": 0.126632,
+            "p5": 0.10643,
+            "p95": 0.164395,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          },
+          {
+            "media": 0.04784,
+            "p5": 0.027118,
+            "p95": 0.079808,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          },
+          {
+            "media": 0.004217,
+            "p5": 0.0,
+            "p95": 0.020107,
+            "id": "ia.energia_dc",
+            "nome": "Energia para data centers"
+          },
+          {
+            "media": 0.0,
+            "p5": 0.0,
+            "p95": 0.0,
+            "id": "ia.generica",
+            "nome": "IA sem subtema definido"
+          }
+        ]
+      }
+    ],
+    "fora_do_tema": 0.695618,
+    "nao_coberto": 0.0
+  },
+  "empresas": [
+    {
+      "empresa_id": "US:NVDA",
+      "ticker": "NVDA",
+      "nome": "NVIDIA",
+      "pais": "US",
+      "peso_efetivo": 0.25,
+      "caminho": [],
+      "setor": "Semicondutores",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.04631,
+        "p5": 0.010266,
+        "p95": 0.126413,
+        "selo": "media",
+        "folhas": [
+          {
+            "media": 0.011053,
+            "p5": 0.0,
+            "p95": 0.035219,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          },
+          {
+            "media": 0.035257,
+            "p5": 0.017123,
+            "p95": 0.075819,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.029891,
+            "presente": true
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.283107,
+            "presente": true
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.387859,
+            "presente": true
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.246084,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.025351,
+            "presente": true
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.027708,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "US:AMZN",
+      "ticker": "AMZN",
+      "nome": "Amazon",
+      "pais": "US",
+      "peso_efetivo": 0.25,
+      "caminho": [],
+      "setor": "Comércio eletrônico e nuvem",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.090196,
+        "p5": 0.021688,
+        "p95": 0.120216,
+        "selo": "media",
+        "folhas": [
+          {
+            "media": 0.016867,
+            "p5": 0.0,
+            "p95": 0.080428,
+            "id": "ia.energia_dc",
+            "nome": "Energia para data centers"
+          },
+          {
+            "media": 0.073329,
+            "p5": 0.020886,
+            "p95": 0.127855,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.030598,
+            "presente": true
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.05381,
+            "presente": true
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.05428,
+            "presente": true
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.022567,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.326174,
+            "presente": true
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.418568,
+            "presente": true
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.094003,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.0,
+            "presente": false
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "US:AAPL",
+      "ticker": "AAPL",
+      "nome": "Apple",
+      "pais": "US",
+      "peso_efetivo": 0.25,
+      "caminho": [],
+      "setor": "Hardware de consumo",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.737828,
+        "p5": 0.699277,
+        "p95": 0.771697,
+        "selo": "alta",
+        "folhas": [
+          {
+            "media": 0.312191,
+            "p5": 0.270544,
+            "p95": 0.351129,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          },
+          {
+            "media": 0.425637,
+            "p5": 0.38365,
+            "p95": 0.47641,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.058092,
+            "presente": true
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.505195,
+            "presente": true
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.053164,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.066598,
+            "presente": true
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.316951,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    },
+    {
+      "empresa_id": "US:MSFT",
+      "ticker": "MSFT",
+      "nome": "Microsoft",
+      "pais": "US",
+      "peso_efetivo": 0.25,
+      "caminho": [],
+      "setor": "Software",
+      "irrae": {
+        "origem": "irrae",
+        "tema": "ia",
+        "media": 0.343196,
+        "p5": 0.27364,
+        "p95": 0.38092,
+        "selo": "media",
+        "folhas": [
+          {
+            "media": 0.106979,
+            "p5": 0.087587,
+            "p95": 0.156158,
+            "id": "ia.modelos_software",
+            "nome": "Modelos e software de IA"
+          },
+          {
+            "media": 0.190585,
+            "p5": 0.126223,
+            "p95": 0.258361,
+            "id": "ia.semicondutores",
+            "nome": "Semicondutores e hardware de IA"
+          },
+          {
+            "media": 0.045632,
+            "p5": 0.024949,
+            "p95": 0.10535,
+            "id": "ia.nuvem_dc",
+            "nome": "Nuvem e data centers"
+          }
+        ],
+        "componentes": [
+          {
+            "id": "A_receita",
+            "nome": "Atividade: receita por segmento",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "A_lucro",
+            "nome": "Atividade: lucro operacional por segmento",
+            "peso_p": 0.420229,
+            "presente": true
+          },
+          {
+            "id": "C_cadeia",
+            "nome": "Cadeia: exposição herdada de clientes",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "Ir_capex",
+            "nome": "Investimento recente: capex",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "B_backlog",
+            "nome": "Carteira contratada (RPO/backlog)",
+            "peso_p": 0.45348,
+            "presente": true
+          },
+          {
+            "id": "R_patentes",
+            "nome": "Pesquisa: patentes (USPTO AIPD)",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "P_participacoes",
+            "nome": "Participações e aquisições",
+            "peso_p": 0.0,
+            "presente": false
+          },
+          {
+            "id": "N_narrativa",
+            "nome": "Narrativa: texto do 10-K",
+            "peso_p": 0.050131,
+            "presente": true
+          },
+          {
+            "id": "prior_setorial",
+            "nome": "Prior do setor oficial (pseudo-componente)",
+            "peso_p": 0.07616,
+            "presente": true
+          }
+        ]
+      },
+      "fontes": []
+    }
+  ],
+  "fontes_carteira": []
+}
