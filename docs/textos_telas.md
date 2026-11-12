@@ -138,6 +138,7 @@ Glossário, para manter os mesmos termos em todo o site:
 | `vitrine.fontes.sem_vinculo` | A Sagital não tem vínculo com a CVM, a SEC ou as empresas citadas, nem fala em nome delas. | rascunho |
 | `vitrine.fontes.licenca_cvm` | Licença ODbL | rascunho |
 | `vitrine.metodologia.provisorio` | Esta página ainda está sendo escrita. O método completo entra aqui em breve. | rascunho |
+| `vitrine.carregando` | Carregando os dados da carteira. | rascunho |
 | `vitrine.erro.carregar` | Não foi possível carregar esta carteira. Recarregue a página para tentar de novo. | rascunho |
 | `vitrine.erro.formato` | Os dados desta carteira estão num formato que o site não reconhece. Tente outra carteira. | rascunho |
 | `vitrine.erro.pagina` | Esta página não existe. | rascunho |

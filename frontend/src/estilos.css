@@ -131,6 +131,17 @@ a {
   transform: none;
 }
 
+/* Faixa de dados de exemplo: no topo de todas as páginas enquanto não há dados reais. Ciano, e
+   não âmbar: o âmbar fica para o número principal (One Voice Rule, DESIGN.md). */
+.faixa-ilustrativa {
+  padding: 8px var(--margem);
+  background: var(--ciano-suave);
+  border-bottom: 1px solid var(--ciano-linha);
+  color: var(--texto);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
 /* Cabeçalho */
 
 .topo {
@@ -480,6 +491,24 @@ a {
   max-width: 60ch;
   color: var(--texto-suave);
   font-size: 1.125rem;
+}
+
+.datas {
+  display: grid;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linha);
+  color: var(--texto-suave);
+  font-size: 0.875rem;
+}
+
+/* Erro do sistema: texto claro com a linha forte, sem vermelho de alarme (frontend/CLAUDE.md). */
+.erro {
+  max-width: 60ch;
+  padding: 12px 16px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  color: var(--texto);
 }
 
 /* Páginas de leitura */

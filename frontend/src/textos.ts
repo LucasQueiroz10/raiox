@@ -10,6 +10,8 @@ export const textos = {
   "vitrine.nav.metodologia": "Como medimos",
   "vitrine.nav.fontes": "Fontes",
   "vitrine.nav.pular_para_conteudo": "Pular para o conteúdo",
+  "vitrine.dados_ilustrativos":
+    "Números ilustrativos. Ainda não foram calculados com dados reais.",
   "vitrine.rodape":
     "Projeto independente, sem fins comerciais. Não é recomendação de investimento. Sem vínculo com a SEC, a CVM, a B3, a S&P Dow Jones Indices, os gestores dos ETFs ou as empresas citadas. Nomes de índices, fundos e empresas pertencem aos seus titulares e aparecem só para identificar as carteiras.",
 
@@ -41,6 +43,10 @@ export const textos = {
   "vitrine.carteira.ibovespa.nome": "Ibovespa",
   "vitrine.carteira.ibovespa.descricao":
     "Um ETF que replica o índice (BOVA11), aberto pela carteira que ele informa à CVM.",
+  "vitrine.carteira.etf_do_indice":
+    "Carteira do {etf}, ETF que replica o índice, em {data}. Não é a composição oficial do índice.",
+  "vitrine.carteira.data_referencia": "Carteira de {data}",
+  "vitrine.carteira.data_calculo": "Calculado em {data}",
 
   // Vitrine > Metodologia, fontes e erros
   "vitrine.metodologia.titulo": "Como medimos",
@@ -58,6 +64,11 @@ export const textos = {
   "vitrine.fontes.sem_vinculo":
     "A Sagital não tem vínculo com a CVM, a SEC ou as empresas citadas, nem fala em nome delas.",
   "vitrine.fontes.licenca_cvm": "Licença ODbL",
+  "vitrine.carregando": "Carregando os dados da carteira.",
+  "vitrine.erro.carregar":
+    "Não foi possível carregar esta carteira. Recarregue a página para tentar de novo.",
+  "vitrine.erro.formato":
+    "Os dados desta carteira estão num formato que o site não reconhece. Tente outra carteira.",
   "vitrine.erro.pagina": "Esta página não existe.",
   "vitrine.erro.voltar": "Voltar às carteiras",
 } as const;

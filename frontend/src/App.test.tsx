@@ -169,3 +169,25 @@ describe("Página inexistente", () => {
     ).toHaveAttribute("href", "/");
   });
 });
+
+describe("Dados de exemplo", () => {
+  it("mostra a faixa de números ilustrativos em todas as páginas", () => {
+    for (const caminho of ["/", "/carteira/sp500", "/fontes", "/nao-existe"]) {
+      const { unmount } = abrirEm(caminho);
+      expect(
+        screen.getByText(textos["vitrine.dados_ilustrativos"]),
+      ).toBeInTheDocument();
+      unmount();
+    }
+  });
+
+  it("mostra a data da carteira do ETF depois de carregar", async () => {
+    abrirEm("/carteira/sp500");
+
+    expect(
+      await screen.findByText(
+        "Carteira do IVV, ETF que replica o índice, em 30/09/2026. Não é a composição oficial do índice.",
+      ),
+    ).toBeInTheDocument();
+  });
+});

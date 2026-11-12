@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { textos } from "../textos";
+import { DADOS_ILUSTRATIVOS } from "../vitrine/snapshots";
 import { Link } from "./Link";
 
 type Props = { caminho: string; children: ReactNode };
@@ -18,6 +19,12 @@ export function Moldura({ caminho, children }: Props) {
       <a className="pular" href="#conteudo">
         {textos["vitrine.nav.pular_para_conteudo"]}
       </a>
+      {/* Com dados de exemplo, a faixa aparece em todas as telas (especificação, seção 12). */}
+      {DADOS_ILUSTRATIVOS && (
+        <p className="faixa-ilustrativa">
+          {textos["vitrine.dados_ilustrativos"]}
+        </p>
+      )}
       <header className="topo">
         <Link
           className="marca"
