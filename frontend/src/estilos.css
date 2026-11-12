@@ -390,8 +390,9 @@ a {
   color: var(--texto-suave);
   font-size: 0.9375rem;
   line-height: 1.45;
+  /* A legenda entra: ease-out nos dois, para ela aparecer logo e assentar devagar. */
   transition:
-    opacity 500ms ease,
+    opacity 500ms var(--ease-out),
     transform 600ms var(--ease-out);
   transition-delay: calc(var(--i) * 70ms + 220ms);
 }
@@ -411,12 +412,30 @@ a {
   transform: translateX(-6px);
 }
 
+/* Movimento reduzido tira o deslocamento, não toda a animação: as legendas ainda surgem por
+   opacidade e o nome da série ainda muda de cor, que ajudam a entender o que mudou. */
 @media (prefers-reduced-motion: reduce) {
   .corte,
-  .corte-legenda,
-  .serie,
-  .serie-nome {
+  .serie {
     transition: none;
+  }
+
+  .corte-legenda {
+    transition: opacity 200ms var(--ease-out);
+    transition-delay: 0ms;
+  }
+
+  .camadas[data-aberta="false"] .corte-legenda {
+    transform: none;
+  }
+
+  .serie-nome {
+    transition: color 160ms ease;
+  }
+
+  .serie:active,
+  .serie:hover .serie-nome {
+    transform: none;
   }
 }
 

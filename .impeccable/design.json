@@ -16,7 +16,7 @@
     "shadows": [],
     "motion": [
       { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Entrada dos cortes e retorno de toque." },
-      { "name": "abertura-dos-cortes", "value": "900ms, 70ms entre cortes, legendas 220ms depois", "purpose": "A única animação assinada; aberta direto com movimento reduzido." }
+      { "name": "abertura-dos-cortes", "value": "900ms, 70ms entre cortes, legendas 220ms depois", "purpose": "A única animação assinada; com movimento reduzido, aberta direto e legendas só por opacidade (200ms)." }
     ],
     "breakpoints": [
       { "name": "margem-desktop", "value": "768px" },
@@ -62,7 +62,8 @@
       { "name": "The One Voice Rule", "body": "O âmbar aparece no máximo duas vezes por tela: o número principal e a maior contribuição.", "section": "colors" },
       { "name": "The Cold Neutral Rule", "body": "Neutros sempre frios, puxados do azul do fundo; texto secundário nunca em cinza puro.", "section": "colors" },
       { "name": "The No Kicker Rule", "body": "Nenhum rótulo pequeno em caixa alta acima de título.", "section": "typography" },
-      { "name": "The Flat Film Rule", "body": "Nada flutua: sem sombra, brilho ou desfoque como decoração.", "section": "elevation" }
+      { "name": "The Flat Film Rule", "body": "Nada flutua: sem sombra, brilho ou desfoque como decoração.", "section": "elevation" },
+      { "name": "The Gentle Reduction Rule", "body": "Movimento reduzido tira o deslocamento, não a animação toda: opacidade e cor continuam, porque ajudam a entender o que mudou.", "section": "components" }
     ],
     "dos": [
       "Do usar linhas de 1px para separar, no lugar de caixas.",

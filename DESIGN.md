@@ -177,8 +177,13 @@ para 99%.
 Quatro cortes em perspectiva, do mais simples ao mais denso (uma posição, uma grade de fundos,
 uma grade de empresas, a mesma grade com a intensidade da exposição), cada um com a legenda ao
 lado. A pilha começa fechada e se abre uma vez ao entrar na tela (900ms, cubic-bezier(0.23, 1,
-0.32, 1), 70ms entre cortes); as legendas entram 220ms depois. Com movimento reduzido, já aparece
-aberta, sem transição.
+0.32, 1), 70ms entre cortes); as legendas entram 220ms depois, com a mesma curva. Com movimento
+reduzido, a pilha já aparece aberta, sem deslocamento, e as legendas surgem só por opacidade
+(200ms).
+
+### Named Rules
+**The Gentle Reduction Rule.** Movimento reduzido tira o deslocamento, não a animação toda:
+opacidade e cor continuam, porque ajudam a entender o que mudou.
 
 ## Do's and Don'ts
 
