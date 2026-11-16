@@ -3,14 +3,14 @@
 # As versões de produção ficam presas às do requirements.txt.
 -c requirements.txt
 -r requirements.in
-pytest==9.1.1
-hypothesis==6.168.3
+pytest==9.2.0
+hypothesis==6.170.15
 httpx==0.28.1
-ruff==0.16.10
+ruff==0.17.5
 pip-audit==2.10.1
-pip-tools==7.6.1
+pip-tools==7.6.2
 # O pytest e o build só pedem o colorama no Windows. Fixado aqui para entrar no arquivo gerado em
 # qualquer sistema: gerado no Linux (CI, Dependabot), ele sumia e a instalação no Windows falhava.
 colorama==0.4.6
 # Mesmo caso: o psycopg só pede o tzdata no Windows.
-tzdata==2026.5
+tzdata==2026.6
